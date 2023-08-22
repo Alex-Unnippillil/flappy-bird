@@ -1,5 +1,5 @@
 # flappy-bird
-basic flappy bird. if you can even score 1 point! that's a win
+a bare bones flappy bird. 
 
 https://alex-unnippillil.github.io/flappy-bird/
 
@@ -9,6 +9,6 @@ https://alex-unnippillil.github.io/flappy-bird/
 to do:
 -fix tunnels so that it is always possible for the bird to flap through
 -add animations for the bird
--change character models
--add repatinf background
+-add models of birds and walls
+-add a repeating background
 -add powerups, speed boost, invincibility, etc
