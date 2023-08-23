@@ -1,5 +1,5 @@
 # flappy-bird
-a bare bones flappy bird. 
+A basic version of flappy bird. 
 
 https://alex-unnippillil.github.io/flappy-bird/
 
