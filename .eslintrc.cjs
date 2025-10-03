@@ -4,10 +4,20 @@ module.exports = {
     browser: true,
     es2022: true,
   },
-  extends: ["eslint:recommended"],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
+    ecmaVersion: 'latest',
+    sourceType: 'module',
   },
-  rules: {},
+  plugins: ['@typescript-eslint'],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  ignorePatterns: ['dist/', 'node_modules/', '**/*.d.ts'],
+  overrides: [
+    {
+      files: ['src/**/*.test.ts'],
+      env: {
+        node: true,
+      },
+    },
+  ],
 };
