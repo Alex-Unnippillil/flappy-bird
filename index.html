@@ -7,7 +7,60 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="game-shell">
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
+      <section
+        id="hud"
+        class="hud"
+        aria-label="Gameplay heads-up display"
+        aria-live="polite"
+      >
+        <div class="hud-row">
+          <div class="hud-group" role="group" aria-label="Current score">
+            <span class="hud-label">Score</span>
+            <span id="hudScore" class="hud-value">0</span>
+          </div>
+          <div class="hud-group" role="group" aria-label="Best score">
+            <span class="hud-label">Best</span>
+            <span id="hudBest" class="hud-value">0</span>
+          </div>
+        </div>
+        <div class="hud-row hud-row--status">
+          <p id="hudStatus" class="hud-status">Tap or click to flap.</p>
+          <div class="hud-icons" role="group" aria-label="Power-up status">
+            <div
+              class="hud-icon"
+              data-power="speed"
+              data-active="false"
+              role="img"
+              aria-label="Speed boost inactive"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M13.5 2 4 14.2h6.3L9 22l9.5-12.2H12L13.5 2z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            <div
+              class="hud-icon"
+              data-power="shield"
+              data-active="false"
+              role="img"
+              aria-label="Shield inactive"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                  d="M12 2 5 5v6c0 5.2 3.4 9.9 7 11 3.6-1.1 7-5.8 7-11V5l-7-3z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <span class="sr-only" id="hudPowerSummary">No active power-ups.</span>
+      </section>
+    </div>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>

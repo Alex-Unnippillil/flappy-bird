@@ -12,6 +12,7 @@ export function createGameState(canvas) {
     bird: null,
     pipes: [],
     score: 0,
+    bestScore: 0,
     gameOver: false,
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
