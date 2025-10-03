@@ -11,7 +11,11 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/jsdom": "^27.0.0",
+    "@types/node": "^24.6.2",
+    "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^8.57.0",
+    "jsdom": "^27.0.0",
     "typescript": "^5.4.0",
     "vite": "^5.2.0",
     "vitest": "^1.6.0"
