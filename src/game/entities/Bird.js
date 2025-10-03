@@ -1,27 +1,48 @@
+const DEFAULTS = Object.freeze({
+  width: 34,
+  height: 24,
+  flapStrength: 9,
+  maxFallSpeed: 13,
+});
+
 export class Bird {
-  constructor(x, y) {
+  constructor(x, y, options = {}) {
+    const settings = { ...DEFAULTS, ...options };
+
     this.x = x;
     this.y = y;
-    this.width = 20;
-    this.height = 20;
+    this.width = settings.width;
+    this.height = settings.height;
     this.velocity = 0;
+    this.flapStrength = settings.flapStrength;
+    this.maxFallSpeed = settings.maxFallSpeed;
+    this.rotation = 0;
   }
 
   jump() {
-    this.velocity = -10;
+    this.velocity = -this.flapStrength;
   }
 
-  update(gravity) {
-    this.velocity += gravity;
-    this.y += this.velocity;
+  update(gravity, delta = 1) {
+    const scaledGravity = gravity * delta;
+
+    this.velocity = Math.min(this.velocity + scaledGravity, this.maxFallSpeed);
+    this.y += this.velocity * delta;
+
+    const targetRotation = Math.max(-0.65, Math.min(0.75, this.velocity / 9));
+    this.rotation += (targetRotation - this.rotation) * 0.2;
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+  getBounds() {
+    return {
+      left: this.x,
+      right: this.x + this.width,
+      top: this.y,
+      bottom: this.y + this.height,
+    };
   }
 
-  isOutOfBounds(canvasHeight) {
-    return this.y < 0 || this.y + this.height > canvasHeight;
+  isOutOfBounds(playfieldHeight) {
+    return this.y < 0 || this.y + this.height > playfieldHeight;
   }
 }

@@ -1,93 +1,96 @@
-import { Bird, Pipe } from "./game/entities/index.js";
-import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import {
+  CONFIG,
+  createGameState,
+  initializeGameLoop,
+  startGame,
+  handleCanvasClick,
+} from "./game/systems/index.js";
 
-let state;
+function bindInput(canvas) {
+  const pressAction = (event) => {
+    event.preventDefault();
+    handleCanvasClick();
+  };
 
-function spawnPipe(xPosition) {
-  state.pipes.push(new Pipe(xPosition, state.canvas.height, CONFIG.gapSize, state.prng));
-}
-
-function startGame() {
-  if (state.animationFrameId !== null) {
-    cancelAnimationFrame(state.animationFrameId);
-    state.animationFrameId = null;
-  }
-
-  resetGameState(state);
-  state.bird = new Bird(50, state.canvas.height / 2);
-  spawnPipe(state.canvas.width);
-  runGameLoop();
-}
-
-function runGameLoop() {
-  state.animationFrameId = null;
-  const { ctx, canvas } = state;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  state.bird.update(CONFIG.gravity);
-  state.bird.draw(ctx);
-
-  for (let i = state.pipes.length - 1; i >= 0; i -= 1) {
-    const pipe = state.pipes[i];
-    pipe.update(
-      state.pipeSpeed,
-      state.bird,
-      () => {
-        state.gameOver = true;
-      },
-      () => {
-        state.score += 1;
-        if (state.score > 0 && state.score % 100 === 0) {
-          state.pipeSpeed += 0.5;
-        }
+  canvas.addEventListener("pointerdown", pressAction);
+  canvas.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.repeat) return;
+      const actionableKeys = new Set(["Space", "ArrowUp", "KeyW", "KeyX"]);
+      if (actionableKeys.has(event.code)) {
+        pressAction(event);
+      } else if (event.code === "KeyR") {
+        event.preventDefault();
+        startGame();
       }
-    );
+    },
+    { passive: false }
+  );
 
-    pipe.draw(ctx);
+  window.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.repeat) return;
+      const actionableKeys = new Set(["Space", "ArrowUp", "KeyW"]);
+      if (actionableKeys.has(event.code)) {
+        event.preventDefault();
+        handleCanvasClick();
+      } else if (event.code === "KeyR") {
+        event.preventDefault();
+        startGame();
+      }
+    },
+    { passive: false }
+  );
 
-    if (pipe.isOffScreen()) {
-      state.pipes.splice(i, 1);
-    }
-  }
+  canvas.addEventListener("touchstart", pressAction, { passive: false });
 
-  if (state.frameCount % CONFIG.pipeInterval === 0) {
-    spawnPipe(canvas.width);
-  }
-
-  ctx.fillStyle = "#000";
-  ctx.font = "20px Arial";
-  ctx.fillText(`Score: ${state.score}`, 10, 30);
-
-  if (state.bird.isOutOfBounds(canvas.height)) {
-    state.gameOver = true;
-  }
-
-  if (!state.gameOver) {
-    state.frameCount += 1;
-    state.animationFrameId = requestAnimationFrame(runGameLoop);
-  } else {
-    ctx.fillStyle = "#000";
-    ctx.font = "30px Arial";
-    ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
-    ctx.fillText("Click to play again", canvas.width / 2 - 100, canvas.height / 2 + 40);
-  }
+  const startButton = document.getElementById("startButton");
+  startButton?.addEventListener("click", () => {
+    handleCanvasClick();
+  });
 }
 
-function handleCanvasClick() {
-  if (!state.gameOver) {
-    state.bird.jump();
-  } else {
-    startGame();
-  }
+function resizeCanvas(canvas) {
+  const container = canvas.parentElement;
+  if (!container) return;
+
+  const aspect = CONFIG.playfieldHeight / CONFIG.playfieldWidth;
+  const maxWidth = Math.min(window.innerWidth * 0.9, 540);
+  const width = Math.max(280, maxWidth);
+  const height = width * aspect;
+
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
 }
 
 function init() {
   const canvas = document.getElementById("gameCanvas");
-  const state = createGameState(canvas);
+  if (!canvas) {
+    throw new Error("Game canvas not found");
+  }
 
-  initializeGameLoop(state);
-  canvas.addEventListener("click", handleCanvasClick);
+  canvas.setAttribute("role", "application");
+  canvas.setAttribute("aria-label", "Flappy Bird 3D playfield");
+  canvas.setAttribute("tabindex", "0");
+
+  const state = createGameState(canvas);
+  initializeGameLoop(state, {
+    hudElements: {
+      score: "#scoreValue",
+      best: "#bestValue",
+      message: "#gameMessage",
+      startButton: "#startButton",
+      overlay: "#gameOverlay",
+      speedBar: "#speedFill",
+      speedProgress: "#speedProgress",
+    },
+  });
+
+  bindInput(canvas);
+  resizeCanvas(canvas);
+  window.addEventListener("resize", () => resizeCanvas(canvas));
 }
 
 window.addEventListener("DOMContentLoaded", init);
