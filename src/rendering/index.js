@@ -1,3 +1,8 @@
+import { MedalBanner } from "../hud/components/MedalBanner.ts";
+import { hudAdapter, Medal } from "../hud/adapter.ts";
+
+export { hudAdapter, Medal } from "../hud/adapter.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -20,6 +25,14 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const overlayParent =
+    overlay?.parentElement instanceof HTMLElement ? overlay.parentElement : null;
+  const medalMount =
+    resolveElement(elements.medalBanner ?? null) ?? overlayParent ?? undefined;
+
+  new MedalBanner({
+    mount: medalMount,
+  });
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -76,6 +89,12 @@ export function createHudController(elements = {}) {
     },
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
+    },
+    awardMedal(event) {
+      hudAdapter.emitMedal(event);
+    },
+    clearMedal() {
+      hudAdapter.emitMedal({ medal: Medal.None });
     },
   };
 }
