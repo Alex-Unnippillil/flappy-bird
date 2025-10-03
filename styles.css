@@ -72,6 +72,17 @@ body {
   font-weight: 700;
 }
 
+/* hud-font-smoothing:start */
+@media (min-resolution: 1.25dppx) and (max-resolution: 3dppx) {
+  .hud-panel,
+  .hud-panel * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+/* hud-font-smoothing:end */
+
 .speed-meter {
   position: relative;
   width: 100%;
