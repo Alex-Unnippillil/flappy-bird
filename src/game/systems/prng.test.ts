@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { Pipe } from "../entities/Pipe.js";
+import { Pipe } from "../entities/Pipe";
 import { DeterministicPRNG } from "./prng";
 
 describe("deterministic pipe spawning", () => {
-  function spawnSequence(seed) {
+  function spawnSequence(seed: number) {
     const prng = new DeterministicPRNG(seed);
-    const heights = [];
+    const heights: number[] = [];
 
     for (let i = 0; i < 10; i += 1) {
       const pipe = new Pipe(0, 400, 120, prng);

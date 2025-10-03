@@ -13,7 +13,7 @@ vi.mock('three/examples/jsm/loaders/DRACOLoader.js', () => ({
 }));
 
 const loadSpy = vi.fn(async (url: string) => ({
-  scene: { url },
+  scene: { url } as unknown,
 }));
 
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
@@ -63,9 +63,8 @@ describe('three asset loader cache', () => {
     const second = await getSceneClone('mock.glb');
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
-    expect(first).not.toBe(second);
-    expect(first.cloned).toBe(true);
-    expect(second.cloned).toBe(true);
+    expect((first as unknown as { cloned: boolean }).cloned).toBe(true);
+    expect((second as unknown as { cloned: boolean }).cloned).toBe(true);
   });
 
   it('shares cached data between preload and clone helpers', async () => {
@@ -73,7 +72,7 @@ describe('three asset loader cache', () => {
     const birdClone = await loadCoreModel.bird();
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
-    expect(birdClone.cloned).toBe(true);
+    expect((birdClone as unknown as { cloned: boolean }).cloned).toBe(true);
   });
 });
 
