@@ -25,45 +25,41 @@ function randomIntInRange(randomSource, min, max) {
 }
 
 export class Pipe {
-  constructor(x, canvasHeight, gapSize, randomSource = Math.random) {
+  constructor(x, playfieldHeight, gapSize, randomSource = Math.random) {
     this.x = x;
-    this.width = 50;
+    this.width = 60;
     this.gapSize = gapSize;
-    this.canvasHeight = canvasHeight;
+    this.playfieldHeight = playfieldHeight;
     this.passed = false;
 
-    const minHeight = 50;
-    const maxHeight = Math.max(minHeight, canvasHeight - gapSize - minHeight);
+    const minHeight = 60;
+    const maxHeight = Math.max(minHeight, playfieldHeight - gapSize - minHeight);
     this.topHeight = randomIntInRange(randomSource, minHeight, maxHeight);
   }
 
-  update(speed, bird, onCollision, onPass) {
-    this.x -= speed;
+  update(speed, delta, bird, onCollision, onPass) {
+    this.x -= speed * delta;
 
-    const birdWithinXRange = bird.x < this.x + this.width && bird.x + bird.width > this.x;
-    const hitsTop = bird.y < this.topHeight;
-    const hitsBottom = bird.y + bird.height > this.topHeight + this.gapSize;
+    const bounds = bird.getBounds();
+    const withinX = bounds.left < this.x + this.width && bounds.right > this.x;
+    const hitsTop = bounds.top < this.topHeight;
+    const hitsBottom = bounds.bottom > this.topHeight + this.gapSize;
 
-    if (birdWithinXRange && (hitsTop || hitsBottom)) {
+    if (withinX && (hitsTop || hitsBottom)) {
       onCollision();
     }
 
-    if (!this.passed && bird.x > this.x + this.width) {
+    if (!this.passed && bounds.left > this.x + this.width) {
       this.passed = true;
       onPass();
     }
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "#00FF00";
-    ctx.fillRect(this.x, 0, this.width, this.topHeight);
-
-    const bottomY = this.topHeight + this.gapSize;
-    const bottomHeight = this.canvasHeight - bottomY;
-    ctx.fillRect(this.x, bottomY, this.width, bottomHeight);
+  draw() {
+    // Rendering handled by the Three.js renderer.
   }
 
   isOffScreen() {
-    return this.x + this.width < 0;
+    return this.x + this.width < -200;
   }
 }
