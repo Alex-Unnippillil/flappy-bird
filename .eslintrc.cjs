@@ -9,5 +9,15 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
+  overrides: [
+    {
+      files: ["**/*.ts", "**/*.tsx"],
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+    },
+  ],
   rules: {},
 };

@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { configureCanvas2D } from "./rendering/canvas2d.ts";
 
 let state;
 
@@ -10,16 +11,16 @@ function startGame() {
   }
 
   resetGameState(state);
-  state.bird = new Bird(50, state.canvas.height / 2);
-  state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
+  state.bird = new Bird(50, state.height / 2);
+  state.pipes.push(new Pipe(state.width, state.height, CONFIG.gapSize));
   runGameLoop();
 }
 
 function runGameLoop() {
   state.animationFrameId = null;
-  const { ctx, canvas } = state;
+  const { ctx } = state;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, state.width, state.height);
 
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
@@ -48,14 +49,14 @@ function runGameLoop() {
   }
 
   if (state.frameCount % CONFIG.pipeInterval === 0) {
-    state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
+    state.pipes.push(new Pipe(state.width, state.height, CONFIG.gapSize));
   }
 
   ctx.fillStyle = "#000";
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${state.score}`, 10, 30);
 
-  if (state.bird.isOutOfBounds(canvas.height)) {
+  if (state.bird.isOutOfBounds(state.height)) {
     state.gameOver = true;
   }
 
@@ -65,8 +66,8 @@ function runGameLoop() {
   } else {
     ctx.fillStyle = "#000";
     ctx.font = "30px Arial";
-    ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
-    ctx.fillText("Click to play again", canvas.width / 2 - 100, canvas.height / 2 + 40);
+    ctx.fillText("Game Over", state.width / 2 - 80, state.height / 2);
+    ctx.fillText("Click to play again", state.width / 2 - 100, state.height / 2 + 40);
   }
 }
 
@@ -80,7 +81,9 @@ function handleCanvasClick() {
 
 function init() {
   const canvas = document.getElementById("gameCanvas");
-  state = createGameState(canvas);
+  const { ctx, width, height, pixelRatio } = configureCanvas2D(canvas);
+
+  state = createGameState(canvas, ctx, { width, height, pixelRatio });
   canvas.addEventListener("click", handleCanvasClick);
   startGame();
 }

@@ -5,10 +5,15 @@ export const CONFIG = {
   initialPipeSpeed: 2,
 };
 
-export function createGameState(canvas) {
+export function createGameState(canvas, ctx, dimensions) {
+  const { width, height, pixelRatio } = dimensions;
+
   return {
     canvas,
-    ctx: canvas.getContext("2d"),
+    ctx,
+    width,
+    height,
+    pixelRatio,
     bird: null,
     pipes: [],
     score: 0,
