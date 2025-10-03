@@ -1,3 +1,5 @@
+import { createHapticsAdapter } from "../hud/util/haptics.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -12,7 +14,7 @@ function resolveElement(element) {
   return element;
 }
 
-export function createHudController(elements = {}) {
+export function createHudController(elements = {}, options = {}) {
   const scoreEl = resolveElement(elements.score ?? "#scoreValue");
   const bestEl = resolveElement(elements.best ?? "#bestValue");
   const messageEl = resolveElement(elements.message ?? "#gameMessage");
@@ -20,6 +22,12 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const medalEl = resolveElement(elements.medal);
+
+  const haptics = options.haptics ?? createHapticsAdapter();
+  const supportsHaptics = Boolean(haptics?.supported);
+  let lastScore = 0;
+  let lastMedal = null;
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -53,9 +61,35 @@ export function createHudController(elements = {}) {
   return {
     setScore(value) {
       safeText(scoreEl, value);
+      const numericValue = Number(value);
+      if (
+        supportsHaptics &&
+        Number.isFinite(numericValue) &&
+        numericValue > lastScore &&
+        typeof haptics.scoreMilestone === "function"
+      ) {
+        haptics.scoreMilestone(numericValue);
+      }
+      if (Number.isFinite(numericValue)) {
+        lastScore = numericValue;
+      }
     },
     setBest(value) {
       safeText(bestEl, value);
+    },
+    setMedal(tier) {
+      if (medalEl) {
+        safeText(medalEl, tier ?? "");
+      }
+      if (
+        supportsHaptics &&
+        tier &&
+        tier !== lastMedal &&
+        typeof haptics.medalEarned === "function"
+      ) {
+        haptics.medalEarned(tier);
+      }
+      lastMedal = tier ?? null;
     },
     setSpeed,
     showIntro() {
