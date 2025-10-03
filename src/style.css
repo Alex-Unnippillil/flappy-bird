@@ -1,0 +1,126 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background-color: #f4f6fb;
+  color: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: min(480px, 100%);
+  padding: 1.75rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #ffffff 0%, #eef2ff 100%);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+}
+
+.game-shell__header {
+  text-align: center;
+}
+
+.game-shell__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.game-shell__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.game-shell__canvas-wrapper {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.game-shell__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  background: #fff;
+  border: 2px solid rgba(15, 23, 42, 0.15);
+  box-shadow: inset 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.game-shell__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.game-shell__button {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+}
+
+.game-shell__button:hover,
+.game-shell__button:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  background: #1d4ed8;
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.35);
+}
+
+.game-shell__button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.game-shell__support-text {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

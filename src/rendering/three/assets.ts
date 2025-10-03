@@ -1,5 +1,6 @@
-import { Group } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { Group } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { clone as cloneWithSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
@@ -40,8 +41,9 @@ function getLoader(): GLTFLoader {
 async function loadGLTF(url: string): Promise<GLTF> {
   let promise = gltfCache.get(url);
   if (!promise) {
-    promise = getLoader().loadAsync(url);
-    gltfCache.set(url, promise);
+    const loaderPromise = getLoader().loadAsync(url);
+    gltfCache.set(url, loaderPromise);
+    promise = loaderPromise;
   }
 
   return promise;

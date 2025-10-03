@@ -1,5 +1,19 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/flappy-bird/', // Ensure this matches the repository name when deploying to GitHub Pages.
+  base: '/flappy-bird/',
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'assets/[name][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
+  },
 });
