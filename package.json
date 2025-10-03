@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.ts",
     "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy": "npm run build && node scripts/deploy-docs.mjs"
   },
   "devDependencies": {
     "@types/jsdom": "^27.0.0",
