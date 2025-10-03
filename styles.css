@@ -6,6 +6,7 @@
   --accent: #ff9f1c;
   --button-bg: #2563eb;
   --button-text: #ffffff;
+  --danger-blink-duration: 1.1s;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -58,6 +59,55 @@ body {
 
 .hud-metric--wide {
   flex: 1 1 160px;
+}
+
+.danger-blink {
+  position: relative;
+  isolation: isolate;
+  --danger-blink-intensity: 0;
+  --danger-blink-color: rgba(239, 68, 68, 1);
+  --danger-blink-glow-radius: clamp(18px, 6vw, 40px);
+}
+
+.danger-blink::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--danger-blink-glow-radius) * -0.45);
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle, var(--danger-blink-color) 0%, transparent 70%);
+  opacity: calc(var(--danger-blink-intensity) * 0.85);
+  animation: danger-blink var(--danger-blink-duration) ease-in-out infinite;
+}
+
+@keyframes danger-blink {
+  0%,
+  100% {
+    opacity: calc(var(--danger-blink-intensity) * 0.2);
+  }
+  50% {
+    opacity: calc(var(--danger-blink-intensity) * 1);
+  }
+}
+
+.danger-blink--none {
+  --danger-blink-color: rgba(59, 130, 246, 0);
+}
+
+.danger-blink--low {
+  --danger-blink-color: rgba(250, 204, 21, 0.9);
+}
+
+.danger-blink--medium {
+  --danger-blink-color: rgba(249, 115, 22, 0.92);
+}
+
+.danger-blink--high {
+  --danger-blink-color: rgba(239, 68, 68, 0.95);
+}
+
+.danger-blink--critical {
+  --danger-blink-color: rgba(220, 38, 38, 1);
 }
 
 .hud-label {
@@ -207,5 +257,10 @@ kbd {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .danger-blink::after {
+    animation: none !important;
+    opacity: calc(var(--danger-blink-intensity) * 0.55);
   }
 }
