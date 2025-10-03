@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { initializeRenderer } from "./rendering/index.js";
 
 let state;
 
@@ -20,6 +21,9 @@ function runGameLoop() {
   const { ctx, canvas } = state;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (state.threeRenderer) {
+    state.threeRenderer.render();
+  }
 
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
@@ -80,7 +84,11 @@ function handleCanvasClick() {
 
 function init() {
   const canvas = document.getElementById("gameCanvas");
+  canvas.style.position = "relative";
+  canvas.style.zIndex = "1";
   state = createGameState(canvas);
+  const container = canvas.parentElement ?? document.body;
+  state.threeRenderer = initializeRenderer(container);
   canvas.addEventListener("click", handleCanvasClick);
   startGame();
 }

@@ -1,6 +1,16 @@
-/**
- * Placeholder renderer module. Future rendering utilities should live here.
- */
-export function initializeRenderer() {
-  // Rendering setup will be implemented in future iterations.
+import { createThreeRenderer } from "./three/index.ts";
+
+let rendererInstance = null;
+
+export function initializeRenderer(container) {
+  if (!container) {
+    throw new Error("Renderer initialization requires a valid container element.");
+  }
+
+  if (rendererInstance) {
+    return rendererInstance;
+  }
+
+  rendererInstance = createThreeRenderer(container);
+  return rendererInstance;
 }

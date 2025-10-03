@@ -9,6 +9,7 @@ export function createGameState(canvas) {
   return {
     canvas,
     ctx: canvas.getContext("2d"),
+    threeRenderer: null,
     bird: null,
     pipes: [],
     score: 0,
