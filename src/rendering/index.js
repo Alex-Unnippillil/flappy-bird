@@ -1,3 +1,5 @@
+import "../hud/styles/digits.css";
+
 const noop = () => {};
 
 function resolveElement(element) {
