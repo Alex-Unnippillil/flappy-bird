@@ -7,7 +7,7 @@
     "checkJs": false,
     "strict": true,
     "noEmit": true,
-    "types": ["vite/client"]
+    "types": ["vitest", "vite/client", "node"]
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

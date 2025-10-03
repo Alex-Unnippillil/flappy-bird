@@ -1,13 +1,22 @@
-import { Bird, Pipe } from "./game/entities/index.js";
-import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { Bird, Pipe } from "../entities/index.js";
+import { CONFIG, resetGameState } from "./state.js";
 
-let state;
+let state = null;
 
-function spawnPipe(xPosition) {
-  state.pipes.push(new Pipe(xPosition, state.canvas.height, CONFIG.gapSize, state.prng));
+function ensureState() {
+  if (!state) {
+    throw new Error("Game state has not been initialized.");
+  }
 }
 
-function startGame() {
+export function initializeGameLoop(gameState) {
+  state = gameState;
+  startGame();
+}
+
+export function startGame() {
+  ensureState();
+
   if (state.animationFrameId !== null) {
     cancelAnimationFrame(state.animationFrameId);
     state.animationFrameId = null;
@@ -15,11 +24,13 @@ function startGame() {
 
   resetGameState(state);
   state.bird = new Bird(50, state.canvas.height / 2);
-  spawnPipe(state.canvas.width);
+  state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
   runGameLoop();
 }
 
 function runGameLoop() {
+  ensureState();
+
   state.animationFrameId = null;
   const { ctx, canvas } = state;
 
@@ -52,7 +63,7 @@ function runGameLoop() {
   }
 
   if (state.frameCount % CONFIG.pipeInterval === 0) {
-    spawnPipe(canvas.width);
+    state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
   }
 
   ctx.fillStyle = "#000";
@@ -74,20 +85,12 @@ function runGameLoop() {
   }
 }
 
-function handleCanvasClick() {
+export function handleCanvasClick() {
+  ensureState();
+
   if (!state.gameOver) {
     state.bird.jump();
   } else {
     startGame();
   }
 }
-
-function init() {
-  const canvas = document.getElementById("gameCanvas");
-  const state = createGameState(canvas);
-
-  initializeGameLoop(state);
-  canvas.addEventListener("click", handleCanvasClick);
-}
-
-window.addEventListener("DOMContentLoaded", init);

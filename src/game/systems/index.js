@@ -4,3 +4,4 @@ export {
   createDeterministicPrng,
   setDeterministicSeed,
 } from "./prng.ts";
+export { initializeGameLoop, startGame, handleCanvasClick } from "./loop.js";
