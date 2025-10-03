@@ -40,8 +40,9 @@ function getLoader(): GLTFLoader {
 async function loadGLTF(url: string): Promise<GLTF> {
   let promise = gltfCache.get(url);
   if (!promise) {
-    promise = getLoader().loadAsync(url);
-    gltfCache.set(url, promise);
+    const loaderPromise = getLoader().loadAsync(url);
+    gltfCache.set(url, loaderPromise);
+    promise = loaderPromise;
   }
 
   return promise;
