@@ -1,5 +1,11 @@
 export class Bird {
-  constructor(x, y) {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  velocity: number;
+
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
     this.width = 20;
@@ -7,21 +13,16 @@ export class Bird {
     this.velocity = 0;
   }
 
-  jump() {
+  jump(): void {
     this.velocity = -10;
   }
 
-  update(gravity) {
+  update(gravity: number): void {
     this.velocity += gravity;
     this.y += this.velocity;
   }
 
-  draw(ctx) {
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-
-  isOutOfBounds(canvasHeight) {
+  isOutOfBounds(canvasHeight: number): boolean {
     return this.y < 0 || this.y + this.height > canvasHeight;
   }
 }
