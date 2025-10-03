@@ -1,5 +1,31 @@
+function randomIntInRange(randomSource, min, max) {
+  if (max < min) {
+    throw new Error("max must be greater than or equal to min");
+  }
+
+  const range = max - min + 1;
+
+  if (randomSource && typeof randomSource.nextInt === "function") {
+    return randomSource.nextInt(min, max);
+  }
+
+  const randomValue = (() => {
+    if (typeof randomSource === "function") {
+      return randomSource();
+    }
+
+    if (randomSource && typeof randomSource.next === "function") {
+      return randomSource.next();
+    }
+
+    return Math.random();
+  })();
+
+  return Math.floor(randomValue * range) + min;
+}
+
 export class Pipe {
-  constructor(x, canvasHeight, gapSize) {
+  constructor(x, canvasHeight, gapSize, randomSource = Math.random) {
     this.x = x;
     this.width = 50;
     this.gapSize = gapSize;
@@ -8,7 +34,7 @@ export class Pipe {
 
     const minHeight = 50;
     const maxHeight = Math.max(minHeight, canvasHeight - gapSize - minHeight);
-    this.topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+    this.topHeight = randomIntInRange(randomSource, minHeight, maxHeight);
   }
 
   update(speed, bird, onCollision, onPass) {

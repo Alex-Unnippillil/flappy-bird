@@ -1,3 +1,5 @@
+import { createDeterministicPrng } from "./prng.ts";
+
 export const CONFIG = {
   gravity: 0.6,
   gapSize: 100,
@@ -5,7 +7,7 @@ export const CONFIG = {
   initialPipeSpeed: 2,
 };
 
-export function createGameState(canvas) {
+export function createGameState(canvas, prng = createDeterministicPrng()) {
   return {
     canvas,
     ctx: canvas.getContext("2d"),
@@ -16,6 +18,7 @@ export function createGameState(canvas) {
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
     animationFrameId: null,
+    prng,
   };
 }
 
@@ -26,4 +29,7 @@ export function resetGameState(state) {
   state.frameCount = 0;
   state.pipeSpeed = CONFIG.initialPipeSpeed;
   state.animationFrameId = null;
+  if (state.prng && typeof state.prng.reset === "function") {
+    state.prng.reset();
+  }
 }

@@ -3,6 +3,10 @@ import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js
 
 let state;
 
+function spawnPipe(xPosition) {
+  state.pipes.push(new Pipe(xPosition, state.canvas.height, CONFIG.gapSize, state.prng));
+}
+
 function startGame() {
   if (state.animationFrameId !== null) {
     cancelAnimationFrame(state.animationFrameId);
@@ -11,7 +15,7 @@ function startGame() {
 
   resetGameState(state);
   state.bird = new Bird(50, state.canvas.height / 2);
-  state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
+  spawnPipe(state.canvas.width);
   runGameLoop();
 }
 
@@ -48,7 +52,7 @@ function runGameLoop() {
   }
 
   if (state.frameCount % CONFIG.pipeInterval === 0) {
-    state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
+    spawnPipe(canvas.width);
   }
 
   ctx.fillStyle = "#000";
