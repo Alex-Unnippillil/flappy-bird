@@ -1,2 +1,4 @@
 dist/
 node_modules/
+public/assets/models/bird.glb
+public/assets/textures/bird_atlas.png
