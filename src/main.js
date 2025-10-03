@@ -1,7 +1,9 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { createAriaLiveAnnouncer } from "./ui/aria-live.ts";
 
 let state;
+const announcer = createAriaLiveAnnouncer();
 
 function startGame() {
   if (state.animationFrameId !== null) {
@@ -12,12 +14,16 @@ function startGame() {
   resetGameState(state);
   state.bird = new Bird(50, state.canvas.height / 2);
   state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
+  state.status = "playing";
+  announcer.announceState("Game started. Tap or click to fly.");
+  announcer.announceScore(state.score);
   runGameLoop();
 }
 
 function runGameLoop() {
   state.animationFrameId = null;
   const { ctx, canvas } = state;
+  const wasGameOver = state.gameOver;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -34,6 +40,7 @@ function runGameLoop() {
       },
       () => {
         state.score += 1;
+        announcer.announceScore(state.score);
         if (state.score > 0 && state.score % 100 === 0) {
           state.pipeSpeed += 0.5;
         }
@@ -57,6 +64,11 @@ function runGameLoop() {
 
   if (state.bird.isOutOfBounds(canvas.height)) {
     state.gameOver = true;
+  }
+
+  if (!wasGameOver && state.gameOver) {
+    state.status = "gameOver";
+    announcer.announceGameOver(state.score);
   }
 
   if (!state.gameOver) {

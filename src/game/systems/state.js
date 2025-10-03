@@ -16,6 +16,7 @@ export function createGameState(canvas) {
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
     animationFrameId: null,
+    status: "idle",
   };
 }
 
@@ -26,4 +27,5 @@ export function resetGameState(state) {
   state.frameCount = 0;
   state.pipeSpeed = CONFIG.initialPipeSpeed;
   state.animationFrameId = null;
+  state.status = "ready";
 }
