@@ -1,6 +1,5 @@
-import { Bird } from "./game/Bird.js";
-import { Pipe } from "./game/Pipe.js";
-import { CONFIG, createGameState, resetGameState } from "./game/state.js";
+import { Bird, Pipe } from "./game/entities/index.js";
+import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
 
 let state;
 
