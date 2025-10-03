@@ -1,3 +1,5 @@
+import "../hud/styles/tokens.css";
+
 const noop = () => {};
 
 function resolveElement(element) {

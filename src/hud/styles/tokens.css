@@ -1,0 +1,111 @@
+:root {
+  /* Typography */
+  --hud-font-family-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --hud-font-weight-normal: 400;
+  --hud-font-weight-semibold: 600;
+  --hud-font-weight-bold: 700;
+  --hud-font-size-label: 0.75rem;
+  --hud-font-size-value: 2rem;
+  --hud-font-size-body: 1rem;
+  --hud-font-size-footer: 0.95rem;
+  --hud-font-size-kbd: 0.85em;
+  --hud-font-size-message-min: 1.25rem;
+  --hud-font-size-message-max: 1.75rem;
+  --hud-letter-spacing-label: 0.08em;
+  --hud-letter-spacing-button: 0.02em;
+
+  /* Spacing scale */
+  --hud-space-4xs: 2px;
+  --hud-space-3xs: 4px;
+  --hud-space-2xs: 6px;
+  --hud-space-xs: 8px;
+  --hud-space-sm: 12px;
+  --hud-space-md: 16px;
+  --hud-space-lg: 20px;
+  --hud-space-xl: 24px;
+  --hud-space-2xl: 32px;
+  --hud-space-3xl: 40px;
+
+  /* Radii */
+  --hud-radius-sm: 6px;
+  --hud-radius-md: 16px;
+  --hud-radius-lg: 18px;
+  --hud-radius-xl: 24px;
+  --hud-radius-pill: 999px;
+
+  /* Layout sizing */
+  --hud-size-layout-max: 960px;
+  --hud-size-metric-min: 96px;
+  --hud-size-metric-wide: 160px;
+  --hud-size-stage-max-width: 540px;
+  --hud-size-stage-max-height: 85vh;
+  --hud-size-speed-height: 12px;
+  --hud-size-kbd-radius: 6px;
+  --hud-width-mobile-stage: 92vw;
+  --hud-width-stage-responsive: 80vw;
+  --hud-size-panel-min: 240px;
+  --hud-aspect-stage: 1.5238;
+  --hud-border-width-default: 1px;
+
+  /* Colors */
+  --hud-color-text-primary: #0b1f33;
+  --hud-color-text-muted: rgba(11, 31, 51, 0.7);
+  --hud-color-text-inverse: #ffffff;
+  --hud-color-surface: rgba(255, 255, 255, 0.75);
+  --hud-color-surface-strong: rgba(255, 255, 255, 0.82);
+  --hud-color-surface-contrast: rgba(255, 255, 255, 0.65);
+  --hud-color-overlay-inner: rgba(255, 255, 255, 0.82);
+  --hud-color-overlay-outer: rgba(255, 255, 255, 0.45);
+  --hud-color-border-subtle: rgba(0, 0, 0, 0.08);
+  --hud-color-border-strong: rgba(15, 23, 42, 0.12);
+  --hud-color-stage-outline: rgba(15, 23, 42, 0.08);
+  --hud-color-sky-top: #89cff0;
+  --hud-color-sky-mid: #d0f4f4;
+  --hud-color-sky-base: #f9f9f9;
+  --hud-color-speed-track: rgba(15, 23, 42, 0.12);
+  --hud-color-speed-low: #22c55e;
+  --hud-color-speed-mid: #facc15;
+  --hud-color-speed-high: #ef4444;
+  --hud-color-button-bg: #2563eb;
+  --hud-color-button-text: #ffffff;
+  --hud-color-button-shadow: rgba(37, 99, 235, 0.28);
+  --hud-color-button-shadow-hover: rgba(37, 99, 235, 0.36);
+  --hud-color-kbd-bg: rgba(15, 23, 42, 0.9);
+  --hud-color-kbd-highlight: rgba(255, 255, 255, 0.18);
+  --hud-color-focus-outer: rgba(37, 99, 235, 0.3);
+  --hud-color-focus-inner: rgba(37, 99, 235, 0.6);
+
+  /* Shadows */
+  --hud-shadow-panel: 0 12px 30px rgba(15, 23, 42, 0.12);
+  --hud-shadow-stage: 0 30px 60px rgba(15, 23, 42, 0.18);
+  --hud-shadow-footer: 0 12px 24px rgba(15, 23, 42, 0.08);
+  --hud-shadow-button: 0 12px 24px var(--hud-color-button-shadow);
+  --hud-shadow-button-hover: 0 16px 28px var(--hud-color-button-shadow-hover);
+  --hud-shadow-kbd: inset 0 -2px 0 var(--hud-color-kbd-highlight);
+
+  /* Blur */
+  --hud-blur-panel: 12px;
+  --hud-blur-overlay: 4px;
+
+  /* Outline */
+  --hud-outline-focus-width: 4px;
+  --hud-outline-focus-inset: 1px;
+  --hud-outline-stage-width: 1px;
+
+  /* Motion */
+  --hud-duration-speed: 0.25s;
+  --hud-duration-button: 0.2s;
+  --hud-duration-instant: 0.01ms;
+  --hud-easing-default: ease;
+  --hud-easing-emphasized: ease-out;
+  --hud-translate-button-hover: -2px;
+  --hud-space-fluid-stage: 5vw;
+  --hud-space-fluid-stage-tight: 8vw;
+  --hud-space-fluid-message: 2vw;
+
+  /* Safe area */
+  --hud-safe-top: max(env(safe-area-inset-top), 0px);
+  --hud-safe-right: max(env(safe-area-inset-right), 0px);
+  --hud-safe-bottom: max(env(safe-area-inset-bottom), 0px);
+  --hud-safe-left: max(env(safe-area-inset-left), 0px);
+}
