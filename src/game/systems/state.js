@@ -14,7 +14,9 @@ export function createGameState(canvas) {
     score: 0,
     gameOver: false,
     frameCount: 0,
+    framesSinceLastSpawn: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
+    startTimestamp: 0,
     animationFrameId: null,
   };
 }
@@ -24,6 +26,8 @@ export function resetGameState(state) {
   state.score = 0;
   state.gameOver = false;
   state.frameCount = 0;
+  state.framesSinceLastSpawn = 0;
   state.pipeSpeed = CONFIG.initialPipeSpeed;
+  state.startTimestamp = 0;
   state.animationFrameId = null;
 }

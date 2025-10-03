@@ -1,5 +1,12 @@
 import { Bird, Pipe } from "./game/entities/index.js";
-import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import {
+  CONFIG,
+  createGameState,
+  getGapSize,
+  getPipeSpeed,
+  getSpawnInterval,
+  resetGameState,
+} from "./game/systems/index.js";
 
 let state;
 
@@ -10,8 +17,12 @@ function startGame() {
   }
 
   resetGameState(state);
+  state.startTimestamp = performance.now();
   state.bird = new Bird(50, state.canvas.height / 2);
-  state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
+
+  const initialGap = getGapSize(state.score, 0);
+  state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, initialGap));
+  state.framesSinceLastSpawn = 0;
   runGameLoop();
 }
 
@@ -24,6 +35,11 @@ function runGameLoop() {
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
 
+  const elapsedSeconds = (performance.now() - state.startTimestamp) / 1000;
+  const gapSize = getGapSize(state.score, elapsedSeconds);
+  const spawnInterval = getSpawnInterval(state.score, elapsedSeconds);
+  state.pipeSpeed = getPipeSpeed(state.score, elapsedSeconds);
+
   for (let i = state.pipes.length - 1; i >= 0; i -= 1) {
     const pipe = state.pipes[i];
     pipe.update(
@@ -34,10 +50,7 @@ function runGameLoop() {
       },
       () => {
         state.score += 1;
-        if (state.score > 0 && state.score % 100 === 0) {
-          state.pipeSpeed += 0.5;
-        }
-      }
+      },
     );
 
     pipe.draw(ctx);
@@ -47,8 +60,10 @@ function runGameLoop() {
     }
   }
 
-  if (state.frameCount % CONFIG.pipeInterval === 0) {
-    state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
+  state.framesSinceLastSpawn += 1;
+  if (state.framesSinceLastSpawn >= spawnInterval) {
+    state.pipes.push(new Pipe(canvas.width, canvas.height, gapSize));
+    state.framesSinceLastSpawn = 0;
   }
 
   ctx.fillStyle = "#000";
