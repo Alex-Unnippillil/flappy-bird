@@ -1,9 +1,16 @@
 # flappy-bird
-A basic version of flappy bird. 
+A basic version of flappy bird.
 
 https://alex-unnippillil.github.io/flappy-bird/
 
  ![image](https://github.com/Alex-Unnippillil/flappy-bird/assets/24538548/fd714539-124e-4703-87a2-c4d82f7dcd59)
+
+
+## Keyboard controls
+
+- Click or press <kbd>Space</kbd> to flap.
+- Press <kbd>P</kbd> to toggle pause.
+- While paused, press <kbd>O</kbd> to advance a single frame.
 
 
 to do:
