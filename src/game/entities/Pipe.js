@@ -14,18 +14,58 @@ export class Pipe {
   update(speed, bird, onCollision, onPass) {
     this.x -= speed;
 
+    const contactPoints = [];
+
     const birdWithinXRange = bird.x < this.x + this.width && bird.x + bird.width > this.x;
     const hitsTop = bird.y < this.topHeight;
     const hitsBottom = bird.y + bird.height > this.topHeight + this.gapSize;
 
-    if (birdWithinXRange && (hitsTop || hitsBottom)) {
-      onCollision();
+    if (birdWithinXRange) {
+      if (hitsTop) {
+        const topContact = this.calculateContactPoint(bird, true);
+        if (topContact) {
+          contactPoints.push(topContact);
+        }
+      }
+
+      if (hitsBottom) {
+        const bottomContact = this.calculateContactPoint(bird, false);
+        if (bottomContact) {
+          contactPoints.push(bottomContact);
+        }
+      }
+
+      if (contactPoints.length > 0) {
+        onCollision();
+      }
     }
 
     if (!this.passed && bird.x > this.x + this.width) {
       this.passed = true;
       onPass();
     }
+
+    return contactPoints;
+  }
+
+  calculateContactPoint(bird, hitsTop) {
+    const overlapLeft = Math.max(bird.x, this.x);
+    const overlapRight = Math.min(bird.x + bird.width, this.x + this.width);
+
+    if (overlapLeft >= overlapRight) {
+      return null;
+    }
+
+    const centerX = (overlapLeft + overlapRight) / 2;
+
+    if (hitsTop) {
+      const y = Math.min(bird.y + bird.height, this.topHeight);
+      return { x: centerX, y };
+    }
+
+    const bottomY = this.topHeight + this.gapSize;
+    const y = Math.max(bird.y, bottomY);
+    return { x: centerX, y };
   }
 
   draw(ctx) {

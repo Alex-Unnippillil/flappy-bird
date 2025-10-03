@@ -1,5 +1,10 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import {
+  drawDebugOverlay,
+  initializeDebugOverlayControls,
+  isDebugOverlayEnabled,
+} from "./rendering/debug.ts";
 
 let state;
 
@@ -21,12 +26,14 @@ function runGameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  const contactPoints = [];
+
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
 
   for (let i = state.pipes.length - 1; i >= 0; i -= 1) {
     const pipe = state.pipes[i];
-    pipe.update(
+    const pipeContactPoints = pipe.update(
       state.pipeSpeed,
       state.bird,
       () => {
@@ -39,6 +46,10 @@ function runGameLoop() {
         }
       }
     );
+
+    if (pipeContactPoints.length > 0) {
+      contactPoints.push(...pipeContactPoints);
+    }
 
     pipe.draw(ctx);
 
@@ -56,7 +67,20 @@ function runGameLoop() {
   ctx.fillText(`Score: ${state.score}`, 10, 30);
 
   if (state.bird.isOutOfBounds(canvas.height)) {
+    const outOfBoundsY = state.bird.y < 0 ? 0 : canvas.height;
+    contactPoints.push({
+      x: state.bird.x + state.bird.width / 2,
+      y: outOfBoundsY,
+    });
     state.gameOver = true;
+  }
+
+  if (isDebugOverlayEnabled()) {
+    drawDebugOverlay(ctx, {
+      bird: state.bird,
+      pipes: state.pipes,
+      contactPoints,
+    });
   }
 
   if (!state.gameOver) {
@@ -82,6 +106,7 @@ function init() {
   const canvas = document.getElementById("gameCanvas");
   state = createGameState(canvas);
   canvas.addEventListener("click", handleCanvasClick);
+  initializeDebugOverlayControls();
   startGame();
 }
 
