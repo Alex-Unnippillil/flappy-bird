@@ -7,7 +7,8 @@
     "checkJs": false,
     "strict": true,
     "noEmit": true,
-    "types": ["vite/client"]
+    "lib": ["ES2023", "DOM"],
+    "types": ["vite/client", "node"]
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]
