@@ -64,8 +64,8 @@ describe('three asset loader cache', () => {
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(first).not.toBe(second);
-    expect(first.cloned).toBe(true);
-    expect(second.cloned).toBe(true);
+    expect(((first as unknown) as { cloned: boolean }).cloned).toBe(true);
+    expect(((second as unknown) as { cloned: boolean }).cloned).toBe(true);
   });
 
   it('shares cached data between preload and clone helpers', async () => {
@@ -73,7 +73,7 @@ describe('three asset loader cache', () => {
     const birdClone = await loadCoreModel.bird();
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
-    expect(birdClone.cloned).toBe(true);
+    expect(((birdClone as unknown) as { cloned: boolean }).cloned).toBe(true);
   });
 });
 
