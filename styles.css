@@ -1,3 +1,7 @@
+:root {
+  --motion-scale: 1;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -6,9 +10,38 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  transition: background-color calc(0.3s * var(--motion-scale)) ease-in-out;
 }
 
 #gameCanvas {
   border: 1px solid #000;
   background-color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0.6;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root.reduced-motion {
+  --motion-scale: 0.6;
+}
+
+:root.reduced-motion *,
+:root.reduced-motion *::before,
+:root.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }

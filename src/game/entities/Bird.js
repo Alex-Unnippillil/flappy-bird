@@ -11,9 +11,10 @@ export class Bird {
     this.velocity = -10;
   }
 
-  update(gravity) {
-    this.velocity += gravity;
-    this.y += this.velocity;
+  update(gravity, motionScale = 1) {
+    const scale = motionScale ?? 1;
+    this.velocity += gravity * scale;
+    this.y += this.velocity * scale;
   }
 
   draw(ctx) {

@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { initializeRenderer } from "./rendering/index.js";
 
 let state;
 
@@ -21,13 +22,13 @@ function runGameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  state.bird.update(CONFIG.gravity);
+  state.bird.update(CONFIG.gravity, state.motionScale);
   state.bird.draw(ctx);
 
   for (let i = state.pipes.length - 1; i >= 0; i -= 1) {
     const pipe = state.pipes[i];
     pipe.update(
-      state.pipeSpeed,
+      state.pipeSpeed * state.motionScale,
       state.bird,
       () => {
         state.gameOver = true;
@@ -35,7 +36,7 @@ function runGameLoop() {
       () => {
         state.score += 1;
         if (state.score > 0 && state.score % 100 === 0) {
-          state.pipeSpeed += 0.5;
+          state.pipeSpeed += CONFIG.pipeSpeedIncrease;
         }
       }
     );
@@ -47,10 +48,6 @@ function runGameLoop() {
     }
   }
 
-  if (state.frameCount % CONFIG.pipeInterval === 0) {
-    state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
-  }
-
   ctx.fillStyle = "#000";
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${state.score}`, 10, 30);
@@ -60,7 +57,12 @@ function runGameLoop() {
   }
 
   if (!state.gameOver) {
-    state.frameCount += 1;
+    state.pipeSpawnTimer -= state.motionScale;
+    while (state.pipeSpawnTimer <= 0) {
+      state.pipes.push(new Pipe(canvas.width, canvas.height, CONFIG.gapSize));
+      state.pipeSpawnTimer += CONFIG.pipeInterval;
+    }
+
     state.animationFrameId = requestAnimationFrame(runGameLoop);
   } else {
     ctx.fillStyle = "#000";
@@ -81,6 +83,7 @@ function handleCanvasClick() {
 function init() {
   const canvas = document.getElementById("gameCanvas");
   state = createGameState(canvas);
+  initializeRenderer({ canvas });
   canvas.addEventListener("click", handleCanvasClick);
   startGame();
 }
