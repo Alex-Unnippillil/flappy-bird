@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { initAccessibility } from "./ui/accessibility.ts";
 
 let state;
 
@@ -80,6 +81,13 @@ function handleCanvasClick() {
 
 function init() {
   const canvas = document.getElementById("gameCanvas");
+
+  if (!(canvas instanceof HTMLCanvasElement)) {
+    throw new Error("Game canvas element is missing");
+  }
+
+  initAccessibility(canvas);
+
   state = createGameState(canvas);
   canvas.addEventListener("click", handleCanvasClick);
   startGame();

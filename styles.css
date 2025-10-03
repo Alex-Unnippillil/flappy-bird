@@ -12,3 +12,39 @@ body {
   border: 1px solid #000;
   background-color: #fff;
 }
+
+:where(
+    a,
+    button,
+    [role="button"],
+    [role="link"],
+    input,
+    select,
+    textarea,
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+  outline: 3px solid #1e88e5;
+  outline-offset: 4px;
+}
+
+body.focus-ring-visible
+  :where(
+    a,
+    button,
+    [role="button"],
+    [role="link"],
+    input,
+    select,
+    textarea,
+    [tabindex]:not([tabindex="-1"])
+  ):focus {
+  outline: 3px solid #1e88e5;
+  outline-offset: 4px;
+}
+
+#gameCanvas:focus,
+#gameCanvas:focus-visible,
+body.focus-ring-visible #gameCanvas:focus {
+  outline: 4px solid #1e88e5;
+  outline-offset: 6px;
+}

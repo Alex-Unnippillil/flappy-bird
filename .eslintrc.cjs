@@ -4,10 +4,18 @@ module.exports = {
     browser: true,
     es2022: true,
   },
-  extends: ["eslint:recommended"],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
   },
+  plugins: ["@typescript-eslint"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   rules: {},
+  overrides: [
+    {
+      files: ["**/*.js"],
+      parser: "espree",
+    },
+  ],
 };
