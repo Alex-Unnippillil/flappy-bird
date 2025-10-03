@@ -1,3 +1,5 @@
+import { createGameOverTitle } from "../hud/components/GameOverTitle.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -20,6 +22,15 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+
+  const gameOverTitle = overlay ? createGameOverTitle() : null;
+  if (gameOverTitle && overlay) {
+    if (messageEl) {
+      overlay.insertBefore(gameOverTitle.element, messageEl);
+    } else {
+      overlay.appendChild(gameOverTitle.element);
+    }
+  }
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -60,15 +71,18 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      gameOverTitle?.hide();
       showMessage("Tap, click, or press Space to start");
       toggle(startButton, true);
     },
     showRunning() {
       toggle(overlay, false);
+      gameOverTitle?.hide();
     },
     showGameOver(score, best) {
       toggle(overlay, true);
-      showMessage(`Game over! Score: ${score} · Best: ${best}`);
+      gameOverTitle?.show();
+      showMessage(`Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
     },
     onStart(handler = noop) {
