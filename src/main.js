@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { drawGround } from "./rendering/index.js";
 
 let state;
 
@@ -21,6 +22,10 @@ function runGameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  state.ground.setScrollSpeed(state.pipeSpeed);
+  state.ground.update();
+  drawGround(ctx, state.ground);
+
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
 
@@ -36,6 +41,7 @@ function runGameLoop() {
         state.score += 1;
         if (state.score > 0 && state.score % 100 === 0) {
           state.pipeSpeed += 0.5;
+          state.ground.setScrollSpeed(state.pipeSpeed);
         }
       }
     );
