@@ -1,5 +1,19 @@
+import type { Bird } from "./Bird";
+
 export class Pipe {
-  constructor(x, canvasHeight, gapSize) {
+  public x: number;
+
+  public readonly width: number;
+
+  public readonly gapSize: number;
+
+  private readonly canvasHeight: number;
+
+  private readonly topHeight: number;
+
+  private passed: boolean;
+
+  constructor(x: number, canvasHeight: number, gapSize: number) {
     this.x = x;
     this.width = 50;
     this.gapSize = gapSize;
@@ -11,7 +25,12 @@ export class Pipe {
     this.topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
   }
 
-  update(speed, bird, onCollision, onPass) {
+  update(
+    speed: number,
+    bird: Bird,
+    onCollision: () => void,
+    onPass: () => void,
+  ): void {
     this.x -= speed;
 
     const birdWithinXRange = bird.x < this.x + this.width && bird.x + bird.width > this.x;
@@ -28,7 +47,7 @@ export class Pipe {
     }
   }
 
-  draw(ctx) {
+  draw(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = "#00FF00";
     ctx.fillRect(this.x, 0, this.width, this.topHeight);
 
@@ -37,7 +56,7 @@ export class Pipe {
     ctx.fillRect(this.x, bottomY, this.width, bottomHeight);
   }
 
-  isOffScreen() {
+  isOffScreen(): boolean {
     return this.x + this.width < 0;
   }
 }
