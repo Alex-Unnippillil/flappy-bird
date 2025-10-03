@@ -1,3 +1,5 @@
+import { createEventBus } from "./eventBus.ts";
+
 export const CONFIG = {
   gravity: 0.6,
   gapSize: 100,
@@ -16,6 +18,7 @@ export function createGameState(canvas) {
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
     animationFrameId: null,
+    eventBus: createEventBus(),
   };
 }
 

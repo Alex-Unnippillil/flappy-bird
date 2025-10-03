@@ -1,7 +1,9 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { createCollisionSystem } from "./game/systems/collision.ts";
 
 let state;
+let collisionSystem;
 
 function startGame() {
   if (state.animationFrameId !== null) {
@@ -26,19 +28,12 @@ function runGameLoop() {
 
   for (let i = state.pipes.length - 1; i >= 0; i -= 1) {
     const pipe = state.pipes[i];
-    pipe.update(
-      state.pipeSpeed,
-      state.bird,
-      () => {
-        state.gameOver = true;
-      },
-      () => {
-        state.score += 1;
-        if (state.score > 0 && state.score % 100 === 0) {
-          state.pipeSpeed += 0.5;
-        }
+    pipe.update(state.pipeSpeed, state.bird, () => {
+      state.score += 1;
+      if (state.score > 0 && state.score % 100 === 0) {
+        state.pipeSpeed += 0.5;
       }
-    );
+    });
 
     pipe.draw(ctx);
 
@@ -55,9 +50,7 @@ function runGameLoop() {
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${state.score}`, 10, 30);
 
-  if (state.bird.isOutOfBounds(canvas.height)) {
-    state.gameOver = true;
-  }
+  collisionSystem.checkCollisions(state.bird, state.pipes);
 
   if (!state.gameOver) {
     state.frameCount += 1;
@@ -81,6 +74,18 @@ function handleCanvasClick() {
 function init() {
   const canvas = document.getElementById("gameCanvas");
   state = createGameState(canvas);
+  state.eventBus.on("game:over", () => {
+    state.gameOver = true;
+  });
+  collisionSystem = createCollisionSystem({
+    eventBus: state.eventBus,
+    getGroundBox: () => ({
+      x: 0,
+      y: state.canvas.height,
+      width: state.canvas.width,
+      height: 0,
+    }),
+  });
   canvas.addEventListener("click", handleCanvasClick);
   startGame();
 }

@@ -11,16 +11,8 @@ export class Pipe {
     this.topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
   }
 
-  update(speed, bird, onCollision, onPass) {
+  update(speed, bird, onPass) {
     this.x -= speed;
-
-    const birdWithinXRange = bird.x < this.x + this.width && bird.x + bird.width > this.x;
-    const hitsTop = bird.y < this.topHeight;
-    const hitsBottom = bird.y + bird.height > this.topHeight + this.gapSize;
-
-    if (birdWithinXRange && (hitsTop || hitsBottom)) {
-      onCollision();
-    }
 
     if (!this.passed && bird.x > this.x + this.width) {
       this.passed = true;
