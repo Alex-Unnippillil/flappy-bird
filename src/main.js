@@ -1,4 +1,4 @@
-import { Bird, Pipe } from "./game/entities/index.js";
+import { Bird, Pipe, InvinciblePowerUp } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
 
 let state;
@@ -11,6 +11,9 @@ function startGame() {
 
   resetGameState(state);
   state.bird = new Bird(50, state.canvas.height / 2);
+  if (state.invinciblePowerUp) {
+    state.invinciblePowerUp.reset(state);
+  }
   state.pipes.push(new Pipe(state.canvas.width, state.canvas.height, CONFIG.gapSize));
   runGameLoop();
 }
@@ -18,8 +21,13 @@ function startGame() {
 function runGameLoop() {
   state.animationFrameId = null;
   const { ctx, canvas } = state;
+  const now = performance.now();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (state.invinciblePowerUp) {
+    state.invinciblePowerUp.update(state, now);
+  }
 
   state.bird.update(CONFIG.gravity);
   state.bird.draw(ctx);
@@ -37,6 +45,17 @@ function runGameLoop() {
         if (state.score > 0 && state.score % 100 === 0) {
           state.pipeSpeed += 0.5;
         }
+
+        if (
+          state.score >= state.nextInvincibilityTriggerScore &&
+          state.invinciblePowerUp
+        ) {
+          state.invinciblePowerUp.activate(state, now);
+          state.nextInvincibilityTriggerScore += CONFIG.invincibilityScoreInterval;
+        }
+      },
+      {
+        ignoreCollisions: Boolean(state.invinciblePowerUp?.isActive),
       }
     );
 
@@ -54,6 +73,15 @@ function runGameLoop() {
   ctx.fillStyle = "#000";
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${state.score}`, 10, 30);
+
+  if (state.invinciblePowerUp?.isActive) {
+    const remainingSeconds = Math.ceil(
+      state.invinciblePowerUp.getRemainingTime(now) / 1000
+    );
+    ctx.fillStyle = "#FFA000";
+    ctx.font = "18px Arial";
+    ctx.fillText(`Invincible: ${remainingSeconds}s`, 10, 55);
+  }
 
   if (state.bird.isOutOfBounds(canvas.height)) {
     state.gameOver = true;
@@ -81,6 +109,9 @@ function handleCanvasClick() {
 function init() {
   const canvas = document.getElementById("gameCanvas");
   state = createGameState(canvas);
+  state.invinciblePowerUp = new InvinciblePowerUp({
+    durationMs: CONFIG.invincibilityDurationMs,
+  });
   canvas.addEventListener("click", handleCanvasClick);
   startGame();
 }

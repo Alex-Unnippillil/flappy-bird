@@ -3,6 +3,8 @@ export const CONFIG = {
   gapSize: 100,
   pipeInterval: 120,
   initialPipeSpeed: 2,
+  invincibilityDurationMs: 4000,
+  invincibilityScoreInterval: 10,
 };
 
 export function createGameState(canvas) {
@@ -16,6 +18,12 @@ export function createGameState(canvas) {
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
     animationFrameId: null,
+    invincibility: {
+      isActive: false,
+      expiresAt: 0,
+    },
+    nextInvincibilityTriggerScore: CONFIG.invincibilityScoreInterval,
+    invinciblePowerUp: null,
   };
 }
 
@@ -26,4 +34,13 @@ export function resetGameState(state) {
   state.frameCount = 0;
   state.pipeSpeed = CONFIG.initialPipeSpeed;
   state.animationFrameId = null;
+  state.invincibility.isActive = false;
+  state.invincibility.expiresAt = 0;
+  state.nextInvincibilityTriggerScore = CONFIG.invincibilityScoreInterval;
+  if (state.bird) {
+    state.bird.isInvincible = false;
+  }
+  if (state.invinciblePowerUp) {
+    state.invinciblePowerUp.reset(state);
+  }
 }
