@@ -3,14 +3,25 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { clone as cloneWithSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
+function resolveBase(path: string): string {
+  const envBase =
+    typeof import.meta !== 'undefined' && typeof import.meta.env?.BASE_URL === 'string'
+      ? import.meta.env.BASE_URL
+      : '/';
+
+  const base = envBase.endsWith('/') ? envBase.slice(0, -1) : envBase;
+  const trimmed = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}/${trimmed}`;
+}
+
 /**
  * Default locations for core game models. These are intentionally exported so callers can
  * build UIs that reference the same canonical asset paths.
  */
 export const MODEL_URLS = Object.freeze({
-  bird: '/assets/models/bird.glb',
-  pipe: '/assets/models/pipe.glb',
-  background: '/assets/models/background.glb',
+  bird: resolveBase('/assets/models/bird.glb'),
+  pipe: resolveBase('/assets/models/pipe.glb'),
+  background: resolveBase('/assets/models/background.glb'),
 });
 
 const gltfCache = new Map<string, Promise<GLTF>>();
@@ -40,7 +51,22 @@ function getLoader(): GLTFLoader {
 async function loadGLTF(url: string): Promise<GLTF> {
   let promise = gltfCache.get(url);
   if (!promise) {
-    promise = getLoader().loadAsync(url);
+    promise = getLoader()
+      .loadAsync(url)
+      .catch((error: unknown) => {
+        gltfCache.delete(url);
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'string'
+              ? error
+              : JSON.stringify(error);
+        throw new Error(
+          `Failed to load GLTF asset at "${url}". ` +
+            'If this is the procedural bird, run "python tools/generate_bird_assets.py" to regenerate the binaries before retrying. ' +
+            `Original error: ${message}`,
+        );
+      });
     gltfCache.set(url, promise);
   }
 
