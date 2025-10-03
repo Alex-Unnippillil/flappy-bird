@@ -1,14 +1,84 @@
+:root {
+  color-scheme: dark;
+  --canvas-width: 0px;
+  --canvas-height: 0px;
+  --letterbox-horizontal: 0px;
+  --letterbox-vertical: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Arial", sans-serif;
+  background-color: #04060c;
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: var(--letterbox-vertical);
+  background: rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  z-index: 0;
+  transition: height 120ms ease;
+}
+
+body::before {
+  top: 0;
+}
+
+body::after {
+  bottom: 0;
+}
+
+#game-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+#game-container::before,
+#game-container::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  width: var(--letterbox-horizontal);
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  z-index: 0;
+  transition: width 120ms ease;
+}
+
+#game-container::before {
+  left: 0;
+}
+
+#game-container::after {
+  right: 0;
 }
 
 #gameCanvas {
-  border: 1px solid #000;
-  background-color: #fff;
+  position: relative;
+  z-index: 1;
+  border-radius: 8px;
+  border: 2px solid #0f172a;
+  background: linear-gradient(180deg, #ffffff 0%, #d9f2ff 100%);
+  box-shadow: 0 18px 36px rgba(8, 15, 40, 0.45);
+  image-rendering: pixelated;
 }

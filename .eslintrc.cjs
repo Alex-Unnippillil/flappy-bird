@@ -10,4 +10,20 @@ module.exports = {
     sourceType: "module",
   },
   rules: {},
+  overrides: [
+    {
+      files: ["**/*.ts"],
+      parser: "@typescript-eslint/parser",
+      plugins: ["@typescript-eslint"],
+      extends: ["plugin:@typescript-eslint/recommended"],
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+      rules: {
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
+      },
+    },
+  ],
 };
