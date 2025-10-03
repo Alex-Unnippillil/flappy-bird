@@ -1,0 +1,9 @@
+node_modules
+build
+dist
+coverage
+.vite
+package-lock.json
+*.log
+*.svg
+public/assets

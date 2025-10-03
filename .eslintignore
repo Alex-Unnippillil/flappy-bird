@@ -1,2 +1,11 @@
-dist
-node_modules
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+*.config.cjs
+*.config.js
+*.config.ts
+vite.config.ts
+.eslintrc.cjs
+.prettierrc
