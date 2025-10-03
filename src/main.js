@@ -1,5 +1,6 @@
 import { Bird, Pipe } from "./game/entities/index.js";
 import { CONFIG, createGameState, resetGameState } from "./game/systems/index.js";
+import { registerTouchControls } from "./input/touch.ts";
 
 let state;
 
@@ -82,6 +83,20 @@ function init() {
   const canvas = document.getElementById("gameCanvas");
   state = createGameState(canvas);
   canvas.addEventListener("click", handleCanvasClick);
+  registerTouchControls({
+    canvas,
+    onFlap: () => {
+      if (!state.gameOver) {
+        state.bird.jump();
+      }
+    },
+    onRestart: () => {
+      if (state.gameOver) {
+        startGame();
+      }
+    },
+    isGameActive: () => !state.gameOver,
+  });
   startGame();
 }
 
