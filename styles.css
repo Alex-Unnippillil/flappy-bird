@@ -47,6 +47,7 @@ body {
   gap: 16px;
   justify-content: center;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  contain: layout paint;
 }
 
 .hud-metric {
@@ -87,6 +88,8 @@ body {
   width: 0;
   background: linear-gradient(90deg, #22c55e, #facc15, #ef4444);
   transition: width 0.25s ease-out;
+  will-change: width;
+  transform: translateZ(0);
 }
 
 .game-stage {
@@ -130,6 +133,8 @@ body {
   text-align: center;
   padding: 32px;
   transition: opacity 0.3s ease;
+  will-change: opacity;
+  contain: layout paint;
 }
 
 .game-overlay.is-hidden {
@@ -154,6 +159,7 @@ body {
   cursor: pointer;
   box-shadow: 0 12px 24px rgba(37, 99, 235, 0.28);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
 }
 
 .game-button:hover,
