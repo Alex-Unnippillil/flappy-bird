@@ -1,5 +1,6 @@
 import { HudRoot } from "../hud/HudRoot.ts";
 import { PauseMenu } from "../hud/components/PauseMenu.ts";
+import { DimLayer } from "../hud/components/DimLayer.ts";
 
 const noop = () => {};
 
@@ -23,6 +24,7 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const dimLayer = overlay ? new DimLayer(overlay) : null;
 
   const hudRootHost = overlay?.parentElement ?? document.body;
   const hudRoot = new HudRoot({ host: hudRootHost });
@@ -68,14 +70,17 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
       toggle(startButton, true);
     },
     showRunning() {
       toggle(overlay, false);
+      dimLayer?.setActive(false);
     },
     showGameOver(score, best) {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
     },
@@ -86,6 +91,10 @@ export function createHudController(elements = {}) {
       startButton?.addEventListener("click", handler);
     },
     pauseMenu,
-    hudRoot,
+    hudRoot
+    }
+    dispose() {
+      dimLayer?.dispose();
+    },
   };
-}
+
