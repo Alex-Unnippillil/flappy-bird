@@ -206,7 +206,9 @@ export function initializeGameLoop(gameState, options = {}) {
   state = gameState;
 
   renderer = createThreeRenderer(state.canvas, options.rendererOptions);
-  hud = createHudController(options.hudElements ?? {});
+  hud = createHudController(options.hudElements ?? {}, {
+    hudRoot: options.hudRoot,
+  });
   refreshHud();
   renderer.render(state, 0);
   showIntro();

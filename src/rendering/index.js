@@ -131,7 +131,8 @@ export function createHudController(elements = {}, options = {}) {
 
   const dimLayer = overlay ? new DimLayer(overlay) : null;
 
-  const hudRoot = new HudRoot({ host: overlayParent ?? document.body });
+  const hudRootHost = options.hudRoot ?? overlayParent ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
   const pauseMenu = new PauseMenu();
   hudRoot.mount(pauseMenu.element, "modal");
 

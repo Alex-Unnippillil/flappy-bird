@@ -6,6 +6,7 @@ import {
   teardownGameLoop,
 } from "./loop.js";
 import { createThreeRenderer } from "../../rendering/three/renderer.js";
+import { createHudController } from "../../rendering/index.js";
 
 vi.mock("../../rendering/three/renderer.js", () => ({
   createThreeRenderer: vi.fn(() => ({
@@ -58,7 +59,9 @@ describe("handleCanvasClick", () => {
     document.body.appendChild(canvas);
     const gameState = createGameState(canvas) as any;
 
-    initializeGameLoop(gameState);
+    const hudRoot = document.createElement("div");
+
+    initializeGameLoop(gameState, { hudRoot });
 
     expect(gameState.awaitingStart).toBe(true);
     handleCanvasClick();
@@ -73,5 +76,10 @@ describe("handleCanvasClick", () => {
     const rendererInstance =
       lastCallIndex >= 0 ? rendererFactory.mock.results[lastCallIndex]?.value : null;
     expect(rendererInstance?.pulseBird).toHaveBeenCalledTimes(1);
+
+    const hudFactory = vi.mocked(createHudController);
+    expect(hudFactory).toHaveBeenCalledWith(expect.anything(), {
+      hudRoot,
+    });
   });
 });

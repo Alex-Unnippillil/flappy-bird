@@ -1,0 +1,13 @@
+#hud-root {
+  position: fixed;
+  inset: 0;
+  contain: layout paint style;
+  pointer-events: none;
+  display: block;
+  isolation: isolate;
+  z-index: 20;
+}
+
+#hud-root > * {
+  pointer-events: auto;
+}
