@@ -97,19 +97,27 @@ npm run test
 npm run typecheck
 ```
 
-## Input Buffer Configuration
+## Flap input router (F09)
 
-Feature flag `VITE_FF_F11` enables the input buffering experiment implemented in
-`src/features/F11_input_buffer/register.ts`. Two exported constants document the
-timing defaults:
+The F09 router centralizes flap actions behind the `feature:F09/flap` event. The
+feature activates when `VITE_FF_F09` resolves to `true`, at which point
+`register()` from [`src/features/F09_flap_input/register.ts`](src/features/F09_flap_input/register.ts)
+listens for pointer, touch, and **Space** key presses. Incoming inputs are
+debounced to avoid double-flaps when browsers emit both pointer and touch
+events, and the router pauses while the core event bus reports a non-`running`
+game state.
 
-- `DEFAULT_BUFFER_WINDOW_MS` (120 ms) – how long flap attempts remain queued
-  while the bird is ineligible to jump.
-- `DEFAULT_COYOTE_WINDOW_MS` (90 ms) – the extra grace period applied to ground
-  attempts so they can still trigger shortly after lift-off.
+To support additional hardware (for example, a gamepad button), wire the input
+inside the same module:
 
-Adjust these constants if you need to tune responsiveness; the unit tests cover
-expected behavior around eligibility and the ground coyote window.
+1. Extend `FlapInputSource` with the new identifier.
+2. Bind the event listener and call the internal `emitFlap()` helper so the
+   debounce and game-state gating remain consistent.
+3. Emit `feature:F09/flap` payloads only through this router to keep the
+   pause/resume semantics centralized.
+
+Downstream systems should subscribe to `feature:F09/flap` via
+[`featureBus`](src/features/bus.ts) instead of handling DOM events directly.
 
 ## HUD performance guidelines
 
