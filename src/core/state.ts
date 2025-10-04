@@ -48,7 +48,22 @@ export const createGameStateMachine = (
   const setState = (next: GameStateValue) => {
     const previous = currentState;
     currentState = next;
-    bus.emit('game:state-change', { from: previous, to: next });
+
+    const detail = { from: previous, to: next } as GameEvents['game:state-change'];
+    Object.defineProperties(detail, {
+      state: {
+        value: next,
+        enumerable: false,
+        configurable: true,
+      },
+      previousState: {
+        value: previous,
+        enumerable: false,
+        configurable: true,
+      },
+    });
+
+    bus.emit('game:state-change', detail);
   };
 
   return {
@@ -74,7 +89,12 @@ export const createGameStateMachine = (
 
 declare global {
   interface GameEvents {
-    'game:state-change': { from: GameStateValue; to: GameStateValue };
+    'game:state-change': {
+      from: GameStateValue;
+      to: GameStateValue;
+      previousState: GameStateValue | null;
+      state: GameStateValue;
+    };
   }
 }
 
