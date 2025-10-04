@@ -10,6 +10,22 @@ npm install
 npm run dev
 ```
 
+## Scene bootstrap
+
+The Three.js renderer is initialized through `createSceneContext()` found in
+`src/core/scene.ts`. Import and call this helper from the Vite entry point to
+obtain the shared `scene`, `camera`, and `renderer` instances while the helper
+appends the renderer's canvas to the `#app` container:
+
+```ts
+import { createSceneContext } from "./core/scene";
+
+const { scene, camera, renderer } = createSceneContext();
+```
+
+The helper automatically matches the container size, clamps the pixel ratio for
+high-DPI displays, and responds to future `resize` events.
+
 ### Available Scripts
 
 - `npm run dev` – Start the Vite development server.
