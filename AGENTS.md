@@ -1,53 +1,103 @@
-# Codex Web Cloud Modernization Guide
+# Project Guidance for Agents
 
-## Project Snapshot
-- **Runtime:** Vite + TypeScript/ESM modules feed both the game loop (`src/game/`) and HUD/view layer (`src/hud/`, `src/rendering/`).
-- **Game loop:** `src/game/systems/loop.js` orchestrates deterministic state, PRNG, spawning, scoring, and dispatches HUD + renderer updates. State is created in `src/game/systems/state.js` and persists best scores in localStorage. Pipes and bird logic live in `src/game/entities/`.
-- **Rendering:** `src/rendering/three/renderer.js` owns the Three.js scene (bird mesh, clouds, pipe pooling, lighting). HUD composition is modularized under `src/hud/` and wired up through `createHudController`.
-- **Assets:** Procedural bird + texture generator lives in `tools/generate_bird_assets.py`; outputs to `public/assets/models/` and `public/assets/textures/`. These binaries are intentionally ignored from version control and should be regenerated locally when needed.
-- **Build & deploy:** `npm run build` emits to `dist/` with the `/flappy-bird/` base path. `npm run deploy` mirrors `dist/` into `docs/` for GitHub Pages.
+This repository hosts a modernized Flappy Bird remake built with Vite, TypeScript, and Three.js. The goal of this guide is to equip every agent with the context, conventions, and workflows required to contribute safely and consistently.
 
-## Active Workstreams & Next Steps
-1. **Visual polish & animations** – Implement sprite-sheet or GLTF-driven wing flaps, pipe movement easing, camera sway, and background parallax tied into the existing renderer without regressing performance budgets.
-2. **Gameplay extensions** – Layer in power-ups (speed boosts, invincibility), adaptive difficulty, and deterministic spawn patterns that stay compatible with `DeterministicPRNG` seeding.
-3. **Responsive & accessible HUD** – Continue refining `src/hud/` components for screen reader hints, keyboard navigation, and performance (`docs/hud-perf.md` guidance). Expand on pause/overlay flows.
-4. **Testing depth** – Increase Vitest coverage for collision detection, PRNG determinism, HUD adapters, and Three.js asset loaders (`src/rendering/three/assets.ts`).
-5. **Asset pipeline** – Replace placeholder bird mesh/pipes with the generated GLB assets and author lighting/material presets that still run inside the static bundle.
+---
 
-Keep this queue in sync when creating or reviewing PRs. Before tackling a large effort, check the upstream GitHub pull request list to avoid duplicate work (mirror PR findings in commit messages or summaries since the remote queue is not visible inside the container).
+## 1. Repository Overview
 
-## Module Map & Conventions
-- Place new game systems under `src/game/systems/` and expose them via `index.js` re-exports.
-- HUD/UI logic should be encapsulated in `src/hud/components/` with stateful adapters in `src/hud/adapter.ts`.
-- Rendering helpers belong in `src/rendering/`; keep Three.js-specific code within `src/rendering/three/` and factor shared utilities into separate modules.
-- Runtime assets (audio, textures, models) live under `public/assets/` so Vite can copy them verbatim.
-- Avoid mixing CommonJS and ESM—project code uses native ESM via Vite.
-- No `try/catch` wrappers around imports (aligns with global instructions).
+| Area | Purpose |
+| --- | --- |
+| `src/game/` | Deterministic game loop, entity logic (bird, pipes, collision), RNG management, and spawning systems. |
+| `src/rendering/` | Three.js scene management, mesh creation, materials, lighting, and render helpers. Keep Three-specific code inside `three/`. |
+| `src/hud/` | DOM-based overlays for score, menus, and accessibility flows. Components live in `components/` with adapters in `adapter.ts`. |
+| `public/assets/` | Static runtime assets (audio, textures, models). Generated assets should be regenerated locally instead of committed. |
+| `docs/` | GitHub Pages deployment output (`npm run deploy`). Only update when a deployment change is explicitly required. |
+| `tools/` | Utilities such as `generate_bird_assets.py` for regenerating procedural assets. |
+| `scripts/` | Project automation helpers used by CI and deployment scripts. |
 
-## Implementation Guidelines
-- Reconcile the legacy 2D logic with the Three.js renderer by leaning on the module-based loop. Add configuration toggles rather than branching by file.
-- Maintain deterministic gameplay: seed `DeterministicPRNG` via `setDeterministicSeed` in tests/previews and avoid Date.now()-style randomness.
-- For HUD updates, follow `docs/hud-perf.md` to keep frequent DOM writes inside contained layers. Prefer CSS `contain` and targeted `will-change` hints.
-- Provide keyboard, pointer, and touch interaction parity (`src/main.js` already wires keybindings—extend via shared helpers when adding controls).
-- Favor dependency-free browser APIs so builds remain deployable as static assets.
+Key entry points:
+- `src/main.ts` bootstraps the game, renderer, and HUD controller.
+- `src/game/systems/loop.ts` orchestrates deterministic ticks, PRNG seeding, and event dispatch.
+- `src/rendering/three/renderer.ts` manages the Three.js scene graph and integrates with the game loop.
 
-## Testing & QA Expectations
-Run relevant checks locally and list them in PR summaries:
-- `npm run lint`
-- `npm run typecheck`
-- `npm run test`
-- `npm run build`
-Use Vitest snapshots cautiously—update alongside meaningful UI/render changes. Keep Three.js unit tests deterministic by mocking timers/PRNG where needed.
+---
 
-## Deployment Checklist
-1. `npm run build`
-2. Sync `dist/` ➜ `docs/` (`npm run deploy` automates this).
-3. `npm run preview -- --host --port 4173` to validate `/flappy-bird/` asset paths locally.
-4. Commit updated `docs/` outputs when a deployment change is part of your task. Otherwise leave `docs/` untouched.
+## 2. Coding Conventions
 
-## Agent Playbook
-- Always read scoped `AGENTS.md` files before editing (this file covers the entire repo).
-- Craft clear, descriptive commit messages summarizing your work.
-- In PR descriptions, highlight which modernization goals you addressed and what tests ran.
-- Coordinate with prior agents by referencing significant architecture changes in summaries (e.g., new renderer modules, HUD flows).
-- Leave TODO comments sparingly—prefer tracking actionable follow-ups in documentation or PR notes.
+1. **Module format** – Use native ES modules everywhere (`import`/`export`). Never add `require` or `module.exports`.
+2. **TypeScript standards** – Prefer explicit types for public APIs. Use interface extensions instead of re-declaring shared shapes. Avoid `any`; use discriminated unions or generics as needed.
+3. **Determinism** – Always route randomness through `DeterministicPRNG`. For tests, call `setDeterministicSeed` before invoking spawning or physics helpers.
+4. **Renderer boundaries** – Keep Three.js-specific logic in `src/rendering/three/`. Cross-communication with the game loop should use typed events or adapters, not global state.
+5. **HUD performance** – Batch DOM writes, leverage CSS `contain`, and reuse nodes. Use `docs/hud-perf.md` as reference for acceptable update frequencies.
+6. **Input parity** – Ensure new interactions support keyboard, pointer, and touch. Augment `src/main.ts` input helpers rather than branching per device.
+7. **Error handling** – Avoid wrapping imports in `try/catch`. For runtime safety, prefer guard utilities and exhaustive `switch` statements.
+8. **File organization** – Add new game systems under `src/game/systems/` and export from its `index.ts`. Renderer helpers belong under `src/rendering/`. Shared utilities go in `src/shared/` (create the directory if missing before scattering helpers elsewhere).
+9. **Testing-first mindset** – When adding new behavior, write or update Vitest suites in parallel. Favor deterministic tests by mocking timers and seeds.
+
+---
+
+## 3. Workflow Expectations
+
+1. **Read scoped `AGENTS.md` files** before editing any file. More specific guides may appear deeper in the tree; they override this document where applicable.
+2. **Branch hygiene** – Work on feature branches, squash noisy commits locally, and push with descriptive commit messages.
+3. **Commit messages** – Use imperative mood and summarize the intent (e.g., `Add easing to pipe spawn animation`). Mention affected subsystems if the change spans multiple areas.
+4. **Pull requests** – Summaries must call out modernization goals addressed, list tests executed, and note any follow-up work. Keep the history of previous PR messages intact when working on follow-ups.
+5. **Documentation** – Update README or architecture notes whenever you introduce new workflows, configuration flags, or developer steps.
+6. **Deployment artifacts** – Only update `docs/` when you intentionally ship a new build. Otherwise leave existing deployment output untouched.
+
+---
+
+## 4. Testing & Quality Assurance
+
+Run relevant checks locally and document them in your final response and PR:
+
+| Command | Purpose |
+| --- | --- |
+| `npm run lint` | ESLint with project rules. Fix or justify any warnings. |
+| `npm run typecheck` | TypeScript type validation. Ensure there are no errors. |
+| `npm run test` | Vitest unit and integration suites. Use deterministic seeds/mocks to avoid flakes. |
+| `npm run build` | Production build verification. Required before deploying or updating `docs/`. |
+| `npm run preview -- --host --port 4173` | Local smoke test for GitHub Pages base path (`/flappy-bird/`). |
+
+If a command cannot run due to environment constraints, record the limitation in your notes and explain why.
+
+---
+
+## 5. Asset Pipeline
+
+- Regenerate bird meshes/textures with `tools/generate_bird_assets.py`. Outputs are intentionally `.gitignore`d; include reproduction steps instead of committing binaries.
+- Keep procedural generation deterministic by hardcoding seeds or feeding CLI arguments. Document new flags in the script header comment.
+- Ensure generated assets land under `public/assets/` to be picked up by Vite.
+
+---
+
+## 6. Accessibility & UX
+
+- Provide keyboard focus states for all HUD interactions.
+- Mirror HUD announcements via ARIA live regions where appropriate (score updates, pause menu, game over).
+- Maintain responsive layouts for mobile and desktop. Test breakpoints down to 320px width.
+- Ensure color contrasts meet WCAG AA by default. Update `styles.css` utilities if new palettes are introduced.
+
+---
+
+## 7. Collaboration Notes
+
+- Coordinate large refactors by referencing previous architectural decisions within PR descriptions.
+- Leave TODOs sparingly; prefer filing follow-up tasks in documentation or project management tools.
+- When introducing new dependencies, justify them in the PR and update `package.json`, `package-lock.json`, and any relevant tooling configs.
+
+---
+
+## 8. Quick Start Checklist for Agents
+
+1. Install dependencies: `npm install`.
+2. Read this guide and any nested `AGENTS.md` files.
+3. Start the dev server: `npm run dev` (use `--host` if testing in a browser container).
+4. Run baseline checks (`npm run lint`, `npm run test`, `npm run typecheck`).
+5. Implement changes while maintaining deterministic behavior and performance budgets.
+6. Update docs/tests as needed.
+7. Run final QA commands and document them.
+8. Commit using a descriptive message, then prepare a PR summary via the provided tooling.
+
+By following this guide, you help ensure the codebase stays maintainable, deterministic, and ready for deployment. Welcome aboard!
