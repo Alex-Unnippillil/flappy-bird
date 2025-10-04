@@ -1,33 +1,59 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
+import type { Mock } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-const scenes: any[] = [];
-const cameras: any[] = [];
-const renderers: any[] = [];
+type SceneModule = typeof import("../scene");
+type MockFn<TArgs extends unknown[] = unknown[], TReturn = unknown> = Mock<TArgs, TReturn>;
+
+interface SceneMockInstance {
+  background: unknown;
+}
+
+interface PerspectiveCameraMockInstance {
+  aspect: number;
+  position: { set: MockFn<[number, number, number], void> };
+  updateProjectionMatrix: MockFn<[], void>;
+  fov: number;
+  near: number;
+  far: number;
+}
+
+interface WebGLRendererMockInstance {
+  domElement: HTMLCanvasElement;
+  params: unknown;
+  setPixelRatio: MockFn<[number], void>;
+  setSize: MockFn<[number, number, boolean], void>;
+}
+
+const scenes: SceneMockInstance[] = [];
+const cameras: PerspectiveCameraMockInstance[] = [];
+const renderers: WebGLRendererMockInstance[] = [];
 const colorArgs: unknown[] = [];
 
 vi.mock("three", () => {
-  class SceneMock {
+  class SceneMock implements SceneMockInstance {
     background: unknown = null;
     constructor() {
       scenes.push(this);
     }
   }
 
-  class PerspectiveCameraMock {
+  class PerspectiveCameraMock implements PerspectiveCameraMockInstance {
     aspect: number;
-    position = { set: vi.fn() };
-    updateProjectionMatrix = vi.fn();
+    position = { set: vi.fn<[number, number, number], void>() };
+    updateProjectionMatrix = vi.fn<[], void>();
     constructor(public fov: number, aspect: number, public near: number, public far: number) {
       this.aspect = aspect;
       cameras.push(this);
     }
   }
 
-  class WebGLRendererMock {
+  class WebGLRendererMock implements WebGLRendererMockInstance {
     domElement: HTMLCanvasElement;
-    setPixelRatio = vi.fn();
-    setSize = vi.fn();
-    constructor(public params: unknown) {
+    params: unknown;
+    setPixelRatio = vi.fn<[number], void>();
+    setSize = vi.fn<[number, number, boolean], void>();
+    constructor(params: unknown) {
+      this.params = params;
       this.domElement = document.createElement("canvas");
       renderers.push(this);
     }
@@ -49,8 +75,11 @@ vi.mock("three", () => {
   };
 });
 
-// eslint-disable-next-line import/first
-import { createSceneContext } from "../scene";
+let createSceneContext: SceneModule["createSceneContext"];
+
+beforeAll(async () => {
+  ({ createSceneContext } = await import("../scene"));
+});
 
 describe("createSceneContext", () => {
   const originalPixelRatio = window.devicePixelRatio ?? 1;
@@ -108,14 +137,15 @@ describe("createSceneContext", () => {
     });
 
     const context = createSceneContext();
-    const renderer = context.renderer as any;
+    const renderer = context.renderer as unknown as WebGLRendererMockInstance;
 
     expect(renderer.setPixelRatio).toHaveBeenCalledWith(2);
   });
 
   it("updates size and camera aspect when the window resizes", () => {
     const context = createSceneContext();
-    const renderer = context.renderer as any;
+    const renderer = context.renderer as unknown as WebGLRendererMockInstance;
+    const camera = context.camera as unknown as PerspectiveCameraMockInstance;
 
     expect(renderer.setSize).toHaveBeenCalledWith(640, 480, false);
 
@@ -125,12 +155,12 @@ describe("createSceneContext", () => {
     Object.defineProperty(container, "clientHeight", { configurable: true, value: newHeight });
 
     renderer.setSize.mockClear();
-    (context.camera.updateProjectionMatrix as any).mockClear();
+    camera.updateProjectionMatrix.mockClear();
 
     window.dispatchEvent(new Event("resize"));
 
     expect(renderer.setSize).toHaveBeenCalledWith(newWidth, newHeight, false);
     expect(context.camera.aspect).toBeCloseTo(newWidth / newHeight);
-    expect(context.camera.updateProjectionMatrix).toHaveBeenCalledTimes(1);
+    expect(camera.updateProjectionMatrix).toHaveBeenCalledTimes(1);
   });
 });

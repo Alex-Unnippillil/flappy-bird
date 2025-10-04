@@ -255,7 +255,9 @@ export default class Bird extends ParentClass {
 
         // Only the first pipe should be check
         break;
-      } catch (err) {}
+      } catch (error) {
+        console.error('Pipe collision detection failed', error);
+      }
     }
 
     return (this.flags & Bird.FLAG_IS_ALIVE) === 0;

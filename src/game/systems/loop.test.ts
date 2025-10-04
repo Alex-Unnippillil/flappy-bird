@@ -41,8 +41,9 @@ describe("handleCanvasClick", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    globalThis.requestAnimationFrame = vi.fn(() => 1) as any;
-    globalThis.cancelAnimationFrame = vi.fn() as any;
+    globalThis.requestAnimationFrame = vi
+      .fn<(callback: FrameRequestCallback) => number>(() => 1);
+    globalThis.cancelAnimationFrame = vi.fn<(handle: number) => void>();
     document.body.innerHTML = "";
   });
 
@@ -56,7 +57,7 @@ describe("handleCanvasClick", () => {
   it("starts the round with an immediate flap on the first interaction", () => {
     const canvas = document.createElement("canvas");
     document.body.appendChild(canvas);
-    const gameState = createGameState(canvas) as any;
+    const gameState = createGameState(canvas);
 
     initializeGameLoop(gameState);
 

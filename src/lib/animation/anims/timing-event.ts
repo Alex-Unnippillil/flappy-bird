@@ -9,7 +9,7 @@ export interface ITimingEventOptions {
   diff: number; // Interval per number
 }
 
-export interface ITimingEventOptionsConstructor extends Partial<ITimingEventOptions> {}
+export type ITimingEventOptionsConstructor = Partial<ITimingEventOptions>;
 
 export interface ITimingEventStatus {
   running: boolean;

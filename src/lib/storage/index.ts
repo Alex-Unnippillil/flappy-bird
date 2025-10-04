@@ -20,7 +20,7 @@ export default class Storage {
       if ('localStorage' in window && typeof window.localStorage === 'object') {
         Storage.isAvailable = true;
       }
-    } catch (err) {
+    } catch (_error) {
       Storage.isAvailable = false;
     }
   }
@@ -79,7 +79,7 @@ export default class Storage {
 
       return return_value;
     } catch (err) {
-      console.error('Failed to fetch highscore');
+      console.error('Failed to fetch highscore', err);
       return void 0;
     }
   }
