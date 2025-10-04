@@ -100,4 +100,12 @@ If a command cannot run due to environment constraints, record the limitation in
 7. Run final QA commands and document them.
 8. Commit using a descriptive message, then prepare a PR summary via the provided tooling.
 
+---
+
+## 9. Communication & Knowledge Sharing
+
+- **Document architectural discoveries.** If you uncover previously implicit behaviors (e.g., renderer lifecycles or PRNG constraints), capture them in the relevant README or create a dedicated note under `docs/`.
+- **Reference historical context.** When a change alters or replaces an established pattern, link to the original implementation or discussion thread within the PR description to help reviewers trace the evolution.
+- **Surface potential follow-ups.** When you notice adjacent areas that require attention but fall outside the current scope, call them out in the PR summary so they can be triaged intentionally rather than lost in commit messages.
+
 By following this guide, you help ensure the codebase stays maintainable, deterministic, and ready for deployment. Welcome aboard!
