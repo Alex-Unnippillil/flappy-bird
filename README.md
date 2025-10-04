@@ -79,6 +79,28 @@ npm run test
 npm run typecheck
 ```
 
+## Flap input router (F09)
+
+The F09 router centralizes flap actions behind the `feature:F09/flap` event. The
+feature activates when `VITE_FF_F09` resolves to `true`, at which point
+`register()` from [`src/features/F09_flap_input/register.ts`](src/features/F09_flap_input/register.ts)
+listens for pointer, touch, and **Space** key presses. Incoming inputs are
+debounced to avoid double-flaps when browsers emit both pointer and touch
+events, and the router pauses while the core event bus reports a non-`running`
+game state.
+
+To support additional hardware (for example, a gamepad button), wire the input
+inside the same module:
+
+1. Extend `FlapInputSource` with the new identifier.
+2. Bind the event listener and call the internal `emitFlap()` helper so the
+   debounce and game-state gating remain consistent.
+3. Emit `feature:F09/flap` payloads only through this router to keep the
+   pause/resume semantics centralized.
+
+Downstream systems should subscribe to `feature:F09/flap` via
+[`featureBus`](src/features/bus.ts) instead of handling DOM events directly.
+
 ## HUD performance guidelines
 
 Documented HUD performance hints live in [docs/hud-perf.md](docs/hud-perf.md). Review the checklist before adjusting scoreboard, overlay, or control styles so frequent updates stay isolated from the rest of the layout.
