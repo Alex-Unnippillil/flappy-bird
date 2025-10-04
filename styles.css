@@ -35,16 +35,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 32px);
   color: var(--hud-text);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .game-layout {
   width: min(960px, 100%);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 24px);
   align-items: start;
+}
+
+@media (min-width: 960px) {
+  .game-layout {
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    align-items: stretch;
+  }
 }
 
 .hud-panel {
@@ -54,10 +63,10 @@ body {
   background: var(--hud-bg);
   border: 1px solid var(--hud-border);
   border-radius: 18px;
-  padding: 16px 20px;
+  padding: clamp(14px, 2.5vw, 20px) clamp(16px, 3vw, 24px);
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: clamp(12px, 2.5vw, 20px);
   justify-content: center;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
   contain: layout paint;
@@ -251,16 +260,16 @@ body {
   justify-content: center;
   background: rgba(255, 255, 255, 0.65);
   border-radius: 24px;
-  padding: clamp(12px, 5vw, 32px);
+  padding: clamp(12px, 5vw, 28px);
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
 }
 
 #gameCanvas {
   position: relative;
   z-index: var(--z-game-canvas);
-  width: min(540px, 80vw);
-  height: calc(min(540px, 80vw) * 1.5238);
-  max-height: 85vh;
+  width: min(540px, 100%);
+  aspect-ratio: 26 / 40;
+  max-height: min(85vh, 720px);
   border-radius: 18px;
   outline: none;
   background: transparent;
@@ -280,12 +289,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: clamp(12px, 3vw, 20px);
   background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.45));
   backdrop-filter: blur(4px);
   border-radius: 18px;
   text-align: center;
-  padding: 32px;
+  padding: clamp(20px, 6vw, 32px);
   transition: opacity 0.3s ease;
   will-change: opacity;
   contain: layout paint;
@@ -371,7 +380,7 @@ body {
   color: var(--button-text);
   border: none;
   border-radius: 999px;
-  padding: 12px 32px;
+  padding: clamp(10px, 2.5vw, 14px) clamp(24px, 6vw, 36px);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -379,6 +388,7 @@ body {
   box-shadow: 0 12px 24px rgba(37, 99, 235, 0.28);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   will-change: transform;
+  touch-action: manipulation;
 }
 
 .game-button:hover,
@@ -394,8 +404,17 @@ body {
   background: var(--hud-bg);
   border: 1px solid var(--hud-border);
   border-radius: 16px;
-  padding: 12px 18px;
+  padding: clamp(10px, 2vw, 16px) clamp(14px, 3vw, 24px);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.hud-panel,
+.hud-panel *:not(input):not(textarea),
+.game-stage,
+.game-overlay,
+.game-footer {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 kbd {
