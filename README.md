@@ -98,3 +98,19 @@ npm run preview -- --host --port 4173
 
 Visit `http://localhost:4173/flappy-bird/` in a browser. Asset URLs should resolve with the `/flappy-bird/` prefix, matching the
 production GitHub Pages site.
+
+## Troubleshooting
+
+### "Failed to load module script" with `video/mp2t`
+
+If the browser console reports `Failed to load module script: Expected a JavaScript module script but the server responded with a MIME type of "video/mp2t"`, the web server is sending your bundled JavaScript with the wrong `Content-Type`. Module scripts require a JavaScript MIME type (for example `text/javascript`), so strict MIME checking prevents the code from executing when the server advertises it as `video/mp2t`.
+
+To confirm the issue, open your browser's developer tools, switch to the **Network** tab, and reload the page. Select the failing request and inspect the **Response Headers** section—if `Content-Type` is `video/mp2t`, the server configuration needs to be corrected.
+
+Update your hosting configuration so that `.js` files are served with a JavaScript MIME type:
+
+- **Apache** – Add `AddType text/javascript .js` (or `application/javascript`) to the relevant configuration or `.htaccess` file.
+- **Nginx** – Ensure the `types` block maps `js` to `text/javascript` (or `application/javascript`).
+- **Node/Express** – Use `express.static` (or equivalent) to serve your `dist/` directory so Vite's output keeps its correct MIME metadata.
+
+After adjusting the server, redeploy and reload the page. The module script should now execute without errors.
