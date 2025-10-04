@@ -1,49 +1,53 @@
 # Codex Web Cloud Modernization Guide
 
-## Introduction
-This document guides Codex Web Cloud agents who are modernizing the Flappy Bird project while ensuring the game remains deployable as static assets on GitHub Pages. Follow these guidelines to keep the project coherent, maintainable, and compatible with static hosting workflows.
+## Project Snapshot (May 2024)
+- **Runtime:** Vite + TypeScript/ESM modules feed both the game loop (`src/game/`) and HUD/view layer (`src/hud/`, `src/rendering/`).
+- **Game loop:** `src/game/systems/loop.js` orchestrates deterministic state, PRNG, spawning, scoring, and dispatches HUD + renderer updates. State is created in `src/game/systems/state.js` and persists best scores in localStorage. Pipes and bird logic live in `src/game/entities/`.
+- **Rendering:** `src/rendering/three/renderer.js` owns the Three.js scene (bird mesh, clouds, pipe pooling, lighting). HUD composition is modularized under `src/hud/` and wired up through `createHudController`.
+- **Assets:** Procedural bird + texture generator lives in `tools/generate_bird_assets.py`; outputs to `public/assets/models/` and `public/assets/textures/`. These binaries are intentionally ignored from version control and should be regenerated locally when needed.
+- **Build & deploy:** `npm run build` emits to `dist/` with the `/flappy-bird/` base path. `npm run deploy` mirrors `dist/` into `docs/` for GitHub Pages.
 
-## Modernization Goals
-1. Implement the outstanding feature work enumerated in `README.md`, including bird animations, modernized 3D bird and pipe models, a seamlessly repeating background, and power-ups such as speed boosts and invincibility.
-2. Design responsive layouts that adapt gracefully from mobile to desktop while preserving gameplay clarity at all breakpoints.
-3. Uphold accessibility standards by providing keyboard, pointer, and touch interaction, proper semantic markup, and sufficient color contrast.
-4. Maintain GitHub Pages-friendly performance budgets: minimize bundle size, defer non-critical assets, and target fast Time to Interactive on static hosting.
+## Active Workstreams & Next Steps
+1. **Visual polish & animations** – Implement sprite-sheet or GLTF-driven wing flaps, pipe movement easing, camera sway, and background parallax tied into the existing renderer without regressing performance budgets.
+2. **Gameplay extensions** – Layer in power-ups (speed boosts, invincibility), adaptive difficulty, and deterministic spawn patterns that stay compatible with `DeterministicPRNG` seeding.
+3. **Responsive & accessible HUD** – Continue refining `src/hud/` components for screen reader hints, keyboard navigation, and performance (`docs/hud-perf.md` guidance). Expand on pause/overlay flows.
+4. **Testing depth** – Increase Vitest coverage for collision detection, PRNG determinism, HUD adapters, and Three.js asset loaders (`src/rendering/three/assets.ts`).
+5. **Asset pipeline** – Replace placeholder bird mesh/pipes with the generated GLB assets and author lighting/material presets that still run inside the static bundle.
 
-## Tech Stack & Tooling
-- Adopt a modern, static-friendly toolchain built around Vite, TypeScript, ESLint, Prettier, and Three.js/WebGL. Vite's static asset pipeline, fast dev server, and straightforward `npm run build` output make it an ideal fit for GitHub Pages.
-- Ensure the following npm scripts are available:
-  - `npm run dev`
-  - `npm run build`
-  - `npm run preview`
-  - `npm run lint`
-  - `npm run test`
-  `npm run build` must emit a fully static bundle into `/dist` (or `/docs`) suitable for direct upload to GitHub Pages.
-- Provide CDN fallbacks for critical assets when feasible so the game continues to function if bundling fails and the static HTML must load assets directly.
+Keep this queue in sync when creating or reviewing PRs. Before tackling a large effort, check the upstream GitHub pull request list to avoid duplicate work (mirror PR findings in commit messages or summaries since the remote queue is not visible inside the container).
 
-## Project Structure
-- Migrate inline logic currently inside `index.html` into TypeScript modules under `src/`, such as `src/game/loop.ts`, `src/game/entities/bird.ts`, `src/game/entities/pipe.ts`, and other domain-specific modules.
-- Organize rendering-specific utilities under `src/rendering/` to encapsulate canvas and Three.js concerns.
-- Keep deployable HTML templates in the `public/` directory; they should reference built assets emitted during the Vite build.
-- Store all runtime assets—`.glb` models, textures, audio files, and sprite sheets—inside `public/assets/` so they are copied verbatim into the static bundle.
+## Module Map & Conventions
+- Place new game systems under `src/game/systems/` and expose them via `index.js` re-exports.
+- HUD/UI logic should be encapsulated in `src/hud/components/` with stateful adapters in `src/hud/adapter.ts`.
+- Rendering helpers belong in `src/rendering/`; keep Three.js-specific code within `src/rendering/three/` and factor shared utilities into separate modules.
+- Runtime assets (audio, textures, models) live under `public/assets/` so Vite can copy them verbatim.
+- Avoid mixing CommonJS and ESM—project code uses native ESM via Vite.
+- No `try/catch` wrappers around imports (aligns with global instructions).
 
 ## Implementation Guidelines
-- Reconcile the legacy 2D canvas loop in `index.html` with the unfinished Three.js prototype in `script.js` by converging on a single module-based game loop that can switch between visual themes (2D sprite-based or 3D-rendered) via configuration.
-- Implement smooth animation timing, adaptive difficulty scaling, and reliable collision detection. Ensure accessibility by supporting keyboard and touch controls alongside pointer interactions.
-- Keep gameplay deterministic on static hosting: avoid server dependencies and persist high scores or settings using `localStorage` or other browser-native storage.
+- Reconcile the legacy 2D logic with the Three.js renderer by leaning on the module-based loop. Add configuration toggles rather than branching by file.
+- Maintain deterministic gameplay: seed `DeterministicPRNG` via `setDeterministicSeed` in tests/previews and avoid Date.now()-style randomness.
+- For HUD updates, follow `docs/hud-perf.md` to keep frequent DOM writes inside contained layers. Prefer CSS `contain` and targeted `will-change` hints.
+- Provide keyboard, pointer, and touch interaction parity (`src/main.js` already wires keybindings—extend via shared helpers when adding controls).
+- Favor dependency-free browser APIs so builds remain deployable as static assets.
 
-## Testing & QA
-- Provide unit tests for core game logic, including physics, collision detection, and scoring.
-- Maintain visual regression snapshots to detect unintended rendering changes when updating assets or themes.
-- Enforce linting and formatting via ESLint and Prettier. In pull requests, report all executed test commands (e.g., lint, unit tests, visual tests) so reviewers can verify the checks.
+## Testing & QA Expectations
+Run relevant checks locally and list them in PR summaries:
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run build`
+Use Vitest snapshots cautiously—update alongside meaningful UI/render changes. Keep Three.js unit tests deterministic by mocking timers/PRNG where needed.
 
 ## Deployment Checklist
-1. Run `npm run build` to produce the static bundle.
-2. If deploying from a `docs/` folder, copy the contents of `dist/` into `docs/` and ensure asset references in `index.html` are correct for GitHub Pages.
-3. Verify the production build locally with `npm run preview` before pushing.
-4. Commit and push the built assets to the appropriate branch. Keep the root `index.html` backward compatible in case GitHub Pages serves directly from `main`.
+1. `npm run build`
+2. Sync `dist/` ➜ `docs/` (`npm run deploy` automates this).
+3. `npm run preview -- --host --port 4173` to validate `/flappy-bird/` asset paths locally.
+4. Commit updated `docs/` outputs when a deployment change is part of your task. Otherwise leave `docs/` untouched.
 
-## Workflow Tips for Codex Web Cloud Agents
-- Always consult `AGENTS.md` files and follow instructions scoped to the files you modify.
-- Respect file-level guidance when formatting code, writing documentation, or updating assets.
-- Write clear, descriptive commit messages summarizing your changes.
-- Prepare pull request descriptions that outline the modifications, highlight testing performed, and reference relevant modernization goals.
+## Agent Playbook
+- Always read scoped `AGENTS.md` files before editing (this file covers the entire repo).
+- Craft clear, descriptive commit messages summarizing your work.
+- In PR descriptions, highlight which modernization goals you addressed and what tests ran.
+- Coordinate with prior agents by referencing significant architecture changes in summaries (e.g., new renderer modules, HUD flows).
+- Leave TODO comments sparingly—prefer tracking actionable follow-ups in documentation or PR notes.
