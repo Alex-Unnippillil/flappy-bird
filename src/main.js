@@ -1,3 +1,4 @@
+import "./features/F10_score_hud/register.ts";
 import {
   CONFIG,
   createGameState,
