@@ -233,11 +233,9 @@ export function handleCanvasClick() {
   if (state.awaitingStart || state.gameOver) {
     const wasStartingRound = state.awaitingStart || state.gameOver;
     startGame();
-    if (wasStartingRound && state.isRunning && state.bird) {
+    if (state.isRunning && state.bird) {
       state.bird.jump();
-      if (renderer) {
-        renderer.pulseBird();
-      }
+      renderer?.pulseBird?.();
     }
     return;
   }
@@ -247,9 +245,7 @@ export function handleCanvasClick() {
   }
 
   state.bird.jump();
-  if (renderer) {
-    renderer.pulseBird();
-  }
+  renderer?.pulseBird?.();
 }
 
 export function teardownGameLoop() {
