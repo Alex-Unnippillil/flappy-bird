@@ -39,6 +39,7 @@ const SOUND_MAP: Record<SoundKey, ToneSegment[]> = {
 };
 
 let audioContext: AudioContext | null = null;
+let pendingResume: Promise<void> | null = null;
 
 function ensureContext(): AudioContext | null {
   if (!AudioContextClass) {
@@ -47,10 +48,20 @@ function ensureContext(): AudioContext | null {
   if (!audioContext) {
     audioContext = new AudioContextClass();
   }
+  if (audioContext.state === 'closed') {
+    audioContext = new AudioContextClass();
+  }
   if (audioContext.state === 'suspended') {
-    void audioContext.resume().catch(() => {
-      /* ignore */
-    });
+    if (!pendingResume) {
+      pendingResume = audioContext
+        .resume()
+        .catch(() => {
+          /* ignore */
+        })
+        .finally(() => {
+          pendingResume = null;
+        });
+    }
   }
   return audioContext;
 }
@@ -72,8 +83,12 @@ function scheduleTone(ctx: AudioContext, startTime: number, segment: ToneSegment
   oscillator.connect(gain);
   gain.connect(ctx.destination);
 
-  oscillator.start(startTime);
-  oscillator.stop(startTime + segment.duration + 0.01);
+  try {
+    oscillator.start(startTime);
+    oscillator.stop(startTime + segment.duration + 0.01);
+  } catch (error) {
+    console.warn('Audio oscillator failed to start', error);
+  }
 
   return startTime + segment.duration;
 }
@@ -84,11 +99,19 @@ export function playSound(key: SoundKey): void {
     return;
   }
 
+  if (ctx.state !== 'running') {
+    return;
+  }
+
   const start = ctx.currentTime;
   let cursor = start;
   const segments = SOUND_MAP[key];
-  for (const segment of segments) {
-    cursor = scheduleTone(ctx, cursor, segment);
+  try {
+    for (const segment of segments) {
+      cursor = scheduleTone(ctx, cursor, segment);
+    }
+  } catch (error) {
+    console.warn('Failed to play sound', error);
   }
 }
 
@@ -101,15 +124,24 @@ export async function preloadAudio(): Promise<void> {
   if (ctx.state === 'suspended') {
     try {
       await ctx.resume();
-    } catch (_error) {
-      // Some browsers block autoplay until user interaction. We'll resume on demand in that case.
+    } catch (error) {
+      console.warn('Unable to resume audio context during preload', error);
+      return;
     }
   }
 
+  if (ctx.state !== 'running') {
+    return;
+  }
+
   // Prime a silent buffer so the first sound plays without delay.
-  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(ctx.destination);
-  source.start();
+  try {
+    const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start();
+  } catch (error) {
+    console.warn('Failed to prime audio context', error);
+  }
 }
