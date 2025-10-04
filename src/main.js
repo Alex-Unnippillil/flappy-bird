@@ -9,6 +9,11 @@ import {
 } from "./game/systems/index.js";
 import { initSessionStats } from "./hud/components/SessionStats.ts";
 import { createSceneContext } from "./core/scene.ts";
+import { createGameLoop } from "./core/loop.ts";
+import { createGameStateMachine } from "./core/state.ts";
+
+const coreStateMachine = createGameStateMachine();
+const coreLoop = createGameLoop({ state: coreStateMachine });
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -74,6 +79,14 @@ function init() {
     createSceneContext();
   } catch (error) {
     console.warn("Unable to initialize Three.js scene", error);
+  }
+
+  if (coreStateMachine.canTransition("READY")) {
+    coreStateMachine.transition("READY");
+  }
+
+  if (!coreLoop.isRunning()) {
+    coreLoop.start();
   }
 
   const canvas = document.getElementById("gameCanvas");
