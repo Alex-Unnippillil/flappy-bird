@@ -154,7 +154,7 @@ const readSettingsFromStorage = (storage: StorageLike | null): PlainObject => {
   try {
     const parsed = JSON.parse(raw);
     return toPlainObject(parsed);
-  } catch (error) {
+  } catch (_error) {
     return {};
   }
 };
@@ -171,7 +171,7 @@ const persistSettings = (storage: StorageLike | null, settings: PlainObject): vo
     }
 
     storage.setItem(F05_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-  } catch (error) {
+  } catch (_error) {
     // Ignore storage write failures (e.g., quota exceeded or disabled storage).
   }
 };
@@ -276,8 +276,8 @@ export const registerF05SettingsContext = (
     random: () => prng.next(),
     update: (patch: Record<string, unknown>) => {
       const normalizedPatch = normalizePatch(patch);
-      let nextLocal = { ...localSettings };
-      let nextSettings = { ...context.settings };
+      const nextLocal = { ...localSettings };
+      const nextSettings = { ...context.settings };
 
       const keys = Object.keys(normalizedPatch);
       if (keys.length === 0) {

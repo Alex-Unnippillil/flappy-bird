@@ -107,7 +107,7 @@ const readSeedFromStorage = (storage: StorageLike | null, storageKey: string): s
       return null;
     }
     return stored;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 };
@@ -119,7 +119,7 @@ const persistSeed = (storage: StorageLike | null, storageKey: string, seed: stri
 
   try {
     storage.setItem(storageKey, seed);
-  } catch (error) {
+  } catch (_error) {
     // Ignore persistence errors.
   }
 };

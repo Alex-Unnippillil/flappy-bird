@@ -174,7 +174,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(_: ICoordinate): void {
     if (this.gameState === 'died') return;
 
     this.state = 'playing';

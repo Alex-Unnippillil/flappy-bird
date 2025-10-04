@@ -7,7 +7,7 @@ export interface IFadingOptions {
   transition: IEasingKey;
 }
 
-export interface IConstructorFadingOptions extends Partial<IFadingOptions> {}
+export type IConstructorFadingOptions = Partial<IFadingOptions>;
 
 export interface IFadingStatus {
   running: boolean;
