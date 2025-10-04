@@ -1,3 +1,9 @@
 export { bus } from './event-bus';
-export { emit, off, on } from './events';
-export type { GameEventName } from './events';
+export type { GameEventName } from './event-bus';
+export {
+  PHYSICS,
+  clampFlapStrength,
+  metersToPixels,
+  pixelsToMeters,
+} from './physics';
+export type { PhysicsConstants } from './physics';

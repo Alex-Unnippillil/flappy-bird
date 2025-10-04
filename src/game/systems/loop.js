@@ -1,4 +1,5 @@
 import { Bird, Pipe } from "../entities/index.js";
+import { PHYSICS, clampFlapStrength } from "../../core/physics.ts";
 import { CONFIG, resetGameState, persistBestScore } from "./state.js";
 import { isRngFeatureEnabled } from "../../core/rng.ts";
 import { createThreeRenderer } from "../../rendering/three/renderer.js";
@@ -184,7 +185,7 @@ function prepareRound() {
   state.bird = new Bird(80, state.playfieldHeight / 2, {
     width: 38,
     height: 26,
-    flapStrength: 9.5,
+    flapStrength: clampFlapStrength(PHYSICS.flapImpulse),
   });
   state.awaitingStart = false;
   state.isRunning = true;

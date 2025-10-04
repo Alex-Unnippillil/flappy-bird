@@ -1,9 +1,10 @@
+import { PHYSICS } from "../../core/physics.ts";
 import { createDeterministicPrng } from "./prng.ts";
 
 export const CONFIG = {
   playfieldWidth: 420,
   playfieldHeight: 640,
-  gravity: 0.55,
+  gravity: PHYSICS.gravity,
   gapSize: 150,
   pipeIntervalMs: 1600,
   initialPipeSpeed: 2.6,
