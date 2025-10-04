@@ -1,3 +1,13 @@
+@import "./src/hud/styles/z.css";
+
+/*
+  Stack order reference:
+  --z-game-canvas: base playfield surface.
+  --z-hud: persistent HUD chrome surrounding the stage.
+  --z-overlay: blocking overlays such as the intro/game-over screen.
+  --z-tooltip: transient affordances that must float above overlays.
+*/
+
 :root {
   color-scheme: light;
   --hud-bg: rgba(255, 255, 255, 0.75);
@@ -37,6 +47,8 @@ body {
 }
 
 .hud-panel {
+  position: relative;
+  z-index: var(--z-hud);
   backdrop-filter: blur(12px);
   background: var(--hud-bg);
   border: 1px solid var(--hud-border);
@@ -72,6 +84,17 @@ body {
   font-weight: 700;
 }
 
+/* hud-font-smoothing:start */
+@media (min-resolution: 1.25dppx) and (max-resolution: 3dppx) {
+  .hud-panel,
+  .hud-panel * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+/* hud-font-smoothing:end */
+
 .speed-meter {
   position: relative;
   width: 100%;
@@ -101,6 +124,8 @@ body {
 }
 
 #gameCanvas {
+  position: relative;
+  z-index: var(--z-game-canvas);
   width: min(540px, 80vw);
   height: calc(min(540px, 80vw) * 1.5238);
   max-height: 85vh;
@@ -130,6 +155,7 @@ body {
   text-align: center;
   padding: 32px;
   transition: opacity 0.3s ease;
+  z-index: var(--z-overlay);
 }
 
 .game-overlay.is-hidden {
