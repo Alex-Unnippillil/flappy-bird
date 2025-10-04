@@ -1,0 +1,96 @@
+.hud-root {
+  --hud-max-width: clamp(320px, 94vw, 1240px);
+  --hud-gap: clamp(16px, 4vw, 32px);
+  --hud-panel-column: clamp(140px, 32vw, 220px);
+  --hud-stage-padding: clamp(12px, 5vw, 28px);
+  margin: 0 auto;
+  width: var(--hud-max-width);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "panel"
+    "stage"
+    "footer";
+  gap: var(--hud-gap);
+}
+
+.hud-root .hud-panel {
+  grid-area: panel;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--hud-panel-column), 1fr)
+  );
+  align-items: stretch;
+  justify-content: stretch;
+  gap: clamp(12px, 3vw, 20px);
+}
+
+.hud-root .hud-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hud-root .game-stage {
+  grid-area: stage;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--hud-stage-padding);
+}
+
+.hud-root .game-stage #gameCanvas {
+  width: clamp(280px, 68vw, 640px);
+  max-width: 100%;
+  aspect-ratio: 420 / 640;
+  max-height: clamp(320px, 76vh, 720px);
+}
+
+.hud-root .game-footer {
+  grid-area: footer;
+  text-align: center;
+  padding: clamp(12px, 3vw, 20px);
+}
+
+@media (min-width: 600px) {
+  .hud-root {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "panel panel"
+      "stage stage"
+      "footer footer";
+  }
+
+  .hud-root .hud-panel {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(clamp(150px, 22vw, 240px), 1fr)
+    );
+  }
+}
+
+@media (min-width: 1024px) {
+  .hud-root {
+    grid-template-columns:
+      minmax(clamp(260px, 28vw, 360px), 1fr)
+      minmax(clamp(360px, 56vw, 780px), 2fr);
+    grid-template-areas:
+      "panel stage"
+      "footer stage";
+    align-items: start;
+  }
+
+  .hud-root .hud-panel {
+    align-content: start;
+  }
+
+  .hud-root .game-stage {
+    justify-content: center;
+    padding: clamp(16px, 3vw, 40px);
+  }
+
+  .hud-root .game-stage #gameCanvas {
+    width: clamp(340px, 48vw, 720px);
+  }
+}
