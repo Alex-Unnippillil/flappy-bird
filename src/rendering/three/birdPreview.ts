@@ -1,21 +1,15 @@
 import {
   AmbientLight,
-  AnimationClip,
-  AnimationMixer,
   Clock,
   Color,
   DirectionalLight,
-  Group,
   PerspectiveCamera,
   Scene,
   SRGBColorSpace,
   Vector3,
   WebGLRenderer,
 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-
-const BASE_URL = import.meta.env?.BASE_URL ?? '/';
-const birdUrl = `${BASE_URL.replace(/\/$/, '')}/assets/models/bird.glb`;
+import { loadBird } from '../../core/assets';
 
 function getContainer(): HTMLElement {
   const container = document.getElementById('bird-preview');
@@ -91,29 +85,10 @@ function showError(container: HTMLElement, error: unknown): void {
   container.appendChild(wrapper);
 }
 
-async function loadBird(): Promise<{ root: Group; mixer: AnimationMixer | null }> {
-  const loader = new GLTFLoader();
-  const gltf = await loader.loadAsync(birdUrl);
-  const root = gltf.scene;
-  root.position.set(0, 0.05, 0);
-  root.rotation.y = Math.PI * -0.35;
-  root.scale.setScalar(1.4);
-
-  let mixer: AnimationMixer | null = null;
-  const clip = AnimationClip.findByName(gltf.animations, 'Flap') ?? gltf.animations[0];
-  if (clip) {
-    mixer = new AnimationMixer(root);
-    const action = mixer.clipAction(clip);
-    action.play();
-  }
-
-  return { root, mixer };
-}
-
 async function init(): Promise<void> {
   const container = getContainer();
 
-  let bird: Awaited<ReturnType<typeof loadBird>>;
+  let bird = null;
   try {
     bird = await loadBird();
   } catch (error) {

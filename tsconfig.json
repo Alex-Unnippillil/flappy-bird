@@ -3,11 +3,20 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "allowJs": true,
     "checkJs": false,
     "strict": true,
     "noEmit": true,
-    "types": ["vitest", "vite/client", "node", "three"]
+    "types": ["vitest", "vite/client", "node", "three"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "src/*": ["src/*"]
+    }
   },
   "include": ["src/**/*", "playgrounds/**/*"],
   "exclude": ["dist", "node_modules"]
