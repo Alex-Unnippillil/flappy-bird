@@ -3,11 +3,66 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flappy Bird</title>
-    <script type="module" crossorigin src="/flappy-bird/assets/index-xJsVWmGU.js"></script>
-    <link rel="stylesheet" crossorigin href="/flappy-bird/assets/index-DMXK-VR0.css">
+    <title>Flappy Bird 3D</title>
+    <script type="module" crossorigin src="/flappy-bird/assets/main-CFhmkxWZ.js"></script>
+    <link rel="modulepreload" crossorigin href="/flappy-bird/assets/modulepreload-polyfill-B5Qt9EMX.js">
+    <link rel="modulepreload" crossorigin href="/flappy-bird/assets/index-B-pfPx8Q.js">
+    <link rel="modulepreload" crossorigin href="/flappy-bird/assets/three.module-tYR32Xpn.js">
+    <link rel="stylesheet" crossorigin href="/flappy-bird/assets/index-CPLm1ixD.css">
+    <link rel="stylesheet" crossorigin href="/flappy-bird/assets/main-DPAJbzD9.css">
   </head>
   <body>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <main class="game-layout">
+      <header class="hud-panel" aria-label="Game dashboard">
+        <div class="hud-metric" aria-live="polite">
+          <span class="hud-label">Score</span>
+          <span id="scoreValue" class="hud-value">0</span>
+        </div>
+        <div class="hud-metric" aria-live="polite">
+          <span class="hud-label">Best</span>
+          <span id="bestValue" class="hud-value">0</span>
+        </div>
+        <div class="hud-metric hud-metric--wide">
+          <span class="hud-label">Speed</span>
+          <div
+            id="speedProgress"
+            class="speed-meter"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-label="Pipe speed"
+          >
+            <span id="speedFill" class="speed-meter__fill"></span>
+          </div>
+        </div>
+        <div class="hud-metric hud-metric--perfect">
+          <span class="hud-label">Perfect</span>
+          <div
+            id="perfectIndicator"
+            class="perfect-indicator"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+        </div>
+      </header>
+
+      <section class="game-stage" aria-label="Flappy Bird 3D game board">
+        <canvas id="gameCanvas" aria-describedby="gameMessage"></canvas>
+        <div id="gameOverlay" class="game-overlay" aria-live="assertive">
+          <p id="gameMessage" class="game-message">Tap or press Space to start</p>
+          <div id="sessionStats" class="session-stats" hidden></div>
+          <button id="startButton" type="button" class="game-button">Play</button>
+        </div>
+      </section>
+
+      <footer class="game-footer">
+        <p>
+          Controls: Tap/click, press <kbd>Space</kbd> or <kbd>Arrow Up</kbd> to flap.
+          Press <kbd>R</kbd> to restart.
+        </p>
+      </footer>
+    </main>
+
   </body>
 </html>
