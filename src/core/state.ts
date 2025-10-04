@@ -15,6 +15,13 @@ const ALLOWED_TRANSITIONS: Record<GameStateValue, readonly GameStateValue[]> = {
 const isValidState = (value: unknown): value is GameStateValue =>
   typeof value === 'string' && (GAME_STATES as readonly string[]).includes(value);
 
+type GameStateDetailName = Lowercase<GameStateValue> | 'game-over';
+
+const toDetailState = (value: GameStateValue): GameStateDetailName =>
+  value === 'GAME_OVER'
+    ? 'game-over'
+    : (value.toLowerCase() as Lowercase<GameStateValue>);
+
 export interface GameStateMachine {
   getState(): GameStateValue;
   canTransition(target: GameStateValue): boolean;
@@ -48,7 +55,13 @@ export const createGameStateMachine = (
   const setState = (next: GameStateValue) => {
     const previous = currentState;
     currentState = next;
-    bus.emit('game:state-change', { from: previous, to: next });
+    const detail: GameStateChangeDetail = {
+      from: previous,
+      to: next,
+      previousState: toDetailState(previous),
+      state: toDetailState(next),
+    };
+    bus.emit('game:state-change', detail);
   };
 
   return {
@@ -74,8 +87,15 @@ export const createGameStateMachine = (
 
 declare global {
   interface GameEvents {
-    'game:state-change': { from: GameStateValue; to: GameStateValue };
+    'game:state-change': GameStateChangeDetail;
   }
 }
+
+export type GameStateChangeDetail = {
+  from: GameStateValue;
+  to: GameStateValue;
+  previousState: GameStateDetailName;
+  state: GameStateDetailName;
+};
 
 export { GAME_STATES };
