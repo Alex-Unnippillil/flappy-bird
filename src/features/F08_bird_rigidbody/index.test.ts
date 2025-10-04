@@ -8,6 +8,33 @@ import {
   type BirdRigidbodyUpdateDetail,
 } from "./index";
 
+const BASE_STEP = 1 / 60;
+
+const createTickEmitter = () => {
+  let elapsed = 0;
+  return (delta: number, frame: number) => {
+    const dt = delta * BASE_STEP;
+    elapsed += dt;
+    return {
+      delta,
+      dt,
+      frame,
+      elapsed,
+      elapsedMs: elapsed * 1000,
+    } as const;
+  };
+};
+
+const createStateChangeDetail = (
+  from: "BOOT" | "READY" | "RUNNING" | "PAUSED" | "GAME_OVER",
+  to: "BOOT" | "READY" | "RUNNING" | "PAUSED" | "GAME_OVER",
+) => ({
+  from,
+  to,
+  previousState: from === "GAME_OVER" ? "game-over" : from.toLowerCase(),
+  state: to === "GAME_OVER" ? "game-over" : to.toLowerCase(),
+}) as const;
+
 const computeBaseline = (deltas: readonly number[]) => {
   const baseline: Array<Pick<BirdRigidbodyUpdateDetail, "position" | "velocity">> = [];
   let velocity = F05_BIRD_RIGIDBODY_DEFAULTS.initialVelocity;
@@ -45,9 +72,10 @@ describe("F08 bird rigidbody integrator", () => {
   it("integrates position and velocity for unit deltas", () => {
     const cleanup = registerF08BirdRigidbody();
     const { updates, unsubscribe } = subscribeUpdates();
+    const emitTick = createTickEmitter();
 
-    bus.emit("game:tick", { delta: 1, frame: 1, elapsedMs: 16.6667 });
-    bus.emit("game:tick", { delta: 1, frame: 2, elapsedMs: 33.3333 });
+    bus.emit("game:tick", emitTick(1, 1));
+    bus.emit("game:tick", emitTick(1, 2));
 
     expect(updates).toHaveLength(2);
     expect(updates[0].velocity).toBeCloseTo(0.55, 5);
@@ -62,12 +90,13 @@ describe("F08 bird rigidbody integrator", () => {
   it("matches the baseline trajectory for varied deltas", () => {
     const cleanup = registerF08BirdRigidbody({ autoStart: false });
     const { updates, unsubscribe } = subscribeUpdates();
+    const emitTick = createTickEmitter();
 
-    bus.emit("game:state-change", { state: "running" });
+    bus.emit("game:state-change", createStateChangeDetail("READY", "RUNNING"));
 
     const deltas = [0.5, 0.25, 0.25, 0.75, 1.5] as const;
     deltas.forEach((delta, index) => {
-      bus.emit("game:tick", { delta, frame: index + 1 });
+      bus.emit("game:tick", emitTick(delta, index + 1));
     });
 
     const baseline = computeBaseline(deltas);
@@ -85,24 +114,28 @@ describe("F08 bird rigidbody integrator", () => {
   it("detaches listeners on resets to avoid duplicate integrations", () => {
     const cleanup = registerF08BirdRigidbody();
     const { updates, unsubscribe } = subscribeUpdates();
+    const emitTick = createTickEmitter();
 
-    bus.emit("game:state-change", { state: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 1 });
+    bus.emit("game:state-change", createStateChangeDetail("READY", "RUNNING"));
+    bus.emit("game:tick", emitTick(1, 1));
 
     expect(updates).toHaveLength(1);
 
-    bus.emit("game:state-change", { state: "running", previousState: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 2 });
+    bus.emit(
+      "game:state-change",
+      createStateChangeDetail("RUNNING", "RUNNING"),
+    );
+    bus.emit("game:tick", emitTick(1, 2));
 
     expect(updates).toHaveLength(2);
 
     bus.emit("world:reset");
-    bus.emit("game:tick", { delta: 1, frame: 3 });
+    bus.emit("game:tick", emitTick(1, 3));
 
     expect(updates).toHaveLength(2);
 
-    bus.emit("game:state-change", { state: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 4 });
+    bus.emit("game:state-change", createStateChangeDetail("READY", "RUNNING"));
+    bus.emit("game:tick", emitTick(1, 4));
 
     expect(updates).toHaveLength(3);
 

@@ -1,10 +1,15 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bus } from '../event-bus';
 import { createGameStateMachine, GAME_STATES, type GameStateValue } from '../state';
 
 const unsubscribeAll: Array<() => void> = [];
 
+beforeEach(() => {
+  vi.stubEnv('VITE_FF_F02', 'true');
+});
+
 afterEach(() => {
+  vi.unstubAllEnvs();
   while (unsubscribeAll.length > 0) {
     const unsubscribe = unsubscribeAll.pop();
     unsubscribe?.();
@@ -42,12 +47,17 @@ describe('game state machine', () => {
     expect(machine.getState()).toBe('READY');
 
     expect(events).toEqual([
-      { from: 'BOOT', to: 'READY' },
-      { from: 'READY', to: 'RUNNING' },
-      { from: 'RUNNING', to: 'PAUSED' },
-      { from: 'PAUSED', to: 'RUNNING' },
-      { from: 'RUNNING', to: 'GAME_OVER' },
-      { from: 'GAME_OVER', to: 'READY' },
+      { from: 'BOOT', to: 'READY', previousState: 'boot', state: 'ready' },
+      { from: 'READY', to: 'RUNNING', previousState: 'ready', state: 'running' },
+      { from: 'RUNNING', to: 'PAUSED', previousState: 'running', state: 'paused' },
+      { from: 'PAUSED', to: 'RUNNING', previousState: 'paused', state: 'running' },
+      {
+        from: 'RUNNING',
+        to: 'GAME_OVER',
+        previousState: 'running',
+        state: 'game-over',
+      },
+      { from: 'GAME_OVER', to: 'READY', previousState: 'game-over', state: 'ready' },
     ]);
   });
 
@@ -85,9 +95,9 @@ describe('game state machine', () => {
     expect(machine.getState()).toBe('BOOT');
 
     expect(events).toEqual([
-      { from: 'BOOT', to: 'READY' },
-      { from: 'READY', to: 'RUNNING' },
-      { from: 'RUNNING', to: 'BOOT' },
+      { from: 'BOOT', to: 'READY', previousState: 'boot', state: 'ready' },
+      { from: 'READY', to: 'RUNNING', previousState: 'ready', state: 'running' },
+      { from: 'RUNNING', to: 'BOOT', previousState: 'running', state: 'boot' },
     ]);
   });
 

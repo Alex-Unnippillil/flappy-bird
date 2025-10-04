@@ -107,6 +107,7 @@ export const createGameLoop = ({
   let lastTimestamp: number | null = null;
   let accumulator = 0;
   let elapsed = 0;
+  let frame = 0;
   let running = false;
 
   const step: FrameRequestCallback = (timestampMs) => {
@@ -146,7 +147,15 @@ export const createGameLoop = ({
     while (accumulator + STEP_EPSILON >= FIXED_TIME_STEP) {
       accumulator -= FIXED_TIME_STEP;
       elapsed += FIXED_TIME_STEP;
-      bus.emit('game:tick', { dt: FIXED_TIME_STEP, elapsed });
+      frame += 1;
+      const detail = {
+        dt: FIXED_TIME_STEP,
+        elapsed,
+        elapsedMs: elapsed * 1000,
+        frame,
+        delta: 1,
+      } satisfies GameTickDetail;
+      bus.emit('game:tick', detail);
       steps += 1;
 
       if (steps >= maxSubSteps) {
@@ -181,6 +190,8 @@ export const createGameLoop = ({
 
     lastTimestamp = null;
     accumulator = 0;
+    elapsed = 0;
+    frame = 0;
   };
 
   return {
@@ -192,8 +203,31 @@ export const createGameLoop = ({
 
 declare global {
   interface GameEvents {
-    'game:tick': { dt: number; elapsed: number };
+    'game:tick': GameTickDetail;
   }
 }
+
+export type GameTickDetail = {
+  /**
+   * Fixed step duration expressed in seconds.
+   */
+  dt: number;
+  /**
+   * Total simulated time in seconds since the loop started.
+   */
+  elapsed: number;
+  /**
+   * Total simulated time in milliseconds since the loop started.
+   */
+  elapsedMs: number;
+  /**
+   * 1-indexed frame counter for deterministic consumers.
+   */
+  frame: number;
+  /**
+   * Normalized delta where 1 represents the baseline 60 FPS step.
+   */
+  delta: number;
+};
 
 export type { GameStateValue };

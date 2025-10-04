@@ -1,9 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bus } from '../event-bus';
-import { createGameLoop, FIXED_TIME_STEP, type FrameScheduler } from '../loop';
+import {
+  createGameLoop,
+  FIXED_TIME_STEP,
+  type FrameScheduler,
+  type GameTickDetail,
+} from '../loop';
 import { createGameStateMachine } from '../state';
 
-type TickPayload = { dt: number; elapsed: number };
+type TickPayload = GameTickDetail;
 
 class TestScheduler {
   private callbacks = new Map<number, FrameRequestCallback>();
@@ -36,6 +41,10 @@ class TestScheduler {
 const unsubscribeAll: Array<() => void> = [];
 
 beforeEach(() => {
+  vi.stubEnv('VITE_FF_F02', 'true');
+});
+
+beforeEach(() => {
   while (unsubscribeAll.length > 0) {
     const unsubscribe = unsubscribeAll.pop();
     unsubscribe?.();
@@ -43,6 +52,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   while (unsubscribeAll.length > 0) {
     const unsubscribe = unsubscribeAll.pop();
     unsubscribe?.();
@@ -80,7 +90,10 @@ describe('game loop', () => {
     expect(ticks).toHaveLength(3);
     ticks.forEach((tick, index) => {
       expect(tick.dt).toBeCloseTo(FIXED_TIME_STEP, 6);
+      expect(tick.delta).toBeCloseTo(1, 6);
+      expect(tick.frame).toBe(index + 1);
       expect(tick.elapsed).toBeCloseTo(FIXED_TIME_STEP * (index + 1), 6);
+      expect(tick.elapsedMs).toBeCloseTo(FIXED_TIME_STEP * (index + 1) * 1000, 6);
     });
 
     loop.stop();
@@ -125,7 +138,10 @@ describe('game loop', () => {
 
     expect(ticks).toHaveLength(2);
     expect(ticks[1].dt).toBeCloseTo(FIXED_TIME_STEP, 6);
+    expect(ticks[1].delta).toBeCloseTo(1, 6);
+    expect(ticks[1].frame).toBe(2);
     expect(ticks[1].elapsed).toBeCloseTo(FIXED_TIME_STEP * 2, 6);
+    expect(ticks[1].elapsedMs).toBeCloseTo(FIXED_TIME_STEP * 2 * 1000, 6);
 
     loop.stop();
   });
