@@ -3,6 +3,7 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
 
   export interface GLTF {
     scene: Group;
+    scenes?: Group[];
     animations: AnimationClip[];
   }
 
@@ -10,6 +11,9 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
     constructor(manager?: unknown);
     loadAsync(url: string, onProgress?: (event: ProgressEvent<EventTarget>) => void): Promise<GLTF>;
     setDRACOLoader(loader: unknown): this;
+    setResourcePath(path: string): this;
+    setPath(path: string): this;
+    setCrossOrigin(origin: string): this;
   }
 }
 

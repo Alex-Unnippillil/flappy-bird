@@ -227,16 +227,8 @@ export class SessionStatsPanel {
       }
     });
 
-    // expose for internal reuse
-    this.expand = expandPanel;
-    this.collapse = collapsePanel;
     this.updateToggleLabel = updateToggleLabel;
   }
-
-  // Methods assigned within constructor
-  private expand: (shouldFocus?: boolean) => void = () => {};
-
-  private collapse: () => void = () => {};
 
   private updateToggleLabel: () => void = () => {};
 
