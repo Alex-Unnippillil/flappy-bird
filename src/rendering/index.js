@@ -1,15 +1,16 @@
 import { createGameOverTitle } from "../hud/components/GameOverTitle.ts";
 import { MedalBanner } from "../hud/components/MedalBanner.ts";
-import { hudAdapter, Medal } from "../hud/adapter.ts";
+import { hudAdapter } from "../hud/adapter.ts";
 
-export { hudAdapter, Medal } from "../hud/adapter.ts";
+export { hudAdapter } from "../hud/adapter.ts";
+export { Medal } from "../hud/logic/medals.ts";
 import { PerfectIndicator } from "../hud/components/PerfectIndicator.ts";
 import { createHapticsAdapter } from "../hud/util/haptics.ts";
 import {
   emitBestRibbonEvent,
   ensureBestRibbon,
 } from "../hud/components/BestRibbon.ts";
-import { getMedalForScore, Medal } from "../hud/logic/medals";
+import { getMedalForScore, Medal } from "../hud/logic/medals.ts";
 import { FinalScore } from "../hud/components/FinalScore.ts";
 import { HudRoot } from "../hud/HudRoot.ts";
 import { PauseMenu } from "../hud/components/PauseMenu.ts";
