@@ -1,6 +1,6 @@
 # HUD Performance Notes
 
-The HUD (scoreboard, speed meter, and overlay) renders on top of the WebGL canvas and updates every frame. Lightweight layout and paint scopes help prevent HUD updates from triggering expensive reflows inside the rest of the page.
+The HUD (scoreboard, speed meter, and overlay) renders on top of the gameplay canvas and updates every frame. Lightweight layout and paint scopes help prevent HUD updates from triggering expensive reflows inside the rest of the page.
 
 ## Current CSS hints
 

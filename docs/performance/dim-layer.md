@@ -21,7 +21,7 @@
 ## Observations
 
 - The dim layer keeps the canvas texture intact, so Layout Playground shows **zero** additional raster work for the playfield during pause transitions.
-- GPU timing remained below 5 ms, leaving >10 ms of headroom for Three.js updates while the menu is open.
+- GPU timing remained below 5 ms, leaving >10 ms of headroom for game updates while the menu is open.
 - `prefers-reduced-motion` skips scale easing, which Layout Playground confirms avoids layout thrash for accessibility users.
 
 ## Follow-up
