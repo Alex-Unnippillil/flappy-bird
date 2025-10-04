@@ -1,7 +1,26 @@
-# Flappy Bird (Vite + Three.js)
+# Flappy Bird Classic (TypeScript + Canvas)
 
-A modernized Flappy Bird prototype powered by Vite, TypeScript, and Three.js. The project builds to static assets that are ready
-for GitHub Pages.
+A TypeScript and Webpack recreation of the original 288×512 Flappy Bird. The
+project renders entirely with the Canvas 2D API, ships a deterministic game
+loop, and bundles static assets that can be deployed to GitHub Pages or any
+static host.
+
+## Features
+
+- **Classic resolution & pacing** – Game constants mirror the original release,
+  including pipe gaps, gravity, and base canvas size. The renderer maintains the
+  288×512 aspect ratio while scaling the DOM canvas responsively.
+- **Deterministic state machine** – `ClassicGame` owns the intro, running, and
+  game-over states, keeps an off-screen buffer for flicker-free draws, and
+  persists the best score via `localStorage`.
+- **Entity-based logic** – Bird physics, scrolling pipes, background parallax,
+  and the platform each live in dedicated entity classes so mechanics remain
+  isolated and testable.
+- **Web Audio synthesis** – Retro sound effects are produced at runtime with the
+  Web Audio API; there are no binary audio assets to ship.
+- **Accessible HUD** – DOM overlays expose score, best run, and control hints
+  with ARIA annotations. Keyboard, pointer, and touch inputs map to the same
+  primary action handler.
 
 ## Getting Started
 
@@ -10,155 +29,80 @@ npm install
 npm run dev
 ```
 
-## Scene bootstrap
+`npm run dev` invokes Webpack in watch mode and serves the generated bundle from
+`dist/` via BrowserSync on `http://localhost:3000`. Edit TypeScript or style
+files under `src/` to trigger live rebuilds.
 
-The Three.js renderer is initialized through `createSceneContext()` found in
-`src/core/scene.ts`. Import and call this helper from the Vite entry point to
-obtain the shared `scene`, `camera`, and `renderer` instances while the helper
-appends the renderer's canvas to the `#app` container:
+## Available Scripts
 
-```ts
-import { createSceneContext } from "./core/scene";
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Start Webpack in development mode with live reload. |
+| `npm run build` | Produce an optimized production bundle in `dist/`. |
+| `npm run start` | Alias for `npm run dev`. |
+| `npm run lint` | Run ESLint across the TypeScript sources. |
+| `npm run prettier-format` | Format `src/` and `types/` with Prettier. |
+| `npm run prettier-format:md` | Format Markdown and JavaScript helpers with Prettier. |
+| `npm test` | Placeholder command (returns an error by design). |
 
-const { scene, camera, renderer } = createSceneContext();
-```
+## Project Structure Highlights
 
-The helper automatically matches the container size, clamps the pixel ratio for
-high-DPI displays, and responds to future `resize` events.
+- `src/main.ts` – Bootstraps the canvas, hooks up responsive sizing, wires DOM
+  HUD elements, and forwards keyboard/touch inputs to the game instance.
+- `src/classic/Game.ts` – Central game orchestrator that manages entities,
+  animation frames, HUD updates, medals, and high-score persistence.
+- `src/classic/entities/` – Renderable actors such as `Bird`, `PipeField`,
+  `Background`, and `Platform`. Each class exposes `update` / `draw` to keep
+  physics and presentation encapsulated.
+- `src/classic/assets.ts` – Synthesizes flap, score, swoosh, hit, and die sound
+  effects using oscillator graphs. `preloadAudio()` primes the context so the
+  first interaction is responsive.
+- `src/classic/spriteSheet.ts` – Lazy-loads the sprite atlas and exposes helpers
+  for drawing scaled sprites when the texture is available. Vector fallbacks keep
+  the game playable without the atlas.
+- `styles.css` – Shared layout for the HUD, stage, and footer rendered around the
+  canvas.
 
-## Deterministic RNG & seeds
+## Game Logic Overview
 
-The spawning systems rely on `createRng()` (`src/core/rng.ts`) when feature flag
-`import.meta.env.VITE_FF_F04` is enabled. The helper persists the active seed to
-`localStorage` (default key `flappy.seed`), supports ISO timestamp seeds, and
-exposes deterministic helpers `nextFloat()` / `int(min, max)` for gameplay
-systems. When the flag is active the game loop publishes developer utilities at
-`window.flappy.rng`:
+- **Input** – Pointer, touch, and keyboard events all drive `handlePrimaryAction`
+  on the active `ClassicGame`. The handler transitions from intro to running,
+  triggers bird flaps, or resets from game over depending on the current state.
+  Canvas focus management ensures accessibility on desktop browsers.
+- **Update loop** – A requestAnimationFrame loop computes frame deltas, advances
+  entity state, spawns pipes based on travelled distance, and clamps bird
+  velocity. Drawing happens on an off-screen buffer before copying to the visible
+  canvas to avoid tearing.
+- **Scoring & medals** – Passing a pipe pair increments the score, updates HUD
+  counters, and awards tiered medals at 10/20/30/40 points using sprite atlas
+  badges when available.
+- **Collisions** – `PipeField` owns an array of `PipePair` instances, each of
+  which checks bounding boxes against the bird. Platform height is injected so
+  ground collisions and gap placement match the classic difficulty curve.
+- **Audio cues** – Calls to `playSound()` during flaps, scoring, hits, and state
+  transitions schedule oscillator segments with decay envelopes for an 8-bit
+  aesthetic.
 
-```js
-window.flappy.rng.getSeed(); // current seed string
-window.flappy.rng.reset();   // reset the active run without changing the seed
-window.flappy.rng.reseed();  // reseed with a new ISO timestamp (or provide one)
-```
+See [docs/game-logic.md](docs/game-logic.md) for a deeper breakdown of the
+state machine, entity lifecycle, and render order.
 
-Use these hooks to reseed or replay deterministic sessions while verifying pipe
-spawn logic or debugging procedural systems.
+## Deployment
 
-### Available Scripts
-
-- `npm run dev` – Start the Vite development server.
-- `npm run build` – Produce the production bundle, including static assets.
-- `npm run preview` – Preview the production build locally. Use this to verify GLTF assets load correctly.
-- `npm run test` – Execute Vitest suites.
-- `npm run lint` – Run ESLint across the project.
-- `npm run typecheck` – Validate TypeScript types.
-
-## 3D Asset Pipeline
-
-The repository contains a procedurally generated bird rig for future Three.js rendering. The asset is authored entirely through scripts so it can be reproduced deterministically, and the generated binaries are intentionally omitted from version control to keep the repository lightweight.
-
-- **Source script:** `tools/generate_bird_assets.py`
-  - Generates the low-poly mesh (612 triangles) with armature joints `BirdRoot`, `Wing.L`, and `Wing.R`.
-  - Creates a 512×512 base-color atlas at `public/assets/textures/bird_atlas.png`.
-  - Bakes skinning weights and a 12 fps looping `Flap` animation directly into `public/assets/models/bird.glb`.
-  - Keeps the final binary under the 200 KB budget (≈31 KB currently).
-- Run the generator after modifying the script (or whenever you need fresh assets). This will recreate `public/assets/models/bird.glb` and `public/assets/textures/bird_atlas.png` locally:
-
-  ```bash
-  python tools/generate_bird_assets.py
-  ```
-
-- Preview the result in Three.js using Vite’s production server. Ensure the assets have been generated first so the preview can load them successfully:
-
-  ```bash
-  npm run build
-  npm run preview
-  # then open http://localhost:4173/flappy-bird/bird-preview.html
-  ```
-
-  The preview page (`bird-preview.html`) loads the model with `GLTFLoader`, instantiates the `Flap` animation, and verifies the rig behaves as expected in the browser. If the preview reports missing assets, re-run the generator above and refresh the page.
-
-## Asset Licensing
-
-The procedural bird model and its texture atlas were authored specifically for this project by the repository maintainers and released under the [Creative Commons Attribution 4.0 International (CC BY 4.0) license](https://creativecommons.org/licenses/by/4.0/). Please credit “Flappy Bird Modernization Team” when reusing the asset.
-
-All other assets retain their original licenses; see subdirectories of `public/assets/` for additional details.
-npm ci
-npm run dev
-```
-
-The dev server runs on Vite's default port (`http://localhost:5173`).
-
-## Quality Checks
-
-```bash
-npm run lint
-npm run test
-npm run typecheck
-```
-
-## Input Buffer Configuration
-
-Feature flag `VITE_FF_F11` enables the input buffering experiment implemented in
-`src/features/F11_input_buffer/register.ts`. Two exported constants document the
-timing defaults:
-
-- `DEFAULT_BUFFER_WINDOW_MS` (120 ms) – how long flap attempts remain queued
-  while the bird is ineligible to jump.
-- `DEFAULT_COYOTE_WINDOW_MS` (90 ms) – the extra grace period applied to ground
-  attempts so they can still trigger shortly after lift-off.
-
-Adjust these constants if you need to tune responsiveness; the unit tests cover
-expected behavior around eligibility and the ground coyote window.
-
-## HUD performance guidelines
-
-Documented HUD performance hints live in [docs/hud-perf.md](docs/hud-perf.md). Review the checklist before adjusting scoreboard, overlay, or control styles so frequent updates stay isolated from the rest of the layout.
-
-## Production Build
-
-```bash
-npm run build
-```
-
-The production bundle is emitted to `dist/` and respects the `/flappy-bird/` base path required by GitHub Pages.
-
-## Deployment to GitHub Pages
-
-The repository deploys via a committed `docs/` directory that mirrors the Vite build output. From a fresh clone:
-
-```bash
-npm ci
-npm run deploy
-```
-
-The `deploy` script runs the production build and synchronizes `dist/` into `docs/`. Commit and push the updated `docs/` folder to
-publish the latest build on GitHub Pages (`https://<username>.github.io/flappy-bird/`).
-
-### Smoke Test
-
-After running `npm run deploy`, launch a local preview to verify that models, textures, and scripts load correctly under the
-`/flappy-bird/` prefix:
-
-```bash
-npm run preview -- --host --port 4173
-```
-
-Visit `http://localhost:4173/flappy-bird/` in a browser. Asset URLs should resolve with the `/flappy-bird/` prefix, matching the
-production GitHub Pages site.
+1. Build the production bundle:
+   ```bash
+   npm run build
+   ```
+2. Serve the contents of `dist/` from any static host. For GitHub Pages, publish
+   the folder to the `gh-pages` branch or copy the files into a tracked `docs/`
+   directory before committing.
+3. The generated `site.webmanifest` and service worker enable installable PWA
+   behavior when hosted over HTTPS.
 
 ## Troubleshooting
 
-### "Failed to load module script" with `video/mp2t`
-
-If the browser console reports `Failed to load module script: Expected a JavaScript module script but the server responded with a MIME type of "video/mp2t"`, the web server is sending your bundled JavaScript with the wrong `Content-Type`. Module scripts require a JavaScript MIME type (for example `text/javascript`), so strict MIME checking prevents the code from executing when the server advertises it as `video/mp2t`.
-
-To confirm the issue, open your browser's developer tools, switch to the **Network** tab, and reload the page. Select the failing request and inspect the **Response Headers** section—if `Content-Type` is `video/mp2t`, the server configuration needs to be corrected.
-
-Update your hosting configuration so that `.js` files are served with a JavaScript MIME type:
-
-- **Apache** – Add `AddType text/javascript .js` (or `application/javascript`) to the relevant configuration or `.htaccess` file.
-- **Nginx** – Ensure the `types` block maps `js` to `text/javascript` (or `application/javascript`).
-- **Node/Express** – Use `express.static` (or equivalent) to serve your `dist/` directory so Vite's output keeps its correct MIME metadata.
-
-After adjusting the server, redeploy and reload the page. The module script should now execute without errors.
+- **Audio blocked until interaction** – Some browsers suspend the AudioContext
+  until the user interacts with the page. Call `preloadAudio()` (already invoked
+  during game init) from an input event if you fork the project.
+- **Viewport scaling** – The game expects a portrait viewport. Resize logic keeps
+  the canvas within 260–420 px wide; adjust the constants in `src/main.ts` if you
+  need different bounds.
