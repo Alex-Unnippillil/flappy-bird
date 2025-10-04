@@ -1,11 +1,11 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, GAME_SPEED, SCORE_NUMBER_HEIGHT } from './constants.ts';
-import { playSound, preloadAudio } from './assets.ts';
-import type { Dimension } from './types.ts';
-import { Background } from './entities/Background.ts';
-import { Bird } from './entities/Bird.ts';
-import { PipeField } from './entities/PipeField.ts';
-import { Platform } from './entities/Platform.ts';
-import { loadSpriteSheet, type SpriteName, type SpriteSheet } from './spriteSheet.ts';
+import { CANVAS_HEIGHT, CANVAS_WIDTH, GAME_SPEED, SCORE_NUMBER_HEIGHT } from './constants';
+import { playSound, preloadAudio } from './assets';
+import type { Dimension } from './types';
+import { Background } from './entities/Background';
+import { Bird } from './entities/Bird';
+import { PipeField } from './entities/PipeField';
+import { Platform } from './entities/Platform';
+import { loadSpriteSheet, type SpriteName, type SpriteSheet } from './spriteSheet';
 
 export type GameState = 'intro' | 'running' | 'gameover';
 

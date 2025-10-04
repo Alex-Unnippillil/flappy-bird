@@ -1,13 +1,7 @@
-import type {
-  BirdRigidbodyUpdateDetail,
-  GameStateChangeDetail,
-  GameTickEventDetail,
-} from "./types";
+import type { BirdRigidbodyUpdateDetail } from "./types";
 
 declare global {
   interface GameEvents {
-    "game:tick": GameTickEventDetail;
-    "game:state-change": GameStateChangeDetail;
     "world:reset": undefined;
   }
 }

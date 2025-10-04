@@ -12,6 +12,10 @@ import type {
   RegisterBirdRigidbodyOptions,
 } from "./types";
 
+type GameTickPayload = GameEvents["game:tick"] & Partial<GameTickEventDetail>;
+type GameStateChangePayload =
+  GameEvents["game:state-change"] & Partial<GameStateChangeDetail>;
+
 const BASE_STEP_MS = 1000 / 60;
 
 const SETTINGS_KEY_MAP: Record<keyof BirdRigidbodyConstants, readonly string[]> = {
@@ -123,7 +127,7 @@ const resolveConstants = (
   return result;
 };
 
-const normalizeDelta = (detail: GameTickEventDetail | undefined | null): number => {
+const normalizeDelta = (detail: GameTickPayload | undefined | null): number => {
   if (!detail) {
     return 0;
   }
@@ -136,7 +140,7 @@ const normalizeDelta = (detail: GameTickEventDetail | undefined | null): number 
     }
   }
 
-  return 0;
+  return toFiniteNumber(detail.dt) ?? 0;
 };
 
 const createInitialState = (
@@ -177,7 +181,7 @@ const registerInternal = (
     }
   };
 
-  const handleTick = (detail: GameTickEventDetail | undefined) => {
+  const handleTick = (detail: GameTickPayload) => {
     if (disposed) {
       return;
     }
@@ -203,7 +207,7 @@ const registerInternal = (
     };
 
     let frame = frameCounter;
-    const providedFrame = toFiniteNumber(detail?.frame);
+    const providedFrame = toFiniteNumber(detail.frame);
     if (providedFrame !== null) {
       frame = Math.trunc(providedFrame);
       frameCounter = frame + 1;
@@ -212,7 +216,7 @@ const registerInternal = (
     }
 
     const elapsedMs =
-      toFiniteNumber(detail?.elapsedMs) ?? Math.max(delta, 0) * BASE_STEP_MS;
+      toFiniteNumber(detail.elapsedMs) ?? Math.max(delta, 0) * BASE_STEP_MS;
 
     const payload: BirdRigidbodyUpdateDetail = {
       position: nextPosition,
@@ -242,8 +246,8 @@ const registerInternal = (
     currentState = "";
   };
 
-  const handleStateChange = (detail: GameStateChangeDetail | undefined) => {
-    const nextState = normalizeStateName(detail?.state);
+  const handleStateChange = (detail: GameStateChangePayload | undefined) => {
+    const nextState = normalizeStateName(detail?.state ?? detail?.to);
     if (!nextState || nextState === currentState) {
       return;
     }
@@ -251,7 +255,7 @@ const registerInternal = (
     currentState = nextState;
 
     if (nextState === "running") {
-      const previous = normalizeStateName(detail?.previousState);
+      const previous = normalizeStateName(detail?.previousState ?? detail?.from);
       if (previous !== "running") {
         resetState();
       }

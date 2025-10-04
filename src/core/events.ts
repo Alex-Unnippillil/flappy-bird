@@ -47,7 +47,26 @@ const normalizeBoolean = (value: unknown): boolean | null => {
 const isEventBusEnabled = (): boolean => {
   const meta = import.meta as unknown as { env?: Record<string, unknown> };
   const raw = meta.env?.[FEATURE_FLAG_KEY];
-  return normalizeBoolean(raw) ?? false;
+  const fromMeta = normalizeBoolean(raw);
+  if (fromMeta !== null) {
+    return fromMeta;
+  }
+
+  if (typeof process !== 'undefined' && process.env) {
+    const fromProcess = normalizeBoolean(process.env[FEATURE_FLAG_KEY]);
+    if (fromProcess !== null) {
+      return fromProcess;
+    }
+  }
+
+  const globalFlags =
+    (globalThis as unknown as { __FEATURE_FLAGS__?: Record<string, unknown> }).__FEATURE_FLAGS__ ?? {};
+  const fromGlobal = normalizeBoolean(globalFlags[FEATURE_FLAG_KEY]);
+  if (fromGlobal !== null) {
+    return fromGlobal;
+  }
+
+  return false;
 };
 
 const listenerRegistry = new Map<string, WeakMap<AnyGameEventListener, EventListener>>();

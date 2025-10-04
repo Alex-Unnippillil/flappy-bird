@@ -1,10 +1,26 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { featureBus, resetFeatureBus } from "../../bus";
+import type { BirdRigidbodyUpdateDetail } from "../../F08_bird_rigidbody";
 import register, {
   type FeatureF12TiltEventDetail,
   type TiltRendererAdapter,
 } from "../register";
+
+const createBirdUpdate = (
+  overrides: Partial<BirdRigidbodyUpdateDetail>,
+): BirdRigidbodyUpdateDetail => ({
+  position: 0,
+  velocity: 0,
+  acceleration: 0,
+  delta: 0,
+  elapsedMs: 0,
+  frame: 0,
+  previousVelocity: 0,
+  previousPosition: 0,
+  terminalVelocity: 0,
+  ...overrides,
+});
 
 describe("F12 bird tilt feature", () => {
   afterEach(() => {
@@ -19,7 +35,10 @@ describe("F12 bird tilt feature", () => {
     const dispose = register({ enabled: false, bus: featureBus });
     expect(typeof dispose).toBe("function");
 
-    featureBus.emit("feature:F08/bird:update", { velocity: 5, deltaMs: 16 });
+    featureBus.emit(
+      "feature:F08/bird:update",
+      createBirdUpdate({ velocity: 5, elapsedMs: 16 }),
+    );
     expect(handler).not.toHaveBeenCalled();
   });
 
@@ -39,7 +58,10 @@ describe("F12 bird tilt feature", () => {
       adapters: [adapter],
     });
 
-    featureBus.emit("feature:F08/bird:update", { velocity: 6, deltaMs: 16 });
+    featureBus.emit(
+      "feature:F08/bird:update",
+      createBirdUpdate({ velocity: 6, elapsedMs: 16 }),
+    );
 
     expect(events).toHaveLength(2); // initial reset + update
     const [, update] = events;
@@ -68,7 +90,10 @@ describe("F12 bird tilt feature", () => {
       ],
     });
 
-    featureBus.emit("feature:F08/bird:update", { velocity: 50, deltaMs: 16 });
+    featureBus.emit(
+      "feature:F08/bird:update",
+      createBirdUpdate({ velocity: 50, elapsedMs: 16 }),
+    );
 
     const [, update] = events;
     expect(update.targetAngle).toBe(0.5);
@@ -92,7 +117,10 @@ describe("F12 bird tilt feature", () => {
       ],
     });
 
-    featureBus.emit("feature:F08/bird:update", { velocity: 6, deltaMs: 16 });
+    featureBus.emit(
+      "feature:F08/bird:update",
+      createBirdUpdate({ velocity: 6, elapsedMs: 16 }),
+    );
     worldTarget.dispatchEvent(new Event("world:reset"));
 
     expect(events).toHaveLength(3);
@@ -109,7 +137,10 @@ describe("F12 bird tilt feature", () => {
     const dispose = register({ enabled: true, bus: featureBus });
     dispose();
 
-    featureBus.emit("feature:F08/bird:update", { velocity: -4, deltaMs: 16 });
+    featureBus.emit(
+      "feature:F08/bird:update",
+      createBirdUpdate({ velocity: -4, elapsedMs: 16 }),
+    );
     expect(handler).toHaveBeenCalledTimes(1); // initial reset emission only
   });
 });

@@ -18,11 +18,17 @@ export interface GameTickEventDetail {
    * Alias for delta provided by older publishers.
    */
   dt?: number;
+  /**
+   * Total elapsed time reported by the loop in seconds.
+   */
+  elapsed?: number;
 }
 
 export interface GameStateChangeDetail {
   state?: string | null;
   previousState?: string | null;
+  to?: string | null;
+  from?: string | null;
 }
 
 export interface BirdRigidbodyUpdateDetail {

@@ -12,7 +12,7 @@ export default class ImageLoader extends AbstractLoader {
     // Load Event Count
     this.ready = 1;
 
-    return new Promise<IPromiseResolve>((resolve: IEmptyFunction, reject) => {
+    return new Promise<IPromiseResolve>((resolve, reject) => {
       const img = new Image();
 
       /**
@@ -22,7 +22,7 @@ export default class ImageLoader extends AbstractLoader {
         this.eventTracking<HTMLImageElement>(resolve, img);
       });
 
-      img.addEventListener('error', reject);
+      img.addEventListener('error', (event) => reject(event));
 
       img.src = this.source;
     });

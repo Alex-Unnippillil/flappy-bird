@@ -1,4 +1,4 @@
-import { ClassicGame } from './classic/Game.ts';
+import { ClassicGame } from './classic/Game';
 
 function resizeCanvas(canvas) {
   const container = canvas.parentElement;

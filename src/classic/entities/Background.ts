@@ -1,6 +1,6 @@
-import { BG_SPEED } from '../constants.ts';
-import type { Dimension } from '../types.ts';
-import type { SpriteSheet } from '../spriteSheet.ts';
+import { BG_SPEED } from '../constants';
+import type { Dimension } from '../types';
+import type { SpriteSheet } from '../spriteSheet';
 
 type Theme = 'day' | 'night';
 

@@ -1,6 +1,6 @@
-import { CANVAS_HEIGHT, PLATFORM_HEIGHT } from '../constants.ts';
-import type { Dimension } from '../types.ts';
-import type { SpriteSheet } from '../spriteSheet.ts';
+import { CANVAS_HEIGHT, PLATFORM_HEIGHT } from '../constants';
+import type { Dimension } from '../types';
+import type { SpriteSheet } from '../spriteSheet';
 
 const TOP_COLOR = '#ded48a';
 const FRONT_COLOR = '#c4a34a';

@@ -33,7 +33,7 @@ export default class WebSfx {
    * to load.
    * @param {Function} callback - A function that will be called when all the files have been loaded.
    */
-  constructor(files: IWebSfxObject, callback: IEmptyFunction) {
+  constructor(files: IWebSfxObject, callback: (cache: IWebSfxCache) => void = () => {}) {
     WebSfx.audioContext = new (AudioContext || webkitAudioContext)();
 
     WebSfx.audioContext.addEventListener('statechange', () => {
@@ -118,7 +118,11 @@ export default class WebSfx {
   /**
    * Loading Assets Section
    * */
-  private static load(files: IWebSfxObject, complete: IEmptyFunction, level = 0): void {
+  private static load(
+    files: IWebSfxObject,
+    complete: (cache: IWebSfxCache) => void,
+    level = 0,
+  ): void {
     const loading = [];
     const entries = Object.entries(files);
 
@@ -158,7 +162,7 @@ export default class WebSfx {
   }
 
   private static load_requests(name: string, path: string): Promise<ILoadRequest> {
-    return new Promise<ILoadRequest>(async (resolve: Function, reject: Function) => {
+    return new Promise<ILoadRequest>(async (resolve, reject) => {
       try {
         const response = await fetch(path, { method: 'GET', mode: 'no-cors' });
 
@@ -172,7 +176,7 @@ export default class WebSfx {
 
         resolve({ content, path, name });
       } catch (err) {
-        reject();
+        reject(err);
       }
     });
   }

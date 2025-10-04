@@ -9,13 +9,13 @@ class ParentLoader {
     this.ready = 0;
   }
 
-  protected eventTracking<T>(resolve: IEmptyFunction, object: T): void {
+  protected eventTracking<T>(resolve: (value: IPromiseResolve) => void, object: T): void {
     this.ready--;
 
     if (this.ready < 1) {
       resolve({
         source: this.source,
-        object: object
+        object,
       });
     }
   }

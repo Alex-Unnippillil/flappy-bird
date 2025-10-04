@@ -1,7 +1,7 @@
-import { GAME_SPEED, PIPE_DISTANCE } from '../constants.ts';
-import type { Dimension } from '../types.ts';
-import { PipePair, type PipeColor, randomGapCenter } from './PipePair.ts';
-import type { SpriteSheet } from '../spriteSheet.ts';
+import { GAME_SPEED, PIPE_DISTANCE } from '../constants';
+import type { Dimension } from '../types';
+import { PipePair, type PipeColor, randomGapCenter } from './PipePair';
+import type { SpriteSheet } from '../spriteSheet';
 
 export class PipeField {
   private pipes: PipePair[] = [];

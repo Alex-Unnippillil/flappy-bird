@@ -7,7 +7,7 @@ import { CANVAS_DIMENSION } from './constants';
 import EventHandler from './events';
 import GameObject from './game';
 import prepareAssets from './asset-preparation';
-import createRAF, { targetFPS } from '@solid-primitives/raf';
+import { createRAF, targetFPS } from './utils/raf';
 import SwOffline from './lib/workbox-work-offline';
 
 if (process.env.NODE_ENV === 'production') {

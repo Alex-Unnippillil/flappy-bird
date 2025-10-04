@@ -7,10 +7,10 @@ import {
   BIRD_WEIGHT,
   BIRD_WIDTH,
   BIRD_X_POSITION,
-} from '../constants.ts';
-import { playSound } from '../assets.ts';
-import type { Dimension } from '../types.ts';
-import type { SpriteName, SpriteSheet } from '../spriteSheet.ts';
+} from '../constants';
+import { playSound } from '../assets';
+import type { Dimension } from '../types';
+import type { SpriteName, SpriteSheet } from '../spriteSheet';
 
 const BODY_COLOR = '#f7d75b';
 const WING_COLOR = '#fceba2';

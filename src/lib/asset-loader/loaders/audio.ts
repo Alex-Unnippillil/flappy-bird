@@ -12,7 +12,7 @@ export default class AudioLoader extends AbstractLoader {
     // Load Event Count
     this.ready = 2;
 
-    return new Promise<IPromiseResolve>((resolve: IEmptyFunction, reject) => {
+    return new Promise<IPromiseResolve>((resolve, reject) => {
       const audio = new Audio();
 
       /**
@@ -36,7 +36,7 @@ export default class AudioLoader extends AbstractLoader {
         this.eventTracking<HTMLAudioElement>(resolve, audio);
       });
 
-      audio.addEventListener('error', reject);
+      audio.addEventListener('error', (event) => reject(event));
 
       audio.src = this.source;
     });

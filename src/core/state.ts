@@ -74,7 +74,14 @@ export const createGameStateMachine = (
 
 declare global {
   interface GameEvents {
-    'game:state-change': { from: GameStateValue; to: GameStateValue };
+    'game:state-change': {
+      from: GameStateValue;
+      to: GameStateValue;
+      /** Optional normalized state string provided by legacy consumers. */
+      state?: string | null;
+      /** Optional previous state string provided by legacy consumers. */
+      previousState?: string | null;
+    };
   }
 }
 

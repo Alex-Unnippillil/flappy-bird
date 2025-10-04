@@ -32,6 +32,7 @@ export interface FeatureF08BirdUpdateEvent {
    * Duration in milliseconds since the previous update. Used to scale smoothing factors.
    */
   deltaMs?: number;
+  elapsedMs?: number;
   /**
    * Optional hint describing the lifecycle state of the bird or world. Certain states reset
    * the tilt controller (e.g., respawning or world reset).
@@ -178,7 +179,7 @@ const extractVelocity = (event: FeatureF08BirdUpdateEvent): number => {
 };
 
 const extractDelta = (event: FeatureF08BirdUpdateEvent, fallback: number): number => {
-  const deltaCandidates: unknown[] = [event.deltaMs];
+  const deltaCandidates: unknown[] = [event.deltaMs, event.elapsedMs];
   for (const candidate of deltaCandidates) {
     if (isFiniteNumber(candidate) && candidate >= 0) {
       return candidate;

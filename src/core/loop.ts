@@ -192,7 +192,16 @@ export const createGameLoop = ({
 
 declare global {
   interface GameEvents {
-    'game:tick': { dt: number; elapsed: number };
+    'game:tick': {
+      dt: number;
+      elapsed: number;
+      /** Optional normalized delta provided by legacy publishers. */
+      delta?: number;
+      /** Optional frame counter provided by callers. */
+      frame?: number;
+      /** Optional elapsed milliseconds for the current frame. */
+      elapsedMs?: number;
+    };
   }
 }
 

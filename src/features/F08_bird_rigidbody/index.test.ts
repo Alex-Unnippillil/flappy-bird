@@ -46,8 +46,21 @@ describe("F08 bird rigidbody integrator", () => {
     const cleanup = registerF08BirdRigidbody();
     const { updates, unsubscribe } = subscribeUpdates();
 
-    bus.emit("game:tick", { delta: 1, frame: 1, elapsedMs: 16.6667 });
-    bus.emit("game:tick", { delta: 1, frame: 2, elapsedMs: 33.3333 });
+    const dt = 1 / 60;
+    bus.emit("game:tick", {
+      dt,
+      elapsed: dt,
+      delta: 1,
+      frame: 1,
+      elapsedMs: 16.6667,
+    });
+    bus.emit("game:tick", {
+      dt,
+      elapsed: dt * 2,
+      delta: 1,
+      frame: 2,
+      elapsedMs: 33.3333,
+    });
 
     expect(updates).toHaveLength(2);
     expect(updates[0].velocity).toBeCloseTo(0.55, 5);
@@ -63,11 +76,17 @@ describe("F08 bird rigidbody integrator", () => {
     const cleanup = registerF08BirdRigidbody({ autoStart: false });
     const { updates, unsubscribe } = subscribeUpdates();
 
-    bus.emit("game:state-change", { state: "running" });
+    bus.emit("game:state-change", { from: "READY", to: "RUNNING", state: "running" });
 
     const deltas = [0.5, 0.25, 0.25, 0.75, 1.5] as const;
     deltas.forEach((delta, index) => {
-      bus.emit("game:tick", { delta, frame: index + 1 });
+      const elapsed = deltas.slice(0, index + 1).reduce((sum, value) => sum + value, 0);
+      bus.emit("game:tick", {
+        dt: delta,
+        elapsed,
+        delta,
+        frame: index + 1,
+      });
     });
 
     const baseline = computeBaseline(deltas);
@@ -86,23 +105,26 @@ describe("F08 bird rigidbody integrator", () => {
     const cleanup = registerF08BirdRigidbody();
     const { updates, unsubscribe } = subscribeUpdates();
 
-    bus.emit("game:state-change", { state: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 1 });
+    bus.emit("game:state-change", { from: "READY", to: "RUNNING", state: "running" });
+    bus.emit("game:tick", { dt: 1, elapsed: 1, delta: 1, frame: 1 });
 
     expect(updates).toHaveLength(1);
 
-    bus.emit("game:state-change", { state: "running", previousState: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 2 });
+    bus.emit(
+      "game:state-change",
+      { from: "RUNNING", to: "RUNNING", state: "running", previousState: "running" },
+    );
+    bus.emit("game:tick", { dt: 1, elapsed: 2, delta: 1, frame: 2 });
 
     expect(updates).toHaveLength(2);
 
     bus.emit("world:reset");
-    bus.emit("game:tick", { delta: 1, frame: 3 });
+    bus.emit("game:tick", { dt: 1, elapsed: 3, delta: 1, frame: 3 });
 
     expect(updates).toHaveLength(2);
 
-    bus.emit("game:state-change", { state: "running" });
-    bus.emit("game:tick", { delta: 1, frame: 4 });
+    bus.emit("game:state-change", { from: "READY", to: "RUNNING", state: "running" });
+    bus.emit("game:tick", { dt: 1, elapsed: 4, delta: 1, frame: 4 });
 
     expect(updates).toHaveLength(3);
 

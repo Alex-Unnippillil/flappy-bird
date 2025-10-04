@@ -1,4 +1,4 @@
-import { createRng, isRngFeatureEnabled, stringToUint32 } from "../../core/rng.ts";
+import { createRng, isRngFeatureEnabled, stringToUint32 } from "../../core/rng";
 
 const LEGACY_STORAGE_KEY = "flappy-bird/prng-seed" as const;
 const MODERN_STORAGE_KEY = "flappy.seed" as const;
@@ -9,6 +9,7 @@ const DEFAULT_STORAGE_KEY = isRngFeatureEnabled()
 export interface StorageAdapter {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 function resolveStorage(storage?: StorageAdapter | null): StorageAdapter | null {
