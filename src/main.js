@@ -5,6 +5,7 @@ import {
   startGame,
   handleCanvasClick,
 } from "./game/systems/index.js";
+import { initSessionStats } from "./hud/components/SessionStats.ts";
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -88,6 +89,8 @@ function init() {
       perfectIndicator: "#perfectIndicator",
     },
   });
+
+  initSessionStats();
 
   bindInput(canvas);
   resizeCanvas(canvas);
