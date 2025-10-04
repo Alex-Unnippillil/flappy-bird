@@ -79,6 +79,20 @@ npm run test
 npm run typecheck
 ```
 
+## Input Buffer Configuration
+
+Feature flag `VITE_FF_F11` enables the input buffering experiment implemented in
+`src/features/F11_input_buffer/register.ts`. Two exported constants document the
+timing defaults:
+
+- `DEFAULT_BUFFER_WINDOW_MS` (120 ms) – how long flap attempts remain queued
+  while the bird is ineligible to jump.
+- `DEFAULT_COYOTE_WINDOW_MS` (90 ms) – the extra grace period applied to ground
+  attempts so they can still trigger shortly after lift-off.
+
+Adjust these constants if you need to tune responsiveness; the unit tests cover
+expected behavior around eligibility and the ground coyote window.
+
 ## HUD performance guidelines
 
 Documented HUD performance hints live in [docs/hud-perf.md](docs/hud-perf.md). Review the checklist before adjusting scoreboard, overlay, or control styles so frequent updates stay isolated from the rest of the layout.
