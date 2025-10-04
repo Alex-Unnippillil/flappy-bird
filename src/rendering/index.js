@@ -1,3 +1,4 @@
+import { createGameOverTitle } from "../hud/components/GameOverTitle.ts";
 import { MedalBanner } from "../hud/components/MedalBanner.ts";
 import { hudAdapter, Medal } from "../hud/adapter.ts";
 
@@ -70,6 +71,15 @@ export function createHudController(elements = {}, options = {}) {
   const hudRoot = new HudRoot({ host: hudRootHost });
   const pauseMenu = new PauseMenu();
   hudRoot.mount(pauseMenu.element, "modal");
+
+  const gameOverTitle = overlay ? createGameOverTitle() : null;
+  if (gameOverTitle && overlay) {
+    if (messageEl) {
+      overlay.insertBefore(gameOverTitle.element, messageEl);
+    } else {
+      overlay.appendChild(gameOverTitle.element);
+    }
+  }
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -241,6 +251,7 @@ export function createHudController(elements = {}, options = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      gameOverTitle?.hide();
       dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
       finalScore?.hide();
@@ -252,12 +263,15 @@ export function createHudController(elements = {}, options = {}) {
     },
     showRunning() {
       toggle(overlay, false);
+      gameOverTitle?.hide();
       resetMilestones();
       finalScore?.hide();
       dimLayer?.setActive(false);
     },
     showGameOver(score, best, options = {}) {
       toggle(overlay, true);
+      gameOverTitle?.show();
+      showMessage(`Score: ${score} · Best: ${best}`);
       showMessage("Game over! Tap or press Space to try again");
       const isRecord =
         typeof options.isNewRecord === "boolean"
