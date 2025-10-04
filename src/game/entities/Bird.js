@@ -1,8 +1,10 @@
+import { PHYSICS, clampFlapStrength } from "../../core/physics.ts";
+
 const DEFAULTS = Object.freeze({
   width: 34,
   height: 24,
-  flapStrength: 9,
-  maxFallSpeed: 13,
+  flapStrength: PHYSICS.flapImpulse,
+  maxFallSpeed: PHYSICS.terminalVelocity,
 });
 
 export class Bird {
@@ -14,7 +16,7 @@ export class Bird {
     this.width = settings.width;
     this.height = settings.height;
     this.velocity = 0;
-    this.flapStrength = settings.flapStrength;
+    this.flapStrength = clampFlapStrength(settings.flapStrength);
     this.maxFallSpeed = settings.maxFallSpeed;
     this.rotation = 0;
   }
