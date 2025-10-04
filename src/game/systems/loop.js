@@ -47,10 +47,13 @@ function refreshHud() {
 
 function syncHighScore() {
   ensureState();
+  let didImprove = false;
   if (state.score > state.bestScore) {
     state.bestScore = state.score;
     persistBestScore(state.bestScore);
+    didImprove = true;
   }
+  return didImprove;
 }
 
 function showIntro() {
@@ -120,10 +123,10 @@ function endRound() {
   state.isRunning = false;
   state.gameOver = true;
   state.awaitingStart = true;
-  syncHighScore();
+  const isNewRecord = syncHighScore();
   refreshHud();
   if (hud) {
-    hud.showGameOver(state.score, state.bestScore);
+    hud.showGameOver(state.score, state.bestScore, { isNewRecord });
   }
   if (renderer) {
     renderer.markGameOver();
