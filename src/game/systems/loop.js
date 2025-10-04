@@ -212,6 +212,7 @@ export function teardownGameLoop() {
     cancelAnimationFrame(state.animationFrameId);
   }
   renderer?.dispose();
+  hud?.destroy?.();
   renderer = null;
   hud = null;
   state = null;

@@ -85,6 +85,7 @@ function init() {
       overlay: "#gameOverlay",
       speedBar: "#speedFill",
       speedProgress: "#speedProgress",
+      perfectIndicator: "#perfectIndicator",
     },
   });
 
