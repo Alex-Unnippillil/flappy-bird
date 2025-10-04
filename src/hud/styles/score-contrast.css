@@ -1,0 +1,10 @@
+@import "./tokens.css";
+
+.hud-score-contrast {
+  text-shadow:
+    var(--hud-score-shadow-secondary),
+    var(--hud-score-shadow-primary),
+    var(--hud-score-shadow-highlight);
+  -webkit-text-stroke: var(--hud-score-outline-width) var(--hud-score-outline-color);
+  paint-order: stroke fill;
+}

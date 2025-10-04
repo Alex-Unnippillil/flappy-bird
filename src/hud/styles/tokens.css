@@ -1,0 +1,7 @@
+:root {
+  --hud-score-outline-width: 1.5px;
+  --hud-score-outline-color: rgba(15, 23, 42, 0.92);
+  --hud-score-shadow-primary: 0 4px 10px rgba(15, 23, 42, 0.55);
+  --hud-score-shadow-secondary: 0 0 2px rgba(15, 23, 42, 0.85);
+  --hud-score-shadow-highlight: 0 0 6px rgba(255, 255, 255, 0.45);
+}

@@ -1,3 +1,5 @@
+import { Score as ScoreDisplay } from "../hud/Score.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -14,6 +16,7 @@ function resolveElement(element) {
 
 export function createHudController(elements = {}) {
   const scoreEl = resolveElement(elements.score ?? "#scoreValue");
+  const scoreDisplay = scoreEl ? new ScoreDisplay(scoreEl) : null;
   const bestEl = resolveElement(elements.best ?? "#bestValue");
   const messageEl = resolveElement(elements.message ?? "#gameMessage");
   const overlay = resolveElement(elements.overlay ?? "#gameOverlay");
@@ -52,6 +55,11 @@ export function createHudController(elements = {}) {
 
   return {
     setScore(value) {
+      if (scoreDisplay) {
+        scoreDisplay.set(value);
+        return;
+      }
+
       safeText(scoreEl, value);
     },
     setBest(value) {
