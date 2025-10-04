@@ -1,3 +1,7 @@
+import { MedalBanner } from "../hud/components/MedalBanner.ts";
+import { hudAdapter, Medal } from "../hud/adapter.ts";
+
+export { hudAdapter, Medal } from "../hud/adapter.ts";
 import { PerfectIndicator } from "../hud/components/PerfectIndicator.ts";
 import { createHapticsAdapter } from "../hud/util/haptics.ts";
 import {
@@ -32,6 +36,14 @@ export function createHudController(elements = {}, options = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const overlayParent =
+    overlay?.parentElement instanceof HTMLElement ? overlay.parentElement : null;
+  const medalMount =
+    resolveElement(elements.medalBanner ?? null) ?? overlayParent ?? undefined;
+
+  new MedalBanner({
+    mount: medalMount,
+  });
   const perfectIndicatorEl = resolveElement(
     elements.perfectIndicator ?? "#perfectIndicator"
   );
@@ -269,6 +281,11 @@ export function createHudController(elements = {}, options = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    awardMedal(event) {
+      hudAdapter.emitMedal(event);
+    },
+    clearMedal() {
+      hudAdapter.emitMedal({ medal: Medal.None });
     events: {
       on: addEventListener,
       off: removeEventListener,
