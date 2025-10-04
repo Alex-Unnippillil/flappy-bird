@@ -1,4 +1,4 @@
-import "../hud/styles/digits.css";
+import { DimLayer } from "../hud/components/DimLayer.ts";
 
 const noop = () => {};
 
@@ -22,6 +22,7 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const dimLayer = overlay ? new DimLayer(overlay) : null;
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -62,14 +63,17 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
       toggle(startButton, true);
     },
     showRunning() {
       toggle(overlay, false);
+      dimLayer?.setActive(false);
     },
     showGameOver(score, best) {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
     },
@@ -78,6 +82,9 @@ export function createHudController(elements = {}) {
     },
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
+    },
+    dispose() {
+      dimLayer?.dispose();
     },
   };
 }
