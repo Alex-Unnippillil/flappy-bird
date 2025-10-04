@@ -17,6 +17,10 @@ function randomIntInRange(randomSource, min, max) {
 
   const range = max - min + 1;
 
+  if (randomSource && typeof randomSource.int === "function") {
+    return randomSource.int(min, max);
+  }
+
   if (randomSource && typeof randomSource.nextInt === "function") {
     return randomSource.nextInt(min, max);
   }

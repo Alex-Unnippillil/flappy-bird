@@ -26,6 +26,24 @@ const { scene, camera, renderer } = createSceneContext();
 The helper automatically matches the container size, clamps the pixel ratio for
 high-DPI displays, and responds to future `resize` events.
 
+## Deterministic RNG & seeds
+
+The spawning systems rely on `createRng()` (`src/core/rng.ts`) when feature flag
+`import.meta.env.VITE_FF_F04` is enabled. The helper persists the active seed to
+`localStorage` (default key `flappy.seed`), supports ISO timestamp seeds, and
+exposes deterministic helpers `nextFloat()` / `int(min, max)` for gameplay
+systems. When the flag is active the game loop publishes developer utilities at
+`window.flappy.rng`:
+
+```js
+window.flappy.rng.getSeed(); // current seed string
+window.flappy.rng.reset();   // reset the active run without changing the seed
+window.flappy.rng.reseed();  // reseed with a new ISO timestamp (or provide one)
+```
+
+Use these hooks to reseed or replay deterministic sessions while verifying pipe
+spawn logic or debugging procedural systems.
+
 ### Available Scripts
 
 - `npm run dev` – Start the Vite development server.
