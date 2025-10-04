@@ -99,6 +99,12 @@ A modern, TypeScript-based web recreation of the classic Flappy Bird game, featu
 - Always check for manual edits before overwriting files.
 - Validate changes with `npm run lint` and `npm run dev`.
 - Document new features in `README.md` and update this file if new agent-relevant patterns are introduced.
+- When preparing pull requests, summarize gameplay-visible changes and mention any required manual test steps in the PR description to help reviewers.
+
+### Documentation Updates
+
+- Keep this file synchronized with any new architectural conventions or tooling so future agents inherit accurate guidance.
+- If you introduce new scripts or workflows that agents should know about, add them here and cross-reference related README sections.
 
 ---
 
