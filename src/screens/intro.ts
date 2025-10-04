@@ -18,7 +18,6 @@ import RankingButton from '../model/btn-ranking';
 import RateButton from '../model/btn-rate';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
-import { APP_VERSION } from '../constants';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
@@ -119,21 +118,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     );
     // ----------------------------------
 
-    this.insertAppVersion(context);
-  }
-
-  private insertAppVersion(context: CanvasRenderingContext2D): void {
-    const fSize = this.canvasSize.width * 0.04;
-    const bot = this.canvasSize.height * 0.985;
-    const right = this.canvasSize.width * 0.985;
-
-    context.font = `bold ${fSize}px monospace`;
-    context.textAlign = 'center';
-    context.fillStyle = '#8E8E93';
-    context.fillText(`v${APP_VERSION}`, right - 2 * fSize, bot);
-
-    // context.strokeStyle = 'black';
-    // context.strokeText(`v${APP_VERSION}`, right - 2 * fSize, bot);
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
