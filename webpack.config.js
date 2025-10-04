@@ -321,6 +321,13 @@ module.exports = function (env, config) {
         chunkFilename: CONFIG.output.chunk + '.css'
       }),
 
+      new CopyPlugin({
+        patterns: [
+          { from: 'styles.css', to: '.' },
+          { from: 'src/hud/styles', to: 'src/hud/styles' }
+        ]
+      }),
+
       new InterpolateHtmlPlugin({
         CDN: '',
         PUBLIC_URL: '',
