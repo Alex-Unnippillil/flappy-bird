@@ -10,7 +10,8 @@
     "start": "npm run dev",
     "prettier-format": "prettier --config .prettierrc \"./src\" \"./types\" --write",
     "prettier-format:md": "prettier --config .prettierrc \"./*.js\" --write",
-    "lint": "eslint ./src/**/*.ts"
+    "lint": "eslint ./src/**/*.ts",
+    "deploy": "node scripts/deploy-docs.mjs"
   },
   "repository": {
     "type": "git",
