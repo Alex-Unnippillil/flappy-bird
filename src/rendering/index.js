@@ -1,3 +1,5 @@
+import { HudRoot } from "../hud/HudRoot.ts";
+import { PauseMenu } from "../hud/components/PauseMenu.ts";
 import { DimLayer } from "../hud/components/DimLayer.ts";
 
 const noop = () => {};
@@ -23,6 +25,11 @@ export function createHudController(elements = {}) {
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
   const dimLayer = overlay ? new DimLayer(overlay) : null;
+
+  const hudRootHost = overlay?.parentElement ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
+  const pauseMenu = new PauseMenu();
+  hudRoot.mount(pauseMenu.element, "modal");
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -83,8 +90,11 @@ export function createHudController(elements = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    pauseMenu,
+    hudRoot
+    }
     dispose() {
       dimLayer?.dispose();
     },
   };
-}
+
