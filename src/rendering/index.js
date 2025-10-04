@@ -1,3 +1,5 @@
+import { getMedalForScore, Medal } from "../hud/logic/medals";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -50,9 +52,27 @@ export function createHudController(elements = {}) {
     startButton.blur();
   });
 
+  let currentMedal = Medal.None;
+  const medalListeners = new Set();
+
+  const notifyMedalChange = (medal) => {
+    medalListeners.forEach((listener) => {
+      try {
+        listener(medal);
+      } catch (error) {
+        console.error("HUD medal listener error", error);
+      }
+    });
+  };
+
   return {
     setScore(value) {
       safeText(scoreEl, value);
+      const medal = getMedalForScore(Number(value));
+      if (medal !== currentMedal) {
+        currentMedal = medal;
+        notifyMedalChange(currentMedal);
+      }
     },
     setBest(value) {
       safeText(bestEl, value);
@@ -76,6 +96,18 @@ export function createHudController(elements = {}) {
     },
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
+    },
+    onMedalChange(handler = noop) {
+      if (typeof handler !== "function") {
+        return noop;
+      }
+      medalListeners.add(handler);
+      return () => {
+        medalListeners.delete(handler);
+      };
+    },
+    getCurrentMedal() {
+      return currentMedal;
     },
   };
 }
