@@ -8,6 +8,7 @@ import {
 } from "./game/systems/index.js";
 import { initSessionStats } from "./hud/components/SessionStats.ts";
 import { createSceneContext } from "./core/scene.ts";
+import { mountHudRoot } from "./core/hud.ts";
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -75,6 +76,8 @@ function init() {
     console.warn("Unable to initialize Three.js scene", error);
   }
 
+  const hudRoot = mountHudRoot();
+
   const canvas = document.getElementById("gameCanvas");
   if (!canvas) {
     throw new Error("Game canvas not found");
@@ -96,6 +99,7 @@ function init() {
       speedProgress: "#speedProgress",
       perfectIndicator: "#perfectIndicator",
     },
+    hudRoot,
   });
 
   initSessionStats();
