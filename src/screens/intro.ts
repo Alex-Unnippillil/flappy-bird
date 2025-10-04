@@ -28,7 +28,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
-  private copyright: HTMLImageElement | undefined;
 
   constructor() {
     super();
@@ -38,7 +37,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rateButton = new RateButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
     this.flappyBirdBanner = void 0;
-    this.copyright = void 0;
   }
 
   public init(): void {
@@ -48,7 +46,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rateButton.init();
     this.toggleSpeakerButton.init();
     this.flappyBirdBanner = SpriteDestructor.asset('banner-flappybird');
-    this.copyright = SpriteDestructor.asset('copyright');
   }
 
   public resize({ width, height }: IDimension): void {
@@ -98,24 +95,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
       this.canvasSize.height * 0.28 - fbbScaled.height / 2,
       fbbScaled.width,
       fbbScaled.height
-    );
-    // ----------------------------------
-
-    // Copyright
-    const crScaled = rescaleDim(
-      {
-        width: this.copyright!.width,
-        height: this.copyright!.height
-      },
-      { width: this.canvasSize.width * 0.44 }
-    );
-
-    context.drawImage(
-      this.copyright!,
-      this.canvasSize.width * 0.5 - crScaled.width / 2,
-      this.canvasSize.height * 0.806 - crScaled.height / 2,
-      crScaled.width,
-      crScaled.height
     );
     // ----------------------------------
 
