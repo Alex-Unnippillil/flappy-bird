@@ -3,9 +3,9 @@ import {
   PIPE_HEIGHT,
   PIPE_MIN_GAP,
   PIPE_WIDTH,
-} from '../constants.ts';
-import type { Dimension } from '../types.ts';
-import type { SpriteName, SpriteSheet } from '../spriteSheet.ts';
+} from '../constants';
+import type { Dimension } from '../types';
+import type { SpriteName, SpriteSheet } from '../spriteSheet';
 
 const PIPE_MAIN = '#7dd36f';
 const PIPE_DARK = '#3a7c47';
@@ -23,7 +23,6 @@ export class PipePair {
   private color: PipeColor = 'green';
   constructor(
     private readonly canvasSize: Dimension,
-    private readonly platformHeight: number,
     public x: number,
     public gapCenter: number
   ) {}
