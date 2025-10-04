@@ -47,7 +47,13 @@ const normalizeBoolean = (value: unknown): boolean | null => {
 const isEventBusEnabled = (): boolean => {
   const meta = import.meta as unknown as { env?: Record<string, unknown> };
   const raw = meta.env?.[FEATURE_FLAG_KEY];
-  return normalizeBoolean(raw) ?? false;
+  const normalized = normalizeBoolean(raw);
+
+  if (normalized !== null) {
+    return normalized;
+  }
+
+  return true;
 };
 
 const listenerRegistry = new Map<string, WeakMap<AnyGameEventListener, EventListener>>();
