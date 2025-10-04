@@ -1,3 +1,15 @@
+/**
+ * @typedef {() => number} RandomFunction
+ * @typedef {{ next: () => number }} NextMethodSource
+ * @typedef {{ nextInt: (min: number, max: number) => number }} NextIntSource
+ * @typedef {RandomFunction | NextMethodSource | NextIntSource} RandomSource
+ */
+
+/**
+ * @param {RandomSource | undefined} randomSource
+ * @param {number} min
+ * @param {number} max
+ */
 function randomIntInRange(randomSource, min, max) {
   if (max < min) {
     throw new Error("max must be greater than or equal to min");
@@ -25,6 +37,12 @@ function randomIntInRange(randomSource, min, max) {
 }
 
 export class Pipe {
+  /**
+   * @param {number} x
+   * @param {number} playfieldHeight
+   * @param {number} gapSize
+   * @param {RandomSource} [randomSource]
+   */
   constructor(x, playfieldHeight, gapSize, randomSource = Math.random) {
     this.x = x;
     this.width = 60;

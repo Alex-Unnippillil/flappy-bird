@@ -180,7 +180,7 @@ function createGroundPlane() {
   return mesh;
 }
 
-export function createThreeRenderer(canvas, options = {}) {
+export function createThreeRenderer(canvas, _options = {}) {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,

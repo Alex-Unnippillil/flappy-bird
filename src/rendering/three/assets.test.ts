@@ -59,8 +59,8 @@ describe('three asset loader cache', () => {
   });
 
   it('loads a scene once and returns cloned instances on subsequent requests', async () => {
-    const first = await getSceneClone('mock.glb');
-    const second = await getSceneClone('mock.glb');
+    const first = (await getSceneClone('mock.glb')) as { cloned?: boolean };
+    const second = (await getSceneClone('mock.glb')) as { cloned?: boolean };
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(first).not.toBe(second);
@@ -70,7 +70,7 @@ describe('three asset loader cache', () => {
 
   it('shares cached data between preload and clone helpers', async () => {
     await preloadScene(MODEL_URLS.bird);
-    const birdClone = await loadCoreModel.bird();
+    const birdClone = (await loadCoreModel.bird()) as { cloned?: boolean };
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(birdClone.cloned).toBe(true);

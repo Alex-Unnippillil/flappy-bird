@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createHapticsAdapter, detectVibrationSupport } from "./haptics";
+import { createHapticsAdapter, detectVibrationSupport, type NavigatorLike } from "./haptics";
 
 describe("detectVibrationSupport", () => {
   it("reports unsupported when navigator is undefined", () => {
@@ -9,15 +9,18 @@ describe("detectVibrationSupport", () => {
   });
 
   it("reports unsupported when vibrate is not a function", () => {
-    const fakeNavigator = {} as any;
+    const fakeNavigator: NavigatorLike = {};
     const result = detectVibrationSupport(fakeNavigator);
     expect(result.supported).toBe(false);
     expect(result.vibrate).toBeNull();
   });
 
   it("binds the vibrate function when available", () => {
-    const vibrate = vi.fn(() => true);
-    const fakeNavigator = { vibrate } as any;
+    const vibrate = vi.fn<
+      ReturnType<NonNullable<NavigatorLike["vibrate"]>>,
+      Parameters<NonNullable<NavigatorLike["vibrate"]>>
+    >(() => true);
+    const fakeNavigator: NavigatorLike = { vibrate };
     const result = detectVibrationSupport(fakeNavigator);
 
     expect(result.supported).toBe(true);
@@ -37,8 +40,11 @@ describe("createHapticsAdapter", () => {
   });
 
   it("delegates to navigator.vibrate when supported", () => {
-    const vibrate = vi.fn(() => true);
-    const fakeNavigator = { vibrate } as any;
+    const vibrate = vi.fn<
+      ReturnType<NonNullable<NavigatorLike["vibrate"]>>,
+      Parameters<NonNullable<NavigatorLike["vibrate"]>>
+    >(() => true);
+    const fakeNavigator: NavigatorLike = { vibrate };
 
     const adapter = createHapticsAdapter({ navigator: fakeNavigator });
     expect(adapter.supported).toBe(true);

@@ -38,19 +38,28 @@ const DEFAULT_HINT_LOCALE: HudLocale = DEFAULT_LOCALE;
 
 const SUPPORTED_LOCALES = Object.keys(HUD_MESSAGES) as HudLocale[];
 
+const isHudLocale = (value: string): value is HudLocale => {
+  for (const locale of SUPPORTED_LOCALES) {
+    if (locale === value) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export function resolveLocale(input?: string | null): HudLocale {
   if (!input) {
     return DEFAULT_HINT_LOCALE;
   }
 
   const normalized = input.toLowerCase();
-  if (SUPPORTED_LOCALES.includes(normalized as HudLocale)) {
-    return normalized as HudLocale;
+  if (isHudLocale(normalized)) {
+    return normalized;
   }
 
   const [languageCode] = normalized.split('-');
-  if (SUPPORTED_LOCALES.includes(languageCode as HudLocale)) {
-    return languageCode as HudLocale;
+  if (languageCode && isHudLocale(languageCode)) {
+    return languageCode;
   }
 
   return DEFAULT_HINT_LOCALE;
@@ -110,14 +119,17 @@ const DICTIONARIES: Record<HudLocale, HudDictionary> = {
 
 const LOCALE_SEPARATOR_REGEX = /[-_]/;
 
-const normalizeLocale = (locale?: string): string => {
+const normalizeLocale = (locale?: string): HudLocale => {
   if (!locale) {
     return DEFAULT_LOCALE;
   }
 
   const primarySubtag = locale.toLowerCase().split(LOCALE_SEPARATOR_REGEX)[0];
+  if (primarySubtag && isHudLocale(primarySubtag)) {
+    return primarySubtag;
+  }
 
-  return primarySubtag || DEFAULT_LOCALE;
+  return DEFAULT_LOCALE;
 };
 
 const getHudDictionary = (locale?: string): HudDictionary => {
