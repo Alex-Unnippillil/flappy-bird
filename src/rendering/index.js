@@ -2,6 +2,11 @@ import {
   emitBestRibbonEvent,
   ensureBestRibbon,
 } from "../hud/components/BestRibbon.ts";
+import { getMedalForScore, Medal } from "../hud/logic/medals";
+import { FinalScore } from "../hud/components/FinalScore.ts";
+import { HudRoot } from "../hud/HudRoot.ts";
+import { PauseMenu } from "../hud/components/PauseMenu.ts";
+import { DimLayer } from "../hud/components/DimLayer.ts";
 
 const noop = () => {};
 
@@ -25,6 +30,18 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const finalScore = overlay ? new FinalScore() : null;
+
+  if (overlay && finalScore) {
+    finalScore.attach(overlay, startButton);
+    finalScore.hide();
+  }
+  const dimLayer = overlay ? new DimLayer(overlay) : null;
+
+  const hudRootHost = overlay?.parentElement ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
+  const pauseMenu = new PauseMenu();
+  hudRoot.mount(pauseMenu.element, "modal");
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -91,11 +108,29 @@ export function createHudController(elements = {}) {
     startButton.blur();
   });
 
+  let currentMedal = Medal.None;
+  const medalListeners = new Set();
+
+  const notifyMedalChange = (medal) => {
+    medalListeners.forEach((listener) => {
+      try {
+        listener(medal);
+      } catch (error) {
+        console.error("HUD medal listener error", error);
+      }
+    });
+  };
+
   return {
     setScore(value) {
       currentScore = Number(value) || 0;
       safeText(scoreEl, value);
       announceMilestone();
+      const medal = getMedalForScore(Number(value));
+      if (medal !== currentMedal) {
+        currentMedal = medal;
+        notifyMedalChange(currentMedal);
+      }
     },
     setBest(value) {
       currentBest = Number(value) || 0;
@@ -106,18 +141,36 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
+      finalScore?.hide();
+      if (startButton) {
+        startButton.textContent = "Play";
+      }
       toggle(startButton, true);
       resetMilestones();
     },
     showRunning() {
       toggle(overlay, false);
       resetMilestones();
+      finalScore?.hide();
+      dimLayer?.setActive(false);
     },
-    showGameOver(score, best) {
+    showGameOver(score, best, options = {}) {
       toggle(overlay, true);
+      showMessage("Game over! Tap or press Space to try again");
+      const isRecord =
+        typeof options.isNewRecord === "boolean"
+          ? options.isNewRecord
+          : score > 0 && score === best;
+      finalScore?.setScores(score, best, { isRecord });
+      finalScore?.show();
+      dimLayer?.setActive(true);
       showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
+      if (startButton) {
+        startButton.textContent = "Play again";
+      }
     },
     onStart(handler = noop) {
       startButton?.addEventListener("click", handler);
@@ -125,5 +178,22 @@ export function createHudController(elements = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    onMedalChange(handler = noop) {
+      if (typeof handler !== "function") {
+        return noop;
+      }
+      medalListeners.add(handler);
+      return () => {
+        medalListeners.delete(handler);
+      };
+    },
+    getCurrentMedal() {
+      return currentMedal;
+    pauseMenu,
+    hudRoot
+    }
+    dispose() {
+      dimLayer?.dispose();
+    },
   };
-}
+

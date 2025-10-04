@@ -8,6 +8,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         birdPreview: resolve(__dirname, 'bird-preview.html'),
+        hudLayout: resolve(__dirname, 'playgrounds/hud-layout.html'),
       },
     },
   },
