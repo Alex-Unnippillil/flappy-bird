@@ -1,0 +1,31 @@
+.score-anim {
+  --score-anim-duration: 220ms;
+  --score-anim-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: scale(1);
+  opacity: 1;
+  transition: transform var(--score-anim-duration) var(--score-anim-ease),
+    opacity var(--score-anim-duration) var(--score-anim-ease);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.score-anim.score-anim--enter {
+  transform: scale(0.75);
+  opacity: 0;
+}
+
+.score-anim.score-anim--entered {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-anim {
+    transition: none;
+  }
+
+  .score-anim.score-anim--enter {
+    transform: none;
+    opacity: 1;
+  }
+}

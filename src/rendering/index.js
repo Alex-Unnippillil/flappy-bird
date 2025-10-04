@@ -1,3 +1,5 @@
+import { applyScoreMountAnimation } from "../hud/components/ScoreAnim.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -20,6 +22,8 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+
+  applyScoreMountAnimation(scoreEl?.closest(".hud-metric") ?? scoreEl);
 
   const safeText = (target, value) => {
     if (!target) return;
