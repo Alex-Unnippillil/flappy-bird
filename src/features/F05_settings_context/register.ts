@@ -270,7 +270,7 @@ export const registerF05SettingsContext = (
     persistSettings(storage, nextSettings);
   };
 
-  const context = {
+  const context: F05SettingsContext = {
     settings: mergedSettings,
     prng,
     random: () => prng.next(),
@@ -340,7 +340,7 @@ export const registerF05SettingsContext = (
 
       return cloneSettings(context.settings);
     },
-  } satisfies F05SettingsContext;
+  };
 
   persistIfNeeded(localSettings);
 

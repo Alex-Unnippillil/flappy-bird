@@ -17,8 +17,8 @@ describe("detectVibrationSupport", () => {
 
   it("binds the vibrate function when available", () => {
     const vibrate = vi.fn<
-      ReturnType<NonNullable<NavigatorLike["vibrate"]>>,
-      Parameters<NonNullable<NavigatorLike["vibrate"]>>
+      Parameters<NonNullable<NavigatorLike["vibrate"]>>,
+      ReturnType<NonNullable<NavigatorLike["vibrate"]>>
     >(() => true);
     const fakeNavigator: NavigatorLike = { vibrate };
     const result = detectVibrationSupport(fakeNavigator);
@@ -41,8 +41,8 @@ describe("createHapticsAdapter", () => {
 
   it("delegates to navigator.vibrate when supported", () => {
     const vibrate = vi.fn<
-      ReturnType<NonNullable<NavigatorLike["vibrate"]>>,
-      Parameters<NonNullable<NavigatorLike["vibrate"]>>
+      Parameters<NonNullable<NavigatorLike["vibrate"]>>,
+      ReturnType<NonNullable<NavigatorLike["vibrate"]>>
     >(() => true);
     const fakeNavigator: NavigatorLike = { vibrate };
 

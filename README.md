@@ -26,6 +26,24 @@ const { scene, camera, renderer } = createSceneContext();
 The helper automatically matches the container size, clamps the pixel ratio for
 high-DPI displays, and responds to future `resize` events.
 
+## Deterministic RNG & seeds
+
+The spawning systems rely on `createRng()` (`src/core/rng.ts`) when feature flag
+`import.meta.env.VITE_FF_F04` is enabled. The helper persists the active seed to
+`localStorage` (default key `flappy.seed`), supports ISO timestamp seeds, and
+exposes deterministic helpers `nextFloat()` / `int(min, max)` for gameplay
+systems. When the flag is active the game loop publishes developer utilities at
+`window.flappy.rng`:
+
+```js
+window.flappy.rng.getSeed(); // current seed string
+window.flappy.rng.reset();   // reset the active run without changing the seed
+window.flappy.rng.reseed();  // reseed with a new ISO timestamp (or provide one)
+```
+
+Use these hooks to reseed or replay deterministic sessions while verifying pipe
+spawn logic or debugging procedural systems.
+
 ### Available Scripts
 
 - `npm run dev` – Start the Vite development server.
@@ -78,6 +96,20 @@ npm run lint
 npm run test
 npm run typecheck
 ```
+
+## Input Buffer Configuration
+
+Feature flag `VITE_FF_F11` enables the input buffering experiment implemented in
+`src/features/F11_input_buffer/register.ts`. Two exported constants document the
+timing defaults:
+
+- `DEFAULT_BUFFER_WINDOW_MS` (120 ms) – how long flap attempts remain queued
+  while the bird is ineligible to jump.
+- `DEFAULT_COYOTE_WINDOW_MS` (90 ms) – the extra grace period applied to ground
+  attempts so they can still trigger shortly after lift-off.
+
+Adjust these constants if you need to tune responsiveness; the unit tests cover
+expected behavior around eligibility and the ground coyote window.
 
 ## HUD performance guidelines
 

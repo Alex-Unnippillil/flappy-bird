@@ -1,6 +1,7 @@
 import { Bird, Pipe } from "../entities/index.js";
 import { PHYSICS, clampFlapStrength } from "../../core/physics.ts";
 import { CONFIG, resetGameState, persistBestScore } from "./state.js";
+import { isRngFeatureEnabled } from "../../core/rng.ts";
 import { createThreeRenderer } from "../../rendering/three/renderer.js";
 import { createHudController } from "../../rendering/index.js";
 import { HUD_GAME_OVER } from "../../hud/components/SessionStats.ts";
@@ -8,6 +9,80 @@ import { HUD_GAME_OVER } from "../../hud/components/SessionStats.ts";
 let state = null;
 let renderer = null;
 let hud = null;
+
+const ensureWindow = () => (typeof window !== "undefined" ? window : null);
+
+const getRngNamespace = () => {
+  const target = ensureWindow();
+  if (!target) {
+    return null;
+  }
+
+  const namespaceKey = "flappy";
+  if (!target[namespaceKey]) {
+    target[namespaceKey] = {};
+  }
+
+  return target[namespaceKey];
+};
+
+function registerRngTools() {
+  if (!isRngFeatureEnabled()) {
+    return;
+  }
+
+  const namespace = getRngNamespace();
+  if (!namespace) {
+    return;
+  }
+
+  namespace.rng = {
+    getSeed: () => {
+      if (!state?.prng) {
+        return null;
+      }
+
+      if (typeof state.prng.serializeSeed === "function") {
+        return state.prng.serializeSeed();
+      }
+
+      if (typeof state.prng.getSeed === "function") {
+        return String(state.prng.getSeed());
+      }
+
+      return null;
+    },
+    reset: () => {
+      if (!state?.prng) {
+        return null;
+      }
+
+      state.prng.reset?.();
+      resetGameState(state);
+      refreshHud();
+      showIntro();
+      return namespace.rng.getSeed();
+    },
+    reseed: (nextSeed) => {
+      if (!state?.prng) {
+        return null;
+      }
+
+      const fallbackSeed = new Date().toISOString();
+      const normalizedSeed =
+        typeof nextSeed === "string" && nextSeed.trim() !== ""
+          ? nextSeed
+          : fallbackSeed;
+
+      state.prng.seed?.(normalizedSeed);
+      state.prng.saveSeed?.();
+      resetGameState(state);
+      refreshHud();
+      showIntro();
+      return namespace.rng.getSeed();
+    },
+  };
+}
 
 function ensureState() {
   if (!state) {
@@ -211,6 +286,7 @@ export function initializeGameLoop(gameState, options = {}) {
   refreshHud();
   renderer.render(state, 0);
   showIntro();
+  registerRngTools();
 }
 
 export function startGame() {
