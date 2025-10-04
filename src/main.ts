@@ -1,6 +1,8 @@
 import { ClassicGame } from './classic/Game.ts';
 
-function resizeCanvas(canvas) {
+type PrimaryInputEvent = PointerEvent | TouchEvent | KeyboardEvent;
+
+function resizeCanvas(canvas: HTMLCanvasElement): void {
   const container = canvas.parentElement;
   if (!container) return;
   const aspect = 512 / 288;
@@ -11,12 +13,10 @@ function resizeCanvas(canvas) {
   canvas.style.height = `${height}px`;
 }
 
-function setupInput(canvas, game) {
-  const handleAction = (event) => {
+function setupInput(canvas: HTMLCanvasElement, game: ClassicGame): void {
+  const handleAction = (event: PrimaryInputEvent): void => {
     event.preventDefault();
-    if (typeof canvas.focus === 'function') {
-      canvas.focus();
-    }
+    canvas.focus();
     game.handlePrimaryAction();
   };
 
@@ -24,7 +24,7 @@ function setupInput(canvas, game) {
   canvas.addEventListener('touchstart', handleAction, { passive: false });
   canvas.addEventListener(
     'keydown',
-    (event) => {
+    (event: KeyboardEvent) => {
       if (event.repeat) return;
       if (['Space', 'ArrowUp', 'KeyW'].includes(event.code)) {
         handleAction(event);
@@ -38,7 +38,7 @@ function setupInput(canvas, game) {
 
   window.addEventListener(
     'keydown',
-    (event) => {
+    (event: KeyboardEvent) => {
       if (event.repeat) return;
       if (['Space', 'ArrowUp', 'KeyW'].includes(event.code)) {
         handleAction(event);
