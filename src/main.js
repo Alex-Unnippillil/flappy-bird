@@ -6,6 +6,7 @@ import {
   handleCanvasClick,
 } from "./game/systems/index.js";
 import { initSessionStats } from "./hud/components/SessionStats.ts";
+import { createSceneContext } from "./core/scene.ts";
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -67,6 +68,12 @@ function resizeCanvas(canvas) {
 }
 
 function init() {
+  try {
+    createSceneContext();
+  } catch (error) {
+    console.warn("Unable to initialize Three.js scene", error);
+  }
+
   const canvas = document.getElementById("gameCanvas");
   if (!canvas) {
     throw new Error("Game canvas not found");
