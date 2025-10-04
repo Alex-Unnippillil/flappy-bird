@@ -1,5 +1,5 @@
 import "./features/F10_score_hud/register.ts";
-import "./features/F12_bird_tilt/register.ts";
+import "./features/autoload.ts";
 import {
   CONFIG,
   createGameState,
