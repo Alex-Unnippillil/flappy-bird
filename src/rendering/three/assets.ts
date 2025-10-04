@@ -49,26 +49,27 @@ function getLoader(): GLTFLoader {
 }
 
 async function loadGLTF(url: string): Promise<GLTF> {
-  let promise = gltfCache.get(url);
-  if (!promise) {
-    promise = getLoader()
-      .loadAsync(url)
-      .catch((error: unknown) => {
-        gltfCache.delete(url);
-        const message =
-          error instanceof Error
-            ? error.message
-            : typeof error === 'string'
-              ? error
-              : JSON.stringify(error);
-        throw new Error(
-          `Failed to load GLTF asset at "${url}". ` +
-            'If this is the procedural bird, run "python tools/generate_bird_assets.py" to regenerate the binaries before retrying. ' +
-            `Original error: ${message}`,
-        );
-      });
-    gltfCache.set(url, promise);
+  const cached = gltfCache.get(url);
+  if (cached) {
+    return cached;
   }
+
+  const loader = getLoader();
+  const promise: Promise<GLTF> = loader.loadAsync(url).catch((error: unknown) => {
+    gltfCache.delete(url);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : JSON.stringify(error);
+    throw new Error(
+      `Failed to load GLTF asset at "${url}". ` +
+        'If this is the procedural bird, run "python tools/generate_bird_assets.py" to regenerate the binaries before retrying. ' +
+        `Original error: ${message}`,
+    );
+  });
+  gltfCache.set(url, promise);
 
   return promise;
 }

@@ -19,7 +19,7 @@ function getStorage(): Storage | null {
 
   try {
     return window.localStorage;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -45,7 +45,7 @@ function loadFromStorage(): HudPreferences {
       ...DEFAULT_PREFERENCES,
       ...parsed,
     };
-  } catch (error) {
+  } catch (_error) {
     return { ...DEFAULT_PREFERENCES };
   }
 }
@@ -59,7 +59,7 @@ function persistPreferences(preferences: HudPreferences): void {
 
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-  } catch (error) {
+  } catch (_error) {
     // Ignore storage failures to keep the HUD responsive even when storage is unavailable.
   }
 
@@ -125,7 +125,7 @@ export function resetHudPreferences(): HudPreferences {
   const storage = getStorage();
   try {
     storage?.removeItem(STORAGE_KEY);
-  } catch (error) {
+  } catch (_error) {
     // Ignore failures when clearing storage.
   }
   notifyListeners(defaults);

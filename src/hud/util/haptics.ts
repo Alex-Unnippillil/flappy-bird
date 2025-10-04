@@ -2,7 +2,7 @@ export type VibrationPattern = number | number[];
 
 type VibrateFunction = (pattern: VibrationPattern) => boolean;
 
-interface NavigatorLike {
+export interface NavigatorLike {
   vibrate?: VibrateFunction;
 }
 

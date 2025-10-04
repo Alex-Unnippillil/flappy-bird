@@ -193,7 +193,7 @@ export class GameOverPanel {
     if (this.previouslyFocused && typeof this.previouslyFocused.focus === 'function') {
       try {
         this.previouslyFocused.focus();
-      } catch (error) {
+      } catch (_error) {
         // Swallow focus errors to avoid breaking dismissal.
       }
     }
