@@ -86,7 +86,7 @@ let prodPlugins = [
 
   new WebpackManifestPlugin({
     basePath: '',
-    publicPath: 'Flappybird/',
+    publicPath: 'flappy-bird/',
     fileName: 'asset-manifest.json'
   }),
 
