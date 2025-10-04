@@ -1,4 +1,5 @@
 import "./features/F10_score_hud/register.ts";
+import "./features/autoload.ts";
 import {
   CONFIG,
   createGameState,
