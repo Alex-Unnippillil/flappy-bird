@@ -1,3 +1,5 @@
+import { Score } from "../hud/components/Score.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -14,6 +16,14 @@ function resolveElement(element) {
 
 export function createHudController(elements = {}) {
   const scoreEl = resolveElement(elements.score ?? "#scoreValue");
+  const scoreHud =
+    scoreEl instanceof HTMLElement ? new Score({ element: scoreEl }) : null;
+  if (scoreHud && scoreEl instanceof HTMLElement) {
+    const initialText = scoreEl.textContent ?? "";
+    const parsedInitial = Number.parseInt(initialText, 10);
+    const initialValue = Number.isNaN(parsedInitial) ? 0 : parsedInitial;
+    scoreHud.setValue(initialValue, { animate: false });
+  }
   const bestEl = resolveElement(elements.best ?? "#bestValue");
   const messageEl = resolveElement(elements.message ?? "#gameMessage");
   const overlay = resolveElement(elements.overlay ?? "#gameOverlay");
@@ -52,7 +62,11 @@ export function createHudController(elements = {}) {
 
   return {
     setScore(value) {
-      safeText(scoreEl, value);
+      if (scoreHud) {
+        scoreHud.setValue(value);
+      } else {
+        safeText(scoreEl, value);
+      }
     },
     setBest(value) {
       safeText(bestEl, value);
