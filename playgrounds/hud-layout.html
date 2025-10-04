@@ -2,6 +2,45 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HUD Layout Playground</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      body {
+        background: radial-gradient(circle at 50% 0%, #27213c 0%, #090b26 55%, #05040f 100%);
+      }
+
+      .game-stage__placeholder {
+        position: relative;
+        display: grid;
+        place-items: center;
+        flex: 1 1 auto;
+        border-radius: 1.25rem;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        background: linear-gradient(
+          160deg,
+          rgba(255, 255, 255, 0.08) 0%,
+          rgba(255, 255, 255, 0.02) 60%,
+          rgba(255, 255, 255, 0.01) 100%
+        );
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1.125rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .game-stage__placeholder::after {
+        content: "HUD Preview";
+      }
+
+      .game-playground {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 3rem;
+      }
+
+      .game-layout {
+        gap: 1.5rem;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HUD Digit Layout Harness</title>
     <link rel="stylesheet" href="../styles.css" />
@@ -76,6 +115,52 @@
     </style>
   </head>
   <body>
+    <main class="game-layout game-playground" aria-labelledby="playgroundTitle">
+      <header class="hud-panel" aria-label="Game dashboard">
+        <div class="hud-metric" aria-live="polite">
+          <span class="hud-label">Score</span>
+          <span id="scoreValue" class="hud-value">0</span>
+        </div>
+        <div class="hud-metric" aria-live="polite">
+          <span class="hud-label">Best</span>
+          <span id="bestValue" class="hud-value">0</span>
+        </div>
+        <div class="hud-metric hud-metric--wide">
+          <span class="hud-label">Speed</span>
+          <div
+            id="speedProgress"
+            class="speed-meter"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-label="Pipe speed"
+          >
+            <span id="speedFill" class="speed-meter__fill"></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="game-stage" aria-label="HUD layout preview">
+        <div class="game-stage__placeholder" role="img" aria-label="HUD background placeholder"></div>
+        <div id="gameOverlay" class="game-overlay" aria-live="assertive">
+          <p id="gameMessage" class="game-message">Tap or press Space to start</p>
+          <button id="startButton" type="button" class="game-button">Play</button>
+        </div>
+      </section>
+
+      <footer class="game-footer" aria-live="polite">
+        <h1 id="playgroundTitle" class="hud-label" style="font-size: 1.5rem">HUD Layout Playground</h1>
+        <p>
+          This standalone playground mounts the HUD components with mock data so designers can iterate on layout and accessibility without the Three.js canvas.
+        </p>
+        <p>
+          Use the <strong>Play</strong> button to trigger a simulated round, or wait for it to start automatically.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="./hud-layout.ts"></script>
     <main>
       <section class="demo-card">
         <h2>Tabular numbers applied</h2>

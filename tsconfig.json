@@ -9,6 +9,6 @@
     "noEmit": true,
     "types": ["vitest", "vite/client", "node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "playgrounds/**/*"],
   "exclude": ["dist", "node_modules"]
 }
