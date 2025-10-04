@@ -28,7 +28,7 @@ const CONFIG = {
     dir: 'dist' // Do not include './' or '/'
   },
   input: {
-    entry: './src/index.ts', // Typescript only
+    entry: './src/main.ts', // Typescript only
     dir: 'src'
   },
 
