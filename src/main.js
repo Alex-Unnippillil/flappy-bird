@@ -5,6 +5,7 @@ import {
   startGame,
   handleCanvasClick,
 } from "./game/systems/index.js";
+import { initSessionStats } from "./hud/components/SessionStats.ts";
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -87,6 +88,8 @@ function init() {
       speedProgress: "#speedProgress",
     },
   });
+
+  initSessionStats();
 
   bindInput(canvas);
   resizeCanvas(canvas);

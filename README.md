@@ -63,6 +63,10 @@ npm run test
 npm run typecheck
 ```
 
+## HUD performance guidelines
+
+Documented HUD performance hints live in [docs/hud-perf.md](docs/hud-perf.md). Review the checklist before adjusting scoreboard, overlay, or control styles so frequent updates stay isolated from the rest of the layout.
+
 ## Production Build
 
 ```bash

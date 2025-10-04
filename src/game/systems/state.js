@@ -41,6 +41,15 @@ export function createGameState(canvas, prng = createDeterministicPrng()) {
     lastTimestamp: null,
     spawnTimer: 0,
     ui: null,
+    roundDurationMs: 0,
+    sessionStats: {
+      attempts: 0,
+      totalScore: 0,
+      totalDurationMs: 0,
+      lastScore: 0,
+      lastDurationMs: 0,
+      bestScore: 0,
+    },
   };
 }
 
@@ -58,6 +67,7 @@ export function resetGameState(state) {
   state.animationFrameId = null;
   state.spawnTimer = 0;
   state.lastTimestamp = null;
+  state.roundDurationMs = 0;
   if (state.prng && typeof state.prng.reset === "function") {
     state.prng.reset();
   }
