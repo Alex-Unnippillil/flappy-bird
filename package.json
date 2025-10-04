@@ -14,6 +14,7 @@
   "devDependencies": {
     "@types/jsdom": "^27.0.0",
     "@types/node": "^24.6.2",
+    "@types/three": "^0.180.0",
     "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^8.57.0",
     "jsdom": "^27.0.0",

@@ -16,6 +16,9 @@ const loadSpy = vi.fn(async (url: string) => ({
   scene: { url },
 }));
 
+const hasClonedFlag = (value: unknown): value is { cloned: boolean } =>
+  typeof value === 'object' && value !== null && 'cloned' in value;
+
 vi.mock('three/examples/jsm/loaders/GLTFLoader.js', () => ({
   __esModule: true,
   GLTFLoader: class {
@@ -64,8 +67,8 @@ describe('three asset loader cache', () => {
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(first).not.toBe(second);
-    expect(first.cloned).toBe(true);
-    expect(second.cloned).toBe(true);
+    expect(hasClonedFlag(first) && first.cloned).toBe(true);
+    expect(hasClonedFlag(second) && second.cloned).toBe(true);
   });
 
   it('shares cached data between preload and clone helpers', async () => {
@@ -73,7 +76,7 @@ describe('three asset loader cache', () => {
     const birdClone = await loadCoreModel.bird();
 
     expect(loadSpy).toHaveBeenCalledTimes(1);
-    expect(birdClone.cloned).toBe(true);
+    expect(hasClonedFlag(birdClone) && birdClone.cloned).toBe(true);
   });
 });
 

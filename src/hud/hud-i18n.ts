@@ -110,20 +110,26 @@ const DICTIONARIES: Record<HudLocale, HudDictionary> = {
 
 const LOCALE_SEPARATOR_REGEX = /[-_]/;
 
-const normalizeLocale = (locale?: string): string => {
+const hasDictionary = (locale: string): locale is HudLocale =>
+  Object.prototype.hasOwnProperty.call(DICTIONARIES, locale);
+
+const normalizeLocale = (locale?: string): HudLocale => {
   if (!locale) {
     return DEFAULT_LOCALE;
   }
 
   const primarySubtag = locale.toLowerCase().split(LOCALE_SEPARATOR_REGEX)[0];
+  if (primarySubtag && hasDictionary(primarySubtag)) {
+    return primarySubtag;
+  }
 
-  return primarySubtag || DEFAULT_LOCALE;
+  return DEFAULT_LOCALE;
 };
 
 const getHudDictionary = (locale?: string): HudDictionary => {
   const normalizedLocale = normalizeLocale(locale);
 
-  return DICTIONARIES[normalizedLocale] ?? ENGLISH_DICTIONARY;
+  return DICTIONARIES[normalizedLocale];
 };
 
 export const getHudString = (key: HudStringKey, locale?: string): string =>

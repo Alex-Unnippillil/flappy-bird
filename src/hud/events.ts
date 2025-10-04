@@ -27,31 +27,36 @@ type EventKey = keyof HudEvents;
 
 type Listener<K extends EventKey> = (payload: HudEvents[K]) => void;
 
-type ListenerRegistry = {
-  [K in EventKey]?: Set<Listener<K>>;
-};
-
 /**
  * Minimal typed event bus for heads-up-display components. Components can
  * subscribe to events and receive strongly typed payloads.
  */
 class HudEventBus {
-  private listeners: ListenerRegistry = {};
+  private listeners = new Map<EventKey, Set<Listener<EventKey>>>();
+
+  private ensureHandlers<K extends EventKey>(type: K): Set<Listener<K>> {
+    let handlers = this.listeners.get(type) as Set<Listener<K>> | undefined;
+    if (!handlers) {
+      handlers = new Set<Listener<K>>();
+      this.listeners.set(type, handlers as Set<Listener<EventKey>>);
+    }
+    return handlers;
+  }
 
   on<K extends EventKey>(type: K, handler: Listener<K>): () => void {
-    const handlers = (this.listeners[type] ??= new Set());
+    const handlers = this.ensureHandlers(type);
     handlers.add(handler);
 
     return () => {
       handlers.delete(handler);
       if (handlers.size === 0) {
-        delete this.listeners[type];
+        this.listeners.delete(type);
       }
     };
   }
 
   emit<K extends EventKey>(type: K, payload: HudEvents[K]): void {
-    const handlers = this.listeners[type];
+    const handlers = this.listeners.get(type) as Set<Listener<K>> | undefined;
     if (!handlers) return;
 
     for (const handler of handlers) {
@@ -60,7 +65,7 @@ class HudEventBus {
   }
 
   clear(): void {
-    this.listeners = {};
+    this.listeners.clear();
   }
 }
 

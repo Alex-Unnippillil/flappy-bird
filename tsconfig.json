@@ -6,6 +6,7 @@
     "allowJs": true,
     "checkJs": false,
     "strict": true,
+    "lib": ["ES2022", "DOM"],
     "noEmit": true,
     "types": ["vitest", "vite/client", "node"]
   },

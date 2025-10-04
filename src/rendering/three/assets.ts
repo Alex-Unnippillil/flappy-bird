@@ -51,7 +51,7 @@ function getLoader(): GLTFLoader {
 async function loadGLTF(url: string): Promise<GLTF> {
   let promise = gltfCache.get(url);
   if (!promise) {
-    promise = getLoader()
+    const loaderPromise = getLoader()
       .loadAsync(url)
       .catch((error: unknown) => {
         gltfCache.delete(url);
@@ -67,7 +67,8 @@ async function loadGLTF(url: string): Promise<GLTF> {
             `Original error: ${message}`,
         );
       });
-    gltfCache.set(url, promise);
+    gltfCache.set(url, loaderPromise);
+    promise = loaderPromise;
   }
 
   return promise;

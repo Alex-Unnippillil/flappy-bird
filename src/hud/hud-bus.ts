@@ -2,14 +2,10 @@ import type { HudChannel, HudEventPayloads } from "./hud-events";
 
 type HudEventHandler<K extends HudChannel> = (payload: HudEventPayloads[K]) => void;
 
-type HandlerRegistry = {
-  [K in HudChannel]?: Set<HudEventHandler<K>>;
-};
-
-const registry: HandlerRegistry = {};
+const registry = new Map<HudChannel, Set<HudEventHandler<HudChannel>>>();
 
 function getHandlers<K extends HudChannel>(channel: K): Set<HudEventHandler<K>> | undefined {
-  return registry[channel] as Set<HudEventHandler<K>> | undefined;
+  return registry.get(channel) as Set<HudEventHandler<K>> | undefined;
 }
 
 function ensureHandlers<K extends HudChannel>(channel: K): Set<HudEventHandler<K>> {
@@ -17,7 +13,7 @@ function ensureHandlers<K extends HudChannel>(channel: K): Set<HudEventHandler<K
 
   if (!handlers) {
     handlers = new Set<HudEventHandler<K>>();
-    registry[channel] = handlers as Set<HudEventHandler<typeof channel>>;
+    registry.set(channel, handlers as Set<HudEventHandler<HudChannel>>);
   }
 
   return handlers;
@@ -48,7 +44,7 @@ export function unsubscribe<K extends HudChannel>(
   const removed = handlers.delete(handler);
 
   if (handlers.size === 0) {
-    delete registry[channel];
+    registry.delete(channel);
   }
 
   return removed;
@@ -77,7 +73,5 @@ export function hasSubscribers(channel: HudChannel): boolean {
 }
 
 export function resetHudBus(): void {
-  (Object.keys(registry) as HudChannel[]).forEach((channel) => {
-    delete registry[channel];
-  });
+  registry.clear();
 }
