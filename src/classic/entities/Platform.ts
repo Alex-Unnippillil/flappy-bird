@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT, PLATFORM_HEIGHT } from '../constants.ts';
 import type { Dimension } from '../types.ts';
+import type { SpriteSheet } from '../spriteSheet.ts';
 
 const TOP_COLOR = '#ded48a';
 const FRONT_COLOR = '#c4a34a';
@@ -8,6 +9,7 @@ const STRIPE_COLOR = '#b48a2c';
 export class Platform {
   private offset = 0;
   private height = 0;
+  private spriteSheet: SpriteSheet | null = null;
 
   constructor(private readonly canvasSize: Dimension) {
     this.resize(canvasSize);
@@ -17,6 +19,10 @@ export class Platform {
     this.height = size.height * (PLATFORM_HEIGHT / CANVAS_HEIGHT);
   }
 
+  setSpriteSheet(sheet: SpriteSheet | null): void {
+    this.spriteSheet = sheet;
+  }
+
   update(deltaFrames: number, speedPerFrame: number): void {
     this.offset = (this.offset + speedPerFrame * deltaFrames) % this.canvasSize.width;
   }
@@ -24,6 +30,18 @@ export class Platform {
   draw(ctx: CanvasRenderingContext2D): void {
     const { width, height } = this.canvasSize;
     const y = height - this.height;
+
+    if (this.spriteSheet) {
+      const frame = this.spriteSheet.getFrame('platform');
+      const tileWidth = (frame.width / frame.height) * this.height;
+      const offset = this.offset % tileWidth;
+
+      for (let x = -tileWidth; x < width + tileWidth; x += tileWidth) {
+        const drawX = Math.round(x - offset);
+        this.spriteSheet.draw(ctx, 'platform', drawX, y, tileWidth, this.height);
+      }
+      return;
+    }
 
     ctx.save();
     ctx.fillStyle = TOP_COLOR;

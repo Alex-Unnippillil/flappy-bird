@@ -5,12 +5,22 @@ import {
   PIPE_WIDTH,
 } from '../constants.ts';
 import type { Dimension } from '../types.ts';
+import type { SpriteName, SpriteSheet } from '../spriteSheet.ts';
 
 const PIPE_MAIN = '#7dd36f';
 const PIPE_DARK = '#3a7c47';
 
+export type PipeColor = 'green' | 'red';
+
+const PIPE_SPRITES: Record<PipeColor, { top: SpriteName; bottom: SpriteName }> = {
+  green: { top: 'pipe-green-top', bottom: 'pipe-green-bottom' },
+  red: { top: 'pipe-red-top', bottom: 'pipe-red-bottom' },
+};
+
 export class PipePair {
   private passed = false;
+  private spriteSheet: SpriteSheet | null = null;
+  private color: PipeColor = 'green';
   constructor(
     private readonly canvasSize: Dimension,
     private readonly platformHeight: number,
@@ -24,6 +34,14 @@ export class PipePair {
 
   get gapHeight(): number {
     return this.canvasSize.height * PIPE_GAP_SIZE;
+  }
+
+  setSpriteSheet(sheet: SpriteSheet | null): void {
+    this.spriteSheet = sheet;
+  }
+
+  setColor(color: PipeColor): void {
+    this.color = color;
   }
 
   update(deltaFrames: number, speedPerFrame: number): void {
@@ -71,6 +89,14 @@ export class PipePair {
     const gapHalf = this.gapHeight / 2;
     const gapTop = this.gapCenter - gapHalf;
     const gapBottom = this.gapCenter + gapHalf;
+
+    if (this.spriteSheet) {
+      const sprites = PIPE_SPRITES[this.color];
+      const left = this.x - pipeWidth / 2;
+      this.spriteSheet.draw(ctx, sprites.top, left, gapTop - pipeHeight, pipeWidth, pipeHeight);
+      this.spriteSheet.draw(ctx, sprites.bottom, left, gapBottom, pipeWidth, pipeHeight);
+      return;
+    }
 
     ctx.save();
     ctx.fillStyle = PIPE_MAIN;

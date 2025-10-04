@@ -5,6 +5,7 @@ import { Background } from './entities/Background.ts';
 import { Bird } from './entities/Bird.ts';
 import { PipeField } from './entities/PipeField.ts';
 import { Platform } from './entities/Platform.ts';
+import { loadSpriteSheet, type SpriteName, type SpriteSheet } from './spriteSheet.ts';
 
 export type GameState = 'intro' | 'running' | 'gameover';
 
@@ -19,6 +20,18 @@ interface HudRefs {
 const PANEL_BACKGROUND = '#fef8dc';
 const PANEL_BORDER = '#352c2a';
 const PANEL_SHADOW = 'rgba(0, 0, 0, 0.25)';
+
+const SCORE_NUMBER_MEDIUM_HEIGHT = 20;
+
+const MEDAL_SPRITES: { threshold: number; sprite: SpriteName }[] = [
+  { threshold: 40, sprite: 'coin-shine-silver' },
+  { threshold: 30, sprite: 'coin-shine-gold' },
+  { threshold: 20, sprite: 'coin-dull-metal' },
+  { threshold: 10, sprite: 'coin-dull-bronze' },
+];
+
+const BIRD_SKINS = ['yellow', 'blue', 'red'] as const;
+type BirdSkin = (typeof BIRD_SKINS)[number];
 
 function loadBestScore(): number {
   if (typeof window === 'undefined') {
@@ -78,6 +91,9 @@ export class ClassicGame {
   private score = 0;
   private bestScore = loadBestScore();
   private audioPreloaded = false;
+  private spriteSheet: SpriteSheet | null = null;
+  private newHighScoreAchieved = false;
+  private readonly birdSkins: BirdSkin[] = [...BIRD_SKINS];
   private readonly onStartButtonClick: () => void;
 
   constructor(private readonly canvas: HTMLCanvasElement, hudSelectors: Record<string, string>) {
@@ -113,6 +129,12 @@ export class ClassicGame {
     this.updateHud();
     this.enterIntro();
     this.startLoop();
+    try {
+      this.spriteSheet = await loadSpriteSheet();
+      this.applySpriteSheet();
+    } catch (error) {
+      console.warn('Failed to load sprite atlas', error);
+    }
   }
 
   destroy(): void {
@@ -127,6 +149,7 @@ export class ClassicGame {
   }
 
   private resizeToCanvas(): void {
+    const currentSkin: BirdSkin = this.bird?.getSkin?.() ?? 'yellow';
     const dpr = window.devicePixelRatio || 1;
     this.canvas.width = Math.round(CANVAS_WIDTH * dpr);
     this.canvas.height = Math.round(CANVAS_HEIGHT * dpr);
@@ -137,11 +160,30 @@ export class ClassicGame {
     this.background = new Background(this.size);
     this.platform = new Platform(this.size);
     this.bird = new Bird(this.size);
+    this.bird.setSkin(currentSkin);
     this.pipes = new PipeField(this.size, this.platform.getHeight());
+    this.applySpriteSheet();
   }
 
   resize(): void {
     this.resizeToCanvas();
+  }
+
+  private applySpriteSheet(): void {
+    const sheet = this.spriteSheet;
+    this.background.setSpriteSheet(sheet);
+    this.platform.setSpriteSheet(sheet);
+    this.bird.setSpriteSheet(sheet);
+    this.pipes.setSpriteSheet(sheet);
+  }
+
+  private randomBirdSkin(): BirdSkin {
+    return this.birdSkins[Math.floor(Math.random() * this.birdSkins.length)];
+  }
+
+  private getMedalSprite(): SpriteName | null {
+    const entry = MEDAL_SPRITES.find(({ threshold }) => this.score >= threshold);
+    return entry?.sprite ?? null;
   }
 
   private enterIntro(): void {
@@ -226,6 +268,7 @@ export class ClassicGame {
     playSound('score');
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
+      this.newHighScoreAchieved = true;
       saveBestScore(this.bestScore);
     }
     this.updateHud();
@@ -258,6 +301,51 @@ export class ClassicGame {
   }
 
   private drawIntro(ctx: CanvasRenderingContext2D): void {
+    if (this.spriteSheet) {
+      const sheet = this.spriteSheet;
+      const baseScale = this.buffer.width / CANVAS_WIDTH;
+      const centerX = this.buffer.width / 2;
+
+      this.drawScore(ctx, 0, centerX, this.buffer.height * 0.08, { spriteSet: 'lg' });
+
+      const flapFrame = sheet.getFrame('banner-flappybird');
+      const flapWidth = flapFrame.width * baseScale;
+      const flapHeight = flapFrame.height * baseScale;
+      sheet.draw(
+        ctx,
+        'banner-flappybird',
+        centerX - flapWidth / 2,
+        this.buffer.height * 0.18,
+        flapWidth,
+        flapHeight
+      );
+
+      const readyFrame = sheet.getFrame('banner-game-ready');
+      const readyWidth = readyFrame.width * baseScale;
+      const readyHeight = readyFrame.height * baseScale;
+      sheet.draw(
+        ctx,
+        'banner-game-ready',
+        centerX - readyWidth / 2,
+        this.buffer.height * 0.32,
+        readyWidth,
+        readyHeight
+      );
+
+      const instructionFrame = sheet.getFrame('banner-instruction');
+      const instructionWidth = instructionFrame.width * baseScale;
+      const instructionHeight = instructionFrame.height * baseScale;
+      sheet.draw(
+        ctx,
+        'banner-instruction',
+        centerX - instructionWidth / 2,
+        this.buffer.height * 0.46,
+        instructionWidth,
+        instructionHeight
+      );
+      return;
+    }
+
     const panelWidth = this.buffer.width * 0.72;
     const panelHeight = this.buffer.height * 0.28;
     const panelX = (this.buffer.width - panelWidth) / 2;
@@ -298,8 +386,12 @@ export class ClassicGame {
     value: number,
     centerX: number,
     top: number,
-    options: { fontSize?: number; align?: CanvasTextAlign } = {}
+    options: { fontSize?: number; align?: CanvasTextAlign; spriteSet?: 'lg' | 'md' } = {}
   ): void {
+    if (this.spriteSheet) {
+      this.drawSpriteScore(ctx, value, centerX, top, options);
+      return;
+    }
     const scale = this.buffer.height / CANVAS_HEIGHT;
     const fontSize = (options.fontSize ?? SCORE_NUMBER_HEIGHT) * scale;
 
@@ -317,7 +409,115 @@ export class ClassicGame {
     ctx.restore();
   }
 
+  private drawSpriteScore(
+    ctx: CanvasRenderingContext2D,
+    value: number,
+    centerX: number,
+    top: number,
+    options: { fontSize?: number; align?: CanvasTextAlign; spriteSet?: 'lg' | 'md' }
+  ): void {
+    if (!this.spriteSheet) {
+      return;
+    }
+
+    const digits = [...String(Math.max(0, value))];
+    const spriteSet = options.spriteSet ?? 'lg';
+    const prefix = spriteSet === 'md' ? 'number-md' : 'number-lg';
+    const scale = this.buffer.height / CANVAS_HEIGHT;
+    const baseHeight = spriteSet === 'md' ? SCORE_NUMBER_MEDIUM_HEIGHT : SCORE_NUMBER_HEIGHT;
+    const targetHeight = (options.fontSize ?? baseHeight) * scale;
+    const spacing = targetHeight * 0.12;
+    const frameNames = digits.map((digit) => `${prefix}-${digit}` as SpriteName);
+    const widths = frameNames.map((name) => {
+      const frame = this.spriteSheet!.getFrame(name);
+      return (frame.width / frame.height) * targetHeight;
+    });
+
+    const totalWidth = widths.reduce((sum, width) => sum + width, 0) + spacing * Math.max(digits.length - 1, 0);
+    let startX = centerX;
+    const align = options.align ?? 'center';
+    if (align === 'center') {
+      startX -= totalWidth / 2;
+    } else if (align === 'right') {
+      startX -= totalWidth;
+    }
+
+    let cursor = startX;
+    frameNames.forEach((name, index) => {
+      const width = widths[index];
+      this.spriteSheet!.draw(ctx, name, cursor, top, width, targetHeight);
+      cursor += width + spacing;
+    });
+  }
+
   private drawGameOver(ctx: CanvasRenderingContext2D): void {
+    if (this.spriteSheet) {
+      const sheet = this.spriteSheet;
+      const baseScale = this.buffer.width / CANVAS_WIDTH;
+      const centerX = this.buffer.width / 2;
+
+      const bannerFrame = sheet.getFrame('banner-game-over');
+      const bannerWidth = bannerFrame.width * baseScale;
+      const bannerHeight = bannerFrame.height * baseScale;
+      sheet.draw(
+        ctx,
+        'banner-game-over',
+        centerX - bannerWidth / 2,
+        this.buffer.height * 0.16,
+        bannerWidth,
+        bannerHeight
+      );
+
+      const boardFrame = sheet.getFrame('score-board');
+      const boardScale = baseScale * 1.05;
+      const boardWidth = boardFrame.width * boardScale;
+      const boardHeight = boardFrame.height * boardScale;
+      const boardX = centerX - boardWidth / 2;
+      const boardY = this.buffer.height * 0.32;
+      sheet.draw(ctx, 'score-board', boardX, boardY, boardWidth, boardHeight);
+
+      const scoreX = boardX + boardWidth * 0.75;
+      const scoreY = boardY + boardHeight * 0.3;
+      this.drawScore(ctx, this.score, scoreX, scoreY, {
+        align: 'right',
+        spriteSet: 'md',
+        fontSize: SCORE_NUMBER_MEDIUM_HEIGHT,
+      });
+
+      const bestY = boardY + boardHeight * 0.6;
+      this.drawScore(ctx, this.bestScore, scoreX, bestY, {
+        align: 'right',
+        spriteSet: 'md',
+        fontSize: SCORE_NUMBER_MEDIUM_HEIGHT,
+      });
+
+      if (this.newHighScoreAchieved) {
+        const toastFrame = sheet.getFrame('toast-new');
+        const toastWidth = toastFrame.width * baseScale;
+        const toastHeight = toastFrame.height * baseScale;
+        sheet.draw(
+          ctx,
+          'toast-new',
+          scoreX - toastWidth - 10 * baseScale,
+          scoreY - toastHeight * 1.2,
+          toastWidth,
+          toastHeight
+        );
+      }
+
+      const medalSprite = this.getMedalSprite();
+      if (medalSprite) {
+        const frame = sheet.getFrame(medalSprite);
+        const medalHeight = boardHeight * 0.36;
+        const medalWidth = medalHeight * (frame.width / frame.height);
+        const medalX = boardX + boardWidth * 0.2 - medalWidth / 2;
+        const medalY = boardY + boardHeight * 0.58 - medalHeight / 2;
+        sheet.draw(ctx, medalSprite, medalX, medalY, medalWidth, medalHeight);
+      }
+
+      return;
+    }
+
     const panelWidth = this.buffer.width * 0.78;
     const panelHeight = this.buffer.height * 0.36;
     const panelX = (this.buffer.width - panelWidth) / 2;
@@ -404,9 +604,12 @@ export class ClassicGame {
     this.background.chooseTheme();
     this.platform = new Platform(this.size);
     this.bird = new Bird(this.size);
+    this.bird.setSkin(this.randomBirdSkin());
     this.pipes = new PipeField(this.size, this.platform.getHeight());
+    this.applySpriteSheet();
     this.pipes.forceSpawn(2, 220);
     this.score = 0;
+    this.newHighScoreAchieved = false;
     this.updateHud();
     this.lastTimestamp = null;
 
