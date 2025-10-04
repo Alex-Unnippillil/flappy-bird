@@ -1,7 +1,9 @@
 # Flappy Bird Classic (TypeScript + Canvas)
 
 A TypeScript and Webpack recreation of the original 288×512 Flappy Bird. The
-project renders entirely with the Canvas 2D API, ships a deterministic game
+game boots through `src/main.ts`, which wires a responsive canvas, DOM HUD, and
+input bindings before handing control to the `ClassicGame` state machine. The
+entire experience renders with the Canvas 2D API, ships a deterministic game
 loop, and bundles static assets that can be deployed to GitHub Pages or any
 static host.
 
@@ -41,9 +43,6 @@ files under `src/` to trigger live rebuilds.
 | `npm run build` | Produce an optimized production bundle in `dist/`. |
 | `npm run start` | Alias for `npm run dev`. |
 | `npm run lint` | Run ESLint across the TypeScript sources. |
-| `npm run prettier-format` | Format `src/` and `types/` with Prettier. |
-| `npm run prettier-format:md` | Format Markdown and JavaScript helpers with Prettier. |
-| `npm test` | Placeholder command (returns an error by design). |
 
 ## Project Structure Highlights
 
