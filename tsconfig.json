@@ -11,7 +11,12 @@
     "checkJs": false,
     "strict": true,
     "noEmit": true,
-    "types": ["vitest", "vite/client", "node", "three"]
+    "types": ["vitest", "vite/client", "node", "three"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "src/*": ["src/*"]
+    }
   },
   "include": ["src/**/*", "playgrounds/**/*"],
   "exclude": ["dist", "node_modules"]
