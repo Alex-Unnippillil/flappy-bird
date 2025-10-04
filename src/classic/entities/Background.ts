@@ -1,5 +1,6 @@
 import { BG_SPEED } from '../constants.ts';
 import type { Dimension } from '../types.ts';
+import type { SpriteSheet } from '../spriteSheet.ts';
 
 type Theme = 'day' | 'night';
 
@@ -20,6 +21,7 @@ export class Background {
   private offset = 0;
   private theme: Theme = 'day';
   private cloudSeed = Math.random();
+  private spriteSheet: SpriteSheet | null = null;
 
   constructor(private readonly canvasSize: Dimension) {
     this.chooseTheme();
@@ -30,6 +32,10 @@ export class Background {
     this.cloudSeed = Math.random();
   }
 
+  setSpriteSheet(sheet: SpriteSheet | null): void {
+    this.spriteSheet = sheet;
+  }
+
   update(deltaFrames: number, speedPerFrame: number): void {
     const scrollSpeed = speedPerFrame > 0 ? speedPerFrame : BG_SPEED * this.canvasSize.width;
     this.offset = (this.offset + scrollSpeed * deltaFrames) % this.canvasSize.width;
@@ -37,15 +43,25 @@ export class Background {
 
   draw(ctx: CanvasRenderingContext2D): void {
     const { width, height } = this.canvasSize;
-    const theme = THEMES[this.theme];
 
+    if (this.spriteSheet) {
+      const key = this.theme === 'day' ? 'theme-day' : 'theme-night';
+      const baseWidth = width;
+      const offset = this.offset % baseWidth;
+
+      for (let x = -baseWidth; x < width + baseWidth; x += baseWidth) {
+        const drawX = Math.round(x - offset);
+        this.spriteSheet.draw(ctx, key, drawX, 0, baseWidth, height);
+      }
+      return;
+    }
+
+    const theme = THEMES[this.theme];
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
     gradient.addColorStop(0, theme.sky[0]);
     gradient.addColorStop(1, theme.sky[1]);
-
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
-
     this.drawClouds(ctx, theme.cloud);
     this.drawHills(ctx, theme.hill);
   }

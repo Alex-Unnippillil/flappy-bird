@@ -1,16 +1,26 @@
 import { GAME_SPEED, PIPE_DISTANCE } from '../constants.ts';
 import type { Dimension } from '../types.ts';
-import { PipePair, randomGapCenter } from './PipePair.ts';
+import { PipePair, type PipeColor, randomGapCenter } from './PipePair.ts';
+import type { SpriteSheet } from '../spriteSheet.ts';
 
 export class PipeField {
   private pipes: PipePair[] = [];
   private spawnTimer = 0;
+  private spriteSheet: SpriteSheet | null = null;
+  private readonly colors: PipeColor[] = ['green', 'red'];
 
   constructor(private readonly canvasSize: Dimension, private platformHeight: number) {}
 
   reset(): void {
     this.pipes = [];
     this.spawnTimer = 0;
+  }
+
+  setSpriteSheet(sheet: SpriteSheet | null): void {
+    this.spriteSheet = sheet;
+    for (const pipe of this.pipes) {
+      pipe.setSpriteSheet(sheet);
+    }
   }
 
   setPlatformHeight(height: number): void {
@@ -54,6 +64,12 @@ export class PipeField {
       randomGapCenter(this.canvasSize, this.platformHeight)
     );
     pipe.x += pipe.width;
+    pipe.setSpriteSheet(this.spriteSheet);
+    pipe.setColor(this.randomColor());
     this.pipes.push(pipe);
+  }
+
+  private randomColor(): PipeColor {
+    return this.colors[Math.floor(Math.random() * this.colors.length)];
   }
 }
