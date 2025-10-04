@@ -1,0 +1,27 @@
+:root {
+  --layout-safe-area-top: env(safe-area-inset-top, 0px);
+  --layout-safe-area-right: env(safe-area-inset-right, 0px);
+  --layout-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --layout-safe-area-left: env(safe-area-inset-left, 0px);
+
+  --layout-body-padding-block: clamp(24px, 6vw, 80px);
+  --layout-body-padding-inline: clamp(24px, 6vw, 80px);
+  --layout-body-padding-block-start: calc(
+    var(--layout-body-padding-block, 0px) + var(--layout-safe-area-top)
+  );
+  --layout-body-padding-block-end: calc(
+    var(--layout-body-padding-block, 0px) + var(--layout-safe-area-bottom)
+  );
+  --layout-body-padding-inline-start: calc(
+    var(--layout-body-padding-inline, 0px) + var(--layout-safe-area-left)
+  );
+  --layout-body-padding-inline-end: calc(
+    var(--layout-body-padding-inline, 0px) + var(--layout-safe-area-right)
+  );
+
+  --layout-stage-padding: clamp(12px, 5vw, 32px);
+  --hud-padding-block-start: calc(var(--hud-padding, 0px) + var(--layout-safe-area-top));
+  --hud-padding-block-end: calc(var(--hud-padding, 0px) + var(--layout-safe-area-bottom));
+  --hud-padding-inline-start: calc(var(--hud-padding, 0px) + var(--layout-safe-area-left));
+  --hud-padding-inline-end: calc(var(--hud-padding, 0px) + var(--layout-safe-area-right));
+}

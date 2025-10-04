@@ -1,3 +1,5 @@
+@import "./styles/tokens.css";
+
 :root {
   color-scheme: light;
   --hud-bg: rgba(255, 255, 255, 0.75);
@@ -24,7 +26,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding-block-start: var(--layout-body-padding-block-start);
+  padding-block-end: var(--layout-body-padding-block-end);
+  padding-inline-start: var(--layout-body-padding-inline-start);
+  padding-inline-end: var(--layout-body-padding-inline-end);
   color: var(--hud-text);
 }
 
@@ -96,7 +101,7 @@ body {
   justify-content: center;
   background: rgba(255, 255, 255, 0.65);
   border-radius: 24px;
-  padding: clamp(12px, 5vw, 32px);
+  padding: var(--layout-stage-padding);
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
 }
 
@@ -183,16 +188,14 @@ kbd {
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 16px;
+  :root {
+    --layout-body-padding-block: 16px;
+    --layout-body-padding-inline: 16px;
+    --layout-stage-padding: clamp(8px, 8vw, 24px);
   }
 
   .game-layout {
     grid-template-columns: 1fr;
-  }
-
-  .game-stage {
-    padding: clamp(8px, 8vw, 24px);
   }
 
   #gameCanvas {

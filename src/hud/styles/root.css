@@ -1,3 +1,5 @@
+@import "../../../styles/tokens.css";
+
 #hud-root {
   position: absolute;
   inset: 0;
@@ -23,7 +25,10 @@
   width: min(100vw, var(--hud-max-width));
   min-width: var(--hud-min-width);
   gap: var(--hud-gap);
-  padding: var(--hud-padding);
+  padding-block-start: var(--hud-padding-block-start);
+  padding-block-end: var(--hud-padding-block-end);
+  padding-inline-start: var(--hud-padding-inline-start);
+  padding-inline-end: var(--hud-padding-inline-end);
   box-sizing: border-box;
   pointer-events: none;
   margin: 0 auto;
