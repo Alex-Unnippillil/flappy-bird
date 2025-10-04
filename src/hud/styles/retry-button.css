@@ -1,0 +1,34 @@
+.retry-button {
+  appearance: none;
+  border: none;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ffaf00, #ff6b00);
+  color: #1b1b1b;
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.retry-button:disabled,
+.retry-button[aria-disabled="true"] {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.retry-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.25);
+}
+
+.retry-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+.retry-button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(255, 111, 0, 0.45);
+}
