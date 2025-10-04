@@ -9,7 +9,7 @@ import {
   emitBestRibbonEvent,
   ensureBestRibbon,
 } from "../hud/components/BestRibbon.ts";
-import { getMedalForScore, Medal } from "../hud/logic/medals";
+import { getMedalForScore } from "../hud/logic/medals";
 import { FinalScore } from "../hud/components/FinalScore.ts";
 import { HudRoot } from "../hud/HudRoot.ts";
 import { PauseMenu } from "../hud/components/PauseMenu.ts";
@@ -57,7 +57,6 @@ export function createHudController(elements = {}, options = {}) {
 
   const haptics = options.haptics ?? createHapticsAdapter();
   const supportsHaptics = Boolean(haptics?.supported);
-  let lastScore = 0;
   let lastMedal = null;
   const finalScore = overlay ? new FinalScore() : null;
 
@@ -195,6 +194,9 @@ export function createHudController(elements = {}, options = {}) {
     setScore(value) {
       const numericValue = toNumeric(value, 0);
       safeText(scoreEl, numericValue);
+
+      const previousScore = lastScore;
+
       if (numericValue !== lastScore) {
         const detail = {
           value: numericValue,
@@ -208,21 +210,22 @@ export function createHudController(elements = {}, options = {}) {
           emitEvent("score:decrement", detail);
         }
         lastScore = numericValue;
-      currentScore = Number(value) || 0;
-      safeText(scoreEl, value);
-      const numericValue = Number(value);
+      }
+
+      currentScore = numericValue;
+
       if (
         supportsHaptics &&
         Number.isFinite(numericValue) &&
-        numericValue > lastScore &&
+        numericValue > previousScore &&
         typeof haptics.scoreMilestone === "function"
       ) {
         haptics.scoreMilestone(numericValue);
       }
-      if (Number.isFinite(numericValue)) {
-        lastScore = numericValue;
+
       announceMilestone();
-      const medal = getMedalForScore(Number(value));
+
+      const medal = getMedalForScore(numericValue);
       if (medal !== currentMedal) {
         currentMedal = medal;
         notifyMedalChange(currentMedal);
@@ -300,9 +303,11 @@ export function createHudController(elements = {}, options = {}) {
     },
     clearMedal() {
       hudAdapter.emitMedal({ medal: Medal.None });
+    },
     events: {
       on: addEventListener,
       off: removeEventListener,
+    },
     onMedalChange(handler = noop) {
       if (typeof handler !== "function") {
         return noop;
@@ -314,11 +319,12 @@ export function createHudController(elements = {}, options = {}) {
     },
     getCurrentMedal() {
       return currentMedal;
+    },
     pauseMenu,
-    hudRoot
-    }
+    hudRoot,
     dispose() {
       dimLayer?.dispose();
     },
   };
+}
 
