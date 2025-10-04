@@ -231,6 +231,7 @@ export function handleCanvasClick() {
   ensureState();
 
   if (state.awaitingStart || state.gameOver) {
+    const wasStartingRound = state.awaitingStart || state.gameOver;
     startGame();
     if (state.isRunning && state.bird) {
       state.bird.jump();
