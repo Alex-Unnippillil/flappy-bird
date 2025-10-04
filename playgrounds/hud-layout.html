@@ -41,6 +41,76 @@
 
       .game-layout {
         gap: 1.5rem;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HUD Digit Layout Harness</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="../src/hud/styles/digits.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(circle at 20% 20%, #f0f9ff, #d0ebff);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(16px, 5vw, 64px);
+      }
+
+      main {
+        display: grid;
+        gap: 32px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        max-width: 960px;
+        width: 100%;
+      }
+
+      .demo-card {
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .demo-card h2 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+
+      .demo-hud {
+        display: grid;
+        gap: 12px;
+      }
+
+      .demo-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: rgba(59, 130, 246, 0.08);
+        border-radius: 16px;
+      }
+
+      .demo-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(15, 23, 42, 0.65);
+      }
+
+      .demo-card--baseline .hud-value {
+        font-variant-numeric: normal;
+        font-feature-settings: normal;
+        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+      }
+
+      .demo-description {
+        margin: 0;
+        color: rgba(15, 23, 42, 0.7);
+        line-height: 1.6;
       }
     </style>
   </head>
@@ -91,5 +161,69 @@
     </main>
 
     <script type="module" src="./hud-layout.ts"></script>
+    <main>
+      <section class="demo-card">
+        <h2>Tabular numbers applied</h2>
+        <div class="demo-hud" aria-live="polite">
+          <div class="demo-row">
+            <span class="demo-label">Score</span>
+            <span class="hud-value" data-score="tabular">000</span>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">Best</span>
+            <span class="hud-value" data-best="tabular">052</span>
+          </div>
+        </div>
+        <p class="demo-description">
+          Digits remain perfectly aligned as values animate, creating a stable
+          HUD layout.
+        </p>
+      </section>
+      <section class="demo-card demo-card--baseline">
+        <h2>Baseline proportional digits</h2>
+        <div class="demo-hud" aria-live="polite">
+          <div class="demo-row">
+            <span class="demo-label">Score</span>
+            <span class="hud-value" data-score="baseline">000</span>
+          </div>
+          <div class="demo-row">
+            <span class="demo-label">Best</span>
+            <span class="hud-value" data-best="baseline">052</span>
+          </div>
+        </div>
+        <p class="demo-description">
+          Without tabular numerals, each digit has a different width, causing
+          the totals to jitter.
+        </p>
+      </section>
+    </main>
+    <script>
+      const samples = [
+        ["004", "004"],
+        ["018", "032"],
+        ["099", "105"],
+        ["108", "128"],
+        ["199", "207"],
+        ["250", "310"],
+      ];
+
+      let index = 0;
+      const scoreTabular = document.querySelector('[data-score="tabular"]');
+      const bestTabular = document.querySelector('[data-best="tabular"]');
+      const scoreBaseline = document.querySelector('[data-score="baseline"]');
+      const bestBaseline = document.querySelector('[data-best="baseline"]');
+
+      function updateValues() {
+        const [score, best] = samples[index];
+        scoreTabular.textContent = score;
+        bestTabular.textContent = best;
+        scoreBaseline.textContent = score;
+        bestBaseline.textContent = best;
+        index = (index + 1) % samples.length;
+      }
+
+      updateValues();
+      setInterval(updateValues, 1200);
+    </script>
   </body>
 </html>
