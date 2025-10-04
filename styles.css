@@ -1,3 +1,13 @@
+@import "./src/hud/styles/z.css";
+
+/*
+  Stack order reference:
+  --z-game-canvas: base playfield surface.
+  --z-hud: persistent HUD chrome surrounding the stage.
+  --z-overlay: blocking overlays such as the intro/game-over screen.
+  --z-tooltip: transient affordances that must float above overlays.
+*/
+
 :root {
   color-scheme: light;
   --hud-bg: rgba(255, 255, 255, 0.75);
@@ -37,6 +47,8 @@ body {
 }
 
 .hud-panel {
+  position: relative;
+  z-index: var(--z-hud);
   backdrop-filter: blur(12px);
   background: var(--hud-bg);
   border: 1px solid var(--hud-border);
@@ -72,6 +84,17 @@ body {
   font-weight: 700;
 }
 
+/* hud-font-smoothing:start */
+@media (min-resolution: 1.25dppx) and (max-resolution: 3dppx) {
+  .hud-panel,
+  .hud-panel * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+/* hud-font-smoothing:end */
+
 .speed-meter {
   position: relative;
   width: 100%;
@@ -101,6 +124,8 @@ body {
 }
 
 #gameCanvas {
+  position: relative;
+  z-index: var(--z-game-canvas);
   width: min(540px, 80vw);
   height: calc(min(540px, 80vw) * 1.5238);
   max-height: 85vh;
@@ -130,11 +155,76 @@ body {
   text-align: center;
   padding: 32px;
   transition: opacity 0.3s ease;
+  z-index: var(--z-overlay);
 }
 
 .game-overlay.is-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.hud-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.hud-layer {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hud-layer--modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-menu {
+  pointer-events: auto;
+  min-width: min(320px, 90%);
+  max-width: min(440px, 90%);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  border-radius: 24px;
+  padding: 28px clamp(24px, 5vw, 36px);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.45);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pause-menu[hidden] {
+  display: none;
+}
+
+.pause-menu__title {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  margin: 0;
+}
+
+.pause-menu__description {
+  margin: 0;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.pause-menu__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pause-menu__button {
+  width: 100%;
+  justify-content: center;
+}
+
+.pause-menu__button[aria-pressed="true"] {
+  background: rgba(37, 99, 235, 0.45);
 }
 
 .game-message {
