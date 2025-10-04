@@ -1,6 +1,6 @@
 # Codex Web Cloud Modernization Guide
 
-## Project Snapshot (May 2024)
+## Project Snapshot
 - **Runtime:** Vite + TypeScript/ESM modules feed both the game loop (`src/game/`) and HUD/view layer (`src/hud/`, `src/rendering/`).
 - **Game loop:** `src/game/systems/loop.js` orchestrates deterministic state, PRNG, spawning, scoring, and dispatches HUD + renderer updates. State is created in `src/game/systems/state.js` and persists best scores in localStorage. Pipes and bird logic live in `src/game/entities/`.
 - **Rendering:** `src/rendering/three/renderer.js` owns the Three.js scene (bird mesh, clouds, pipe pooling, lighting). HUD composition is modularized under `src/hud/` and wired up through `createHudController`.
