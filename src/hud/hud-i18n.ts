@@ -1,3 +1,5 @@
+const DEFAULT_LOCALE = 'en' as const;
+
 const HUD_MESSAGES = {
   en: {
     'hud.hints.title': 'Flight academy',
@@ -32,13 +34,13 @@ export const HINT_KEYS = [
 export type HintKey = (typeof HINT_KEYS)[number];
 export type HudLocale = keyof typeof HUD_MESSAGES;
 
-const DEFAULT_LOCALE: HudLocale = 'en';
+const DEFAULT_HINT_LOCALE: HudLocale = DEFAULT_LOCALE;
 
 const SUPPORTED_LOCALES = Object.keys(HUD_MESSAGES) as HudLocale[];
 
 export function resolveLocale(input?: string | null): HudLocale {
   if (!input) {
-    return DEFAULT_LOCALE;
+    return DEFAULT_HINT_LOCALE;
   }
 
   const normalized = input.toLowerCase();
@@ -51,7 +53,7 @@ export function resolveLocale(input?: string | null): HudLocale {
     return languageCode as HudLocale;
   }
 
-  return DEFAULT_LOCALE;
+  return DEFAULT_HINT_LOCALE;
 }
 
 export type HudMessageKey = HintKey | 'hud.hints.title';
@@ -59,7 +61,7 @@ export type HudMessageKey = HintKey | 'hud.hints.title';
 export function translate(locale: string | undefined, key: HudMessageKey): string {
   const resolved = resolveLocale(locale);
   const messages = HUD_MESSAGES[resolved];
-  const fallback = HUD_MESSAGES[DEFAULT_LOCALE];
+  const fallback = HUD_MESSAGES[DEFAULT_HINT_LOCALE];
   return messages[key] ?? fallback[key];
 }
 
@@ -88,18 +90,24 @@ export type HudStringKey = keyof typeof ENGLISH_DICTIONARY;
 
 type HudDictionary = Record<HudStringKey, string>;
 
+const SPANISH_DICTIONARY: HudDictionary = {
+  scoreLabel: 'Puntuación',
+  bestLabel: 'Mejor',
+  tapToStart: 'Toca para comenzar',
+};
+
 const FRENCH_DICTIONARY: HudDictionary = {
   scoreLabel: 'Score',
   bestLabel: 'Record',
   tapToStart: 'Touchez pour commencer',
 };
 
-const DICTIONARIES: Record<string, HudDictionary> = {
+const DICTIONARIES: Record<HudLocale, HudDictionary> = {
   en: ENGLISH_DICTIONARY,
+  es: SPANISH_DICTIONARY,
   fr: FRENCH_DICTIONARY,
 };
 
-const DEFAULT_LOCALE = 'en';
 const LOCALE_SEPARATOR_REGEX = /[-_]/;
 
 const normalizeLocale = (locale?: string): string => {
