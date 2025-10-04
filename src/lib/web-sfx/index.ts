@@ -67,8 +67,8 @@ export default class WebSfx {
       bufferSource.addEventListener('ended', () => endedcb?.());
       bufferSource.connect(WebSfx.gainContext!);
       bufferSource.start();
-    } catch (error) {
-      throw new Error(`Failed to play audio: ${key}. Error: ${String(error)}`);
+    } catch (err) {
+      throw new Error(`Failed to play audio: ${key}. Error: ${err}`);
     }
   }
 
@@ -88,9 +88,7 @@ export default class WebSfx {
 
     try {
       WebSfx.gainContext!.gain.value = num;
-    } catch (error) {
-      console.error('Failed to adjust audio volume', error);
-    }
+    } catch (err) {}
   }
 
   /**
@@ -159,19 +157,23 @@ export default class WebSfx {
     });
   }
 
-  private static async load_requests(name: string, path: string): Promise<ILoadRequest> {
-    const response = await fetch(path, { method: 'GET', mode: 'no-cors' });
+  private static load_requests(name: string, path: string): Promise<ILoadRequest> {
+    return new Promise<ILoadRequest>(async (resolve: Function, reject: Function) => {
+      try {
+        const response = await fetch(path, { method: 'GET', mode: 'no-cors' });
 
-    if (!response.ok) {
-      throw new TypeError(`Erro while fetching '${path}`);
-    }
+        if (!response.ok) throw new TypeError(`Erro while fetching '${path}`);
 
-    // We cannot cannot cache array buffer with dettached head
-    const buffer = await response.arrayBuffer();
+        // We cannot cannot cache array buffer with dettached head
+        const buffer = await response.arrayBuffer();
 
-    // But luckily, we can do cache the AudioBuffer
-    const content = await WebSfx.audioContext!.decodeAudioData(buffer);
+        // But luckily, we can do cache the AudioBuffer
+        const content = await WebSfx.audioContext!.decodeAudioData(buffer);
 
-    return { content, path, name };
+        resolve({ content, path, name });
+      } catch (err) {
+        reject();
+      }
+    });
   }
 }

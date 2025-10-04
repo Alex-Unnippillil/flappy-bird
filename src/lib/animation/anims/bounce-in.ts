@@ -14,7 +14,7 @@ export interface IBounceIn {
   };
 }
 
-export type IBounceInConstructor = Partial<IBounceIn>;
+export interface IBounceInConstructor extends Partial<IBounceIn> {}
 
 export interface IBounceInStatus {
   running: boolean;
