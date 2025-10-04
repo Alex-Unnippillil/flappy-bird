@@ -1,19 +1,19 @@
 import { createGameOverTitle } from "../hud/components/GameOverTitle.ts";
 import { MedalBanner } from "../hud/components/MedalBanner.ts";
 import { hudAdapter, Medal } from "../hud/adapter.ts";
-
-export { hudAdapter, Medal } from "../hud/adapter.ts";
 import { PerfectIndicator } from "../hud/components/PerfectIndicator.ts";
 import { createHapticsAdapter } from "../hud/util/haptics.ts";
 import {
   emitBestRibbonEvent,
   ensureBestRibbon,
 } from "../hud/components/BestRibbon.ts";
-import { getMedalForScore, Medal } from "../hud/logic/medals";
+import { getMedalForScore } from "../hud/logic/medals";
 import { FinalScore } from "../hud/components/FinalScore.ts";
 import { HudRoot } from "../hud/HudRoot.ts";
 import { PauseMenu } from "../hud/components/PauseMenu.ts";
 import { DimLayer } from "../hud/components/DimLayer.ts";
+
+export { hudAdapter, Medal } from "../hud/adapter.ts";
 
 const noop = () => {};
 
@@ -29,6 +29,21 @@ function resolveElement(element) {
   return element;
 }
 
+function safeText(target, value) {
+  if (!target) return;
+  target.textContent = String(value);
+}
+
+function toggle(target, shouldShow) {
+  if (!target) return;
+  target.classList.toggle("is-hidden", !shouldShow);
+}
+
+function toNumeric(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export function createHudController(elements = {}, options = {}) {
   const scoreEl = resolveElement(elements.score ?? "#scoreValue");
   const bestEl = resolveElement(elements.best ?? "#bestValue");
@@ -37,6 +52,11 @@ export function createHudController(elements = {}, options = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const medalEl = resolveElement(elements.medal ?? null);
+  const perfectIndicatorEl = resolveElement(
+    elements.perfectIndicator ?? "#perfectIndicator"
+  );
+
   const overlayParent =
     overlay?.parentElement instanceof HTMLElement ? overlay.parentElement : null;
   const medalMount =
@@ -45,26 +65,22 @@ export function createHudController(elements = {}, options = {}) {
   new MedalBanner({
     mount: medalMount,
   });
-  const perfectIndicatorEl = resolveElement(
-    elements.perfectIndicator ?? "#perfectIndicator"
-  );
-
-  const toNumeric = (value, fallback = 0) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  };
-  const medalEl = resolveElement(elements.medal);
 
   const haptics = options.haptics ?? createHapticsAdapter();
   const supportsHaptics = Boolean(haptics?.supported);
-  let lastScore = 0;
-  let lastMedal = null;
-  const finalScore = overlay ? new FinalScore() : null;
 
+  let lastScore = toNumeric(scoreEl?.textContent ?? 0);
+  let currentScore = lastScore;
+  let currentBest = toNumeric(bestEl?.textContent ?? 0);
+  let lastMedal = null;
+  let currentMedal = Medal.None;
+
+  const finalScore = overlay ? new FinalScore() : null;
   if (overlay && finalScore) {
-    finalScore.attach(overlay, startButton);
+    finalScore.attach(overlay, startButton ?? undefined);
     finalScore.hide();
   }
+
   const dimLayer = overlay ? new DimLayer(overlay) : null;
 
   const hudRootHost = overlay?.parentElement ?? document.body;
@@ -80,16 +96,6 @@ export function createHudController(elements = {}, options = {}) {
       overlay.appendChild(gameOverTitle.element);
     }
   }
-
-  const safeText = (target, value) => {
-    if (!target) return;
-    target.textContent = String(value);
-  };
-
-  const toggle = (target, shouldShow) => {
-    if (!target) return;
-    target.classList.toggle("is-hidden", !shouldShow);
-  };
 
   const setSpeed = (ratio) => {
     const clamped = Math.max(0, Math.min(1, Number.isFinite(ratio) ? ratio : 0));
@@ -131,20 +137,23 @@ export function createHudController(elements = {}, options = {}) {
         })
       : null;
 
-  let lastScore = toNumeric(scoreEl?.textContent ?? 0);
-
-  const showMessage = (text) => {
-    if (!messageEl) return;
-    messageEl.textContent = text;
-  };
-
   ensureBestRibbon();
 
-  let currentScore = 0;
-  let currentBest = 0;
   let tieAnnouncedAt = 0;
-  let bestThreshold = 0;
+  let bestThreshold = currentBest;
   let lastBeatScore = 0;
+
+  const medalListeners = new Set();
+
+  const notifyMedalChange = (medal) => {
+    medalListeners.forEach((listener) => {
+      try {
+        listener(medal);
+      } catch (error) {
+        console.error("HUD medal listener error", error);
+      }
+    });
+  };
 
   const announceMilestone = () => {
     if (currentScore <= 0) {
@@ -178,23 +187,17 @@ export function createHudController(elements = {}, options = {}) {
     startButton.blur();
   });
 
-  let currentMedal = Medal.None;
-  const medalListeners = new Set();
-
-  const notifyMedalChange = (medal) => {
-    medalListeners.forEach((listener) => {
-      try {
-        listener(medal);
-      } catch (error) {
-        console.error("HUD medal listener error", error);
-      }
-    });
+  const showMessage = (text) => {
+    if (!messageEl) return;
+    messageEl.textContent = text;
   };
 
   return {
     setScore(value) {
       const numericValue = toNumeric(value, 0);
+      currentScore = numericValue;
       safeText(scoreEl, numericValue);
+
       if (numericValue !== lastScore) {
         const detail = {
           value: numericValue,
@@ -207,31 +210,30 @@ export function createHudController(elements = {}, options = {}) {
         } else if (detail.delta < 0) {
           emitEvent("score:decrement", detail);
         }
+
+        if (
+          supportsHaptics &&
+          detail.delta > 0 &&
+          typeof haptics.scoreMilestone === "function"
+        ) {
+          haptics.scoreMilestone(numericValue);
+        }
+
         lastScore = numericValue;
-      currentScore = Number(value) || 0;
-      safeText(scoreEl, value);
-      const numericValue = Number(value);
-      if (
-        supportsHaptics &&
-        Number.isFinite(numericValue) &&
-        numericValue > lastScore &&
-        typeof haptics.scoreMilestone === "function"
-      ) {
-        haptics.scoreMilestone(numericValue);
-      }
-      if (Number.isFinite(numericValue)) {
-        lastScore = numericValue;
-      announceMilestone();
-      const medal = getMedalForScore(Number(value));
-      if (medal !== currentMedal) {
-        currentMedal = medal;
-        notifyMedalChange(currentMedal);
+        announceMilestone();
+
+        const medal = getMedalForScore(numericValue);
+        if (medal !== currentMedal) {
+          currentMedal = medal;
+          notifyMedalChange(currentMedal);
+        }
       }
     },
     setBest(value) {
-      currentBest = Number(value) || 0;
+      const numericValue = toNumeric(value, 0);
+      currentBest = numericValue;
       bestThreshold = Math.max(bestThreshold, currentBest);
-      safeText(bestEl, value);
+      safeText(bestEl, numericValue);
       announceMilestone();
     },
     setMedal(tier) {
@@ -271,16 +273,14 @@ export function createHudController(elements = {}, options = {}) {
     showGameOver(score, best, options = {}) {
       toggle(overlay, true);
       gameOverTitle?.show();
-      showMessage(`Score: ${score} · Best: ${best}`);
-      showMessage("Game over! Tap or press Space to try again");
       const isRecord =
         typeof options.isNewRecord === "boolean"
           ? options.isNewRecord
           : score > 0 && score === best;
+      showMessage("Game over! Tap or press Space to try again");
       finalScore?.setScores(score, best, { isRecord });
       finalScore?.show();
       dimLayer?.setActive(true);
-      showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
       if (startButton) {
         startButton.textContent = "Play again";
@@ -288,6 +288,10 @@ export function createHudController(elements = {}, options = {}) {
     },
     destroy() {
       perfectIndicator?.destroy();
+      dimLayer?.dispose();
+      pauseMenu.destroy();
+      hudRoot.destroy();
+      gameOverTitle?.destroy?.();
     },
     onStart(handler = noop) {
       startButton?.addEventListener("click", handler);
@@ -300,9 +304,11 @@ export function createHudController(elements = {}, options = {}) {
     },
     clearMedal() {
       hudAdapter.emitMedal({ medal: Medal.None });
+    },
     events: {
       on: addEventListener,
       off: removeEventListener,
+    },
     onMedalChange(handler = noop) {
       if (typeof handler !== "function") {
         return noop;
@@ -314,11 +320,12 @@ export function createHudController(elements = {}, options = {}) {
     },
     getCurrentMedal() {
       return currentMedal;
-    pauseMenu,
-    hudRoot
-    }
-    dispose() {
-      dimLayer?.dispose();
+    },
+    get pauseMenu() {
+      return pauseMenu;
+    },
+    get hudRoot() {
+      return hudRoot;
     },
   };
-
+}
