@@ -2,6 +2,7 @@ import { Bird, Pipe } from "../entities/index.js";
 import { CONFIG, resetGameState, persistBestScore } from "./state.js";
 import { createThreeRenderer } from "../../rendering/three/renderer.js";
 import { createHudController } from "../../rendering/index.js";
+import { HUD_GAME_OVER } from "../../hud/components/SessionStats.ts";
 
 let state = null;
 let renderer = null;
@@ -95,6 +96,9 @@ function prepareRound() {
   ensureRenderer();
 
   resetGameState(state);
+  state.sessionStats.attempts += 1;
+  state.sessionStats.lastScore = 0;
+  state.sessionStats.lastDurationMs = 0;
   state.bird = new Bird(80, state.playfieldHeight / 2, {
     width: 38,
     height: 26,
@@ -122,8 +126,34 @@ function endRound() {
   state.awaitingStart = true;
   syncHighScore();
   refreshHud();
+  state.sessionStats.lastScore = state.score;
+  state.sessionStats.lastDurationMs = state.roundDurationMs;
+  state.sessionStats.totalScore += state.score;
+  state.sessionStats.totalDurationMs += state.roundDurationMs;
+  state.sessionStats.bestScore = Math.max(
+    state.sessionStats.bestScore,
+    state.score
+  );
   if (hud) {
     hud.showGameOver(state.score, state.bestScore);
+  }
+  if (typeof window !== "undefined") {
+    const attempts = state.sessionStats.attempts;
+    window.dispatchEvent(
+      new CustomEvent(HUD_GAME_OVER, {
+        detail: {
+          attempts,
+          averageScore:
+            attempts > 0 ? state.sessionStats.totalScore / attempts : 0,
+          averageDurationMs:
+            attempts > 0 ? state.sessionStats.totalDurationMs / attempts : 0,
+          lastScore: state.sessionStats.lastScore,
+          lastDurationMs: state.sessionStats.lastDurationMs,
+          sessionBest: state.sessionStats.bestScore,
+          bestScore: state.bestScore,
+        },
+      })
+    );
   }
   if (renderer) {
     renderer.markGameOver();
@@ -142,6 +172,7 @@ function update(timestamp) {
   const deltaMs = Math.min(now - state.lastTimestamp, 1000 / 15);
   state.lastTimestamp = now;
   const delta = deltaMs / (1000 / 60);
+  state.roundDurationMs += deltaMs;
 
   state.spawnTimer += deltaMs;
   if (state.spawnTimer >= CONFIG.pipeIntervalMs) {
