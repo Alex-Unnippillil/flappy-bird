@@ -1,3 +1,8 @@
+import {
+  emitBestRibbonEvent,
+  ensureBestRibbon,
+} from "../hud/components/BestRibbon.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -46,25 +51,68 @@ export function createHudController(elements = {}) {
     messageEl.textContent = text;
   };
 
+  ensureBestRibbon();
+
+  let currentScore = 0;
+  let currentBest = 0;
+  let tieAnnouncedAt = 0;
+  let bestThreshold = 0;
+  let lastBeatScore = 0;
+
+  const announceMilestone = () => {
+    if (currentScore <= 0) {
+      return;
+    }
+
+    if (
+      currentBest > 0 &&
+      currentScore === currentBest &&
+      currentScore > tieAnnouncedAt &&
+      currentScore !== lastBeatScore
+    ) {
+      emitBestRibbonEvent("tie", currentScore);
+      tieAnnouncedAt = currentScore;
+    }
+
+    if (currentScore > bestThreshold) {
+      emitBestRibbonEvent("beat", currentScore);
+      bestThreshold = currentScore;
+      lastBeatScore = currentScore;
+    }
+  };
+
+  const resetMilestones = () => {
+    tieAnnouncedAt = 0;
+    bestThreshold = currentBest;
+    lastBeatScore = 0;
+  };
+
   startButton?.addEventListener("click", () => {
     startButton.blur();
   });
 
   return {
     setScore(value) {
+      currentScore = Number(value) || 0;
       safeText(scoreEl, value);
+      announceMilestone();
     },
     setBest(value) {
+      currentBest = Number(value) || 0;
+      bestThreshold = Math.max(bestThreshold, currentBest);
       safeText(bestEl, value);
+      announceMilestone();
     },
     setSpeed,
     showIntro() {
       toggle(overlay, true);
       showMessage("Tap, click, or press Space to start");
       toggle(startButton, true);
+      resetMilestones();
     },
     showRunning() {
       toggle(overlay, false);
+      resetMilestones();
     },
     showGameOver(score, best) {
       toggle(overlay, true);

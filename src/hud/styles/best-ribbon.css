@@ -1,0 +1,113 @@
+.best-ribbon {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fffbf0, #ffe4a5);
+  color: #512800;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(110%, 0, 0);
+  transition: transform 240ms ease-out, opacity 220ms ease-out;
+  z-index: 40;
+}
+
+.best-ribbon__badge {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffce64, #ffb13d);
+  font-size: 1.35rem;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.65);
+  animation: best-ribbon-pop 480ms ease-out both;
+}
+
+.best-ribbon__content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.best-ribbon__title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(50, 30, 0, 0.7);
+}
+
+.best-ribbon__value {
+  font-size: 1.4rem;
+  line-height: 1.05;
+}
+
+.best-ribbon__status {
+  font-size: 0.75rem;
+  color: rgba(50, 30, 0, 0.72);
+}
+
+.best-ribbon--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.best-ribbon[data-state="beat"] .best-ribbon__badge {
+  animation-name: best-ribbon-pop, best-ribbon-glow;
+}
+
+@keyframes best-ribbon-pop {
+  0% {
+    transform: scale(0.75);
+  }
+  70% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes best-ribbon-glow {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 168, 0, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 24px rgba(255, 193, 72, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(255, 168, 0, 0.4);
+  }
+}
+
+@media (max-width: 600px) {
+  .best-ribbon {
+    top: auto;
+    bottom: 1rem;
+    right: 50%;
+    transform: translate3d(50%, 150%, 0);
+    padding: 0.6rem 0.9rem;
+  }
+
+  .best-ribbon--visible {
+    transform: translate3d(50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .best-ribbon,
+  .best-ribbon__badge {
+    animation: none !important;
+    transition: none;
+  }
+}
