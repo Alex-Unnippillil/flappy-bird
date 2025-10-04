@@ -99,17 +99,17 @@ const DICTIONARIES: Record<string, HudDictionary> = {
   fr: FRENCH_DICTIONARY,
 };
 
-const DEFAULT_LOCALE = 'en';
+const DICTIONARY_DEFAULT_LOCALE = DEFAULT_LOCALE;
 const LOCALE_SEPARATOR_REGEX = /[-_]/;
 
 const normalizeLocale = (locale?: string): string => {
   if (!locale) {
-    return DEFAULT_LOCALE;
+    return DICTIONARY_DEFAULT_LOCALE;
   }
 
   const primarySubtag = locale.toLowerCase().split(LOCALE_SEPARATOR_REGEX)[0];
 
-  return primarySubtag || DEFAULT_LOCALE;
+  return primarySubtag || DICTIONARY_DEFAULT_LOCALE;
 };
 
 const getHudDictionary = (locale?: string): HudDictionary => {
