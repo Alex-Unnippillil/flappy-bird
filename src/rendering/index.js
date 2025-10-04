@@ -1,3 +1,7 @@
+import {
+  emitBestRibbonEvent,
+  ensureBestRibbon,
+} from "../hud/components/BestRibbon.ts";
 import { getMedalForScore, Medal } from "../hud/logic/medals";
 import { FinalScore } from "../hud/components/FinalScore.ts";
 import { HudRoot } from "../hud/HudRoot.ts";
@@ -64,6 +68,42 @@ export function createHudController(elements = {}) {
     messageEl.textContent = text;
   };
 
+  ensureBestRibbon();
+
+  let currentScore = 0;
+  let currentBest = 0;
+  let tieAnnouncedAt = 0;
+  let bestThreshold = 0;
+  let lastBeatScore = 0;
+
+  const announceMilestone = () => {
+    if (currentScore <= 0) {
+      return;
+    }
+
+    if (
+      currentBest > 0 &&
+      currentScore === currentBest &&
+      currentScore > tieAnnouncedAt &&
+      currentScore !== lastBeatScore
+    ) {
+      emitBestRibbonEvent("tie", currentScore);
+      tieAnnouncedAt = currentScore;
+    }
+
+    if (currentScore > bestThreshold) {
+      emitBestRibbonEvent("beat", currentScore);
+      bestThreshold = currentScore;
+      lastBeatScore = currentScore;
+    }
+  };
+
+  const resetMilestones = () => {
+    tieAnnouncedAt = 0;
+    bestThreshold = currentBest;
+    lastBeatScore = 0;
+  };
+
   startButton?.addEventListener("click", () => {
     startButton.blur();
   });
@@ -83,7 +123,9 @@ export function createHudController(elements = {}) {
 
   return {
     setScore(value) {
+      currentScore = Number(value) || 0;
       safeText(scoreEl, value);
+      announceMilestone();
       const medal = getMedalForScore(Number(value));
       if (medal !== currentMedal) {
         currentMedal = medal;
@@ -91,7 +133,10 @@ export function createHudController(elements = {}) {
       }
     },
     setBest(value) {
+      currentBest = Number(value) || 0;
+      bestThreshold = Math.max(bestThreshold, currentBest);
       safeText(bestEl, value);
+      announceMilestone();
     },
     setSpeed,
     showIntro() {
@@ -103,9 +148,11 @@ export function createHudController(elements = {}) {
         startButton.textContent = "Play";
       }
       toggle(startButton, true);
+      resetMilestones();
     },
     showRunning() {
       toggle(overlay, false);
+      resetMilestones();
       finalScore?.hide();
       dimLayer?.setActive(false);
     },

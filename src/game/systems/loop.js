@@ -84,6 +84,10 @@ function updatePipes(delta, onCollision) {
             state.pipeSpeed + CONFIG.speedRampAmount
           );
         }
+        if (state.score > state.bestScore) {
+          state.bestScore = state.score;
+          persistBestScore(state.bestScore);
+        }
         refreshHud();
       }
     );
