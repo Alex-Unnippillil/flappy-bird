@@ -1,4 +1,7 @@
 import { FinalScore } from "../hud/components/FinalScore.ts";
+import { HudRoot } from "../hud/HudRoot.ts";
+import { PauseMenu } from "../hud/components/PauseMenu.ts";
+import { DimLayer } from "../hud/components/DimLayer.ts";
 
 const noop = () => {};
 
@@ -28,6 +31,12 @@ export function createHudController(elements = {}) {
     finalScore.attach(overlay, startButton);
     finalScore.hide();
   }
+  const dimLayer = overlay ? new DimLayer(overlay) : null;
+
+  const hudRootHost = overlay?.parentElement ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
+  const pauseMenu = new PauseMenu();
+  hudRoot.mount(pauseMenu.element, "modal");
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -68,6 +77,7 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
       finalScore?.hide();
       if (startButton) {
@@ -78,6 +88,7 @@ export function createHudController(elements = {}) {
     showRunning() {
       toggle(overlay, false);
       finalScore?.hide();
+      dimLayer?.setActive(false);
     },
     showGameOver(score, best, options = {}) {
       toggle(overlay, true);
@@ -88,6 +99,8 @@ export function createHudController(elements = {}) {
           : score > 0 && score === best;
       finalScore?.setScores(score, best, { isRecord });
       finalScore?.show();
+      dimLayer?.setActive(true);
+      showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
       if (startButton) {
         startButton.textContent = "Play again";
@@ -99,5 +112,11 @@ export function createHudController(elements = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    pauseMenu,
+    hudRoot
+    }
+    dispose() {
+      dimLayer?.dispose();
+    },
   };
-}
+
