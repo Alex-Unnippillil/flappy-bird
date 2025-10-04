@@ -1,3 +1,8 @@
+import { FinalScore } from "../hud/components/FinalScore.ts";
+import { HudRoot } from "../hud/HudRoot.ts";
+import { PauseMenu } from "../hud/components/PauseMenu.ts";
+import { DimLayer } from "../hud/components/DimLayer.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -20,6 +25,18 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+  const finalScore = overlay ? new FinalScore() : null;
+
+  if (overlay && finalScore) {
+    finalScore.attach(overlay, startButton);
+    finalScore.hide();
+  }
+  const dimLayer = overlay ? new DimLayer(overlay) : null;
+
+  const hudRootHost = overlay?.parentElement ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
+  const pauseMenu = new PauseMenu();
+  hudRoot.mount(pauseMenu.element, "modal");
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -60,16 +77,34 @@ export function createHudController(elements = {}) {
     setSpeed,
     showIntro() {
       toggle(overlay, true);
+      dimLayer?.setActive(true);
       showMessage("Tap, click, or press Space to start");
+      finalScore?.hide();
+      if (startButton) {
+        startButton.textContent = "Play";
+      }
       toggle(startButton, true);
     },
     showRunning() {
       toggle(overlay, false);
+      finalScore?.hide();
+      dimLayer?.setActive(false);
     },
-    showGameOver(score, best) {
+    showGameOver(score, best, options = {}) {
       toggle(overlay, true);
+      showMessage("Game over! Tap or press Space to try again");
+      const isRecord =
+        typeof options.isNewRecord === "boolean"
+          ? options.isNewRecord
+          : score > 0 && score === best;
+      finalScore?.setScores(score, best, { isRecord });
+      finalScore?.show();
+      dimLayer?.setActive(true);
       showMessage(`Game over! Score: ${score} · Best: ${best}`);
       toggle(startButton, true);
+      if (startButton) {
+        startButton.textContent = "Play again";
+      }
     },
     onStart(handler = noop) {
       startButton?.addEventListener("click", handler);
@@ -77,5 +112,11 @@ export function createHudController(elements = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    pauseMenu,
+    hudRoot
+    }
+    dispose() {
+      dimLayer?.dispose();
+    },
   };
-}
+
