@@ -3,10 +3,23 @@ import { CONFIG, resetGameState, persistBestScore } from "./state.js";
 import { createThreeRenderer } from "../../rendering/three/renderer.js";
 import { createHudController } from "../../rendering/index.js";
 import { HUD_GAME_OVER } from "../../hud/components/SessionStats.ts";
+import { PauseMenuEvent } from "../../hud/components/PauseMenu.ts";
 
 let state = null;
 let renderer = null;
 let hud = null;
+const pauseMenuCleanup = [];
+
+function clearPauseMenuListeners() {
+  while (pauseMenuCleanup.length > 0) {
+    const dispose = pauseMenuCleanup.pop();
+    try {
+      dispose();
+    } catch (error) {
+      console.error("Failed to clean pause menu listener", error);
+    }
+  }
+}
 
 function ensureState() {
   if (!state) {
@@ -113,6 +126,7 @@ function prepareRound() {
   });
   state.awaitingStart = false;
   state.isRunning = true;
+  state.isPaused = false;
   state.gameOver = false;
 
   // Spawn a pair of starter pipes so the playfield looks alive immediately.
@@ -122,6 +136,7 @@ function prepareRound() {
 
   refreshHud();
   if (hud) {
+    hud.pauseMenu.close();
     hud.showRunning();
   }
 }
@@ -129,6 +144,7 @@ function prepareRound() {
 function endRound() {
   ensureState();
   state.isRunning = false;
+  state.isPaused = false;
   state.gameOver = true;
   state.awaitingStart = true;
   const isNewRecord = syncHighScore();
@@ -165,11 +181,17 @@ function endRound() {
   if (renderer) {
     renderer.markGameOver();
   }
+  hud?.pauseMenu.close();
 }
 
 function update(timestamp) {
   ensureState();
   ensureRenderer();
+
+  if (state.isPaused) {
+    state.animationFrameId = null;
+    return;
+  }
 
   const now = timestamp ?? performance.now();
   if (state.lastTimestamp === null) {
@@ -197,9 +219,65 @@ function update(timestamp) {
 
   renderer.render(state, deltaMs);
 
-  if (!state.gameOver) {
+  if (!state.gameOver && !state.isPaused) {
     state.animationFrameId = requestAnimationFrame(update);
   }
+}
+
+function resetToIntro() {
+  ensureState();
+
+  if (state.animationFrameId !== null) {
+    cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
+  }
+
+  resetGameState(state);
+  state.bird = null;
+  refreshHud();
+  renderer?.render(state, 0);
+  hud?.pauseMenu.close();
+  showIntro();
+}
+
+function attachPauseMenuListeners() {
+  if (!hud?.pauseMenu) {
+    return;
+  }
+
+  const { pauseMenu } = hud;
+
+  const handleResume = () => {
+    resumeGame();
+  };
+
+  const handleToggleMute = (event) => {
+    const muted = Boolean(event?.detail?.muted);
+    if (hud?.pauseMenu && typeof hud.pauseMenu.setMuted === "function") {
+      hud.pauseMenu.setMuted(muted);
+    }
+    if (state) {
+      state.isMuted = muted;
+    }
+  };
+
+  const handleQuit = () => {
+    resetToIntro();
+  };
+
+  pauseMenu.addEventListener(PauseMenuEvent.Resume, handleResume);
+  pauseMenu.addEventListener(PauseMenuEvent.ToggleMute, handleToggleMute);
+  pauseMenu.addEventListener(PauseMenuEvent.Quit, handleQuit);
+
+  pauseMenuCleanup.push(() =>
+    pauseMenu.removeEventListener(PauseMenuEvent.Resume, handleResume)
+  );
+  pauseMenuCleanup.push(() =>
+    pauseMenu.removeEventListener(PauseMenuEvent.ToggleMute, handleToggleMute)
+  );
+  pauseMenuCleanup.push(() =>
+    pauseMenu.removeEventListener(PauseMenuEvent.Quit, handleQuit)
+  );
 }
 
 export function initializeGameLoop(gameState, options = {}) {
@@ -207,9 +285,17 @@ export function initializeGameLoop(gameState, options = {}) {
 
   renderer = createThreeRenderer(state.canvas, options.rendererOptions);
   hud = createHudController(options.hudElements ?? {});
+  state.ui = hud;
+  if (hud?.pauseMenu && typeof hud.pauseMenu.setMuted === "function") {
+    hud.pauseMenu.setMuted(Boolean(state.isMuted));
+  }
   refreshHud();
   renderer.render(state, 0);
   showIntro();
+  clearPauseMenuListeners();
+  attachPauseMenuListeners();
+
+  return { hud, renderer };
 }
 
 export function startGame() {
@@ -227,6 +313,45 @@ export function startGame() {
   state.animationFrameId = requestAnimationFrame(update);
 }
 
+export function pauseGame() {
+  ensureState();
+
+  if (
+    state.isPaused ||
+    state.awaitingStart ||
+    state.gameOver ||
+    !state.isRunning
+  ) {
+    return false;
+  }
+
+  state.isPaused = true;
+  state.isRunning = false;
+
+  if (state.animationFrameId !== null) {
+    cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
+  }
+
+  return true;
+}
+
+export function resumeGame() {
+  ensureState();
+  ensureRenderer();
+
+  if (!state.isPaused || state.gameOver) {
+    return false;
+  }
+
+  state.isPaused = false;
+  state.isRunning = true;
+  state.lastTimestamp = null;
+  state.animationFrameId = requestAnimationFrame(update);
+
+  return true;
+}
+
 export function handleCanvasClick() {
   ensureState();
 
@@ -235,7 +360,7 @@ export function handleCanvasClick() {
     return;
   }
 
-  if (!state.isRunning) {
+  if (!state.isRunning || state.isPaused) {
     return;
   }
 
@@ -249,6 +374,7 @@ export function teardownGameLoop() {
   if (state?.animationFrameId) {
     cancelAnimationFrame(state.animationFrameId);
   }
+  clearPauseMenuListeners();
   renderer?.dispose();
   hud?.destroy?.();
   renderer = null;

@@ -3,21 +3,47 @@ import {
   createGameState,
   initializeGameLoop,
   startGame,
+  pauseGame,
+  resumeGame,
   handleCanvasClick,
 } from "./game/systems/index.js";
 import { initSessionStats } from "./hud/components/SessionStats.ts";
 
-function bindInput(canvas) {
+function bindInput(canvas, hudController) {
   const pressAction = (event) => {
     event.preventDefault();
     handleCanvasClick();
   };
+
+  const togglePauseMenu = (event) => {
+    const pauseMenu = hudController?.pauseMenu;
+    if (!pauseMenu) return;
+
+    event.preventDefault();
+
+    if (pauseMenu.isVisible()) {
+      pauseMenu.close();
+      resumeGame();
+      return;
+    }
+
+    const didPause = pauseGame();
+    if (didPause) {
+      pauseMenu.open();
+    }
+  };
+
+  const pauseKeys = new Set(["Escape", "KeyP"]);
 
   canvas.addEventListener("pointerdown", pressAction);
   canvas.addEventListener(
     "keydown",
     (event) => {
       if (event.repeat) return;
+      if (pauseKeys.has(event.code)) {
+        togglePauseMenu(event);
+        return;
+      }
       const actionableKeys = new Set(["Space", "ArrowUp", "KeyW", "KeyX"]);
       if (actionableKeys.has(event.code)) {
         pressAction(event);
@@ -33,6 +59,10 @@ function bindInput(canvas) {
     "keydown",
     (event) => {
       if (event.repeat) return;
+      if (pauseKeys.has(event.code)) {
+        togglePauseMenu(event);
+        return;
+      }
       const actionableKeys = new Set(["Space", "ArrowUp", "KeyW"]);
       if (actionableKeys.has(event.code)) {
         event.preventDefault();
@@ -77,7 +107,7 @@ function init() {
   canvas.setAttribute("tabindex", "0");
 
   const state = createGameState(canvas);
-  initializeGameLoop(state, {
+  const { hud } = initializeGameLoop(state, {
     hudElements: {
       score: "#scoreValue",
       best: "#bestValue",
@@ -92,7 +122,7 @@ function init() {
 
   initSessionStats();
 
-  bindInput(canvas);
+  bindInput(canvas, hud);
   resizeCanvas(canvas);
   window.addEventListener("resize", () => resizeCanvas(canvas));
 }

@@ -3,12 +3,12 @@ import { Pipe } from "../entities/Pipe.js";
 import { DeterministicPRNG } from "./prng";
 
 describe("deterministic pipe spawning", () => {
-  function spawnSequence(seed) {
+  function spawnSequence(seed: number) {
     const prng = new DeterministicPRNG(seed);
-    const heights = [];
+    const heights: number[] = [];
 
     for (let i = 0; i < 10; i += 1) {
-      const pipe = new Pipe(0, 400, 120, prng);
+      const pipe = new Pipe(0, 400, 120, () => prng.next());
       heights.push(pipe.topHeight);
     }
 

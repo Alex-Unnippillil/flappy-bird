@@ -34,6 +34,8 @@ export function createGameState(canvas, prng = createDeterministicPrng()) {
     gameOver: false,
     awaitingStart: true,
     isRunning: false,
+    isPaused: false,
+    isMuted: false,
     frameCount: 0,
     pipeSpeed: CONFIG.initialPipeSpeed,
     animationFrameId: null,
@@ -59,6 +61,7 @@ export function resetGameState(state) {
   state.gameOver = false;
   state.awaitingStart = true;
   state.isRunning = false;
+  state.isPaused = false;
   state.frameCount = 0;
   state.pipeSpeed = Math.max(
     CONFIG.initialPipeSpeed,
