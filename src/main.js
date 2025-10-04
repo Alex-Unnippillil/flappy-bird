@@ -5,6 +5,7 @@ import {
   startGame,
   handleCanvasClick,
 } from "./game/systems/index.js";
+import { HudRoot } from "./hud/HudRoot.js";
 
 function bindInput(canvas) {
   const pressAction = (event) => {
@@ -75,17 +76,11 @@ function init() {
   canvas.setAttribute("aria-label", "Flappy Bird 3D playfield");
   canvas.setAttribute("tabindex", "0");
 
+  const hudRoot = new HudRoot();
+
   const state = createGameState(canvas);
   initializeGameLoop(state, {
-    hudElements: {
-      score: "#scoreValue",
-      best: "#bestValue",
-      message: "#gameMessage",
-      startButton: "#startButton",
-      overlay: "#gameOverlay",
-      speedBar: "#speedFill",
-      speedProgress: "#speedProgress",
-    },
+    hudElements: hudRoot.getElements(),
   });
 
   bindInput(canvas);
