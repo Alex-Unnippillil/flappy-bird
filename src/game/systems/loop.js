@@ -232,6 +232,10 @@ export function handleCanvasClick() {
 
   if (state.awaitingStart || state.gameOver) {
     startGame();
+    if (state.isRunning && state.bird) {
+      state.bird.jump();
+      renderer?.pulseBird?.();
+    }
     return;
   }
 
@@ -240,9 +244,7 @@ export function handleCanvasClick() {
   }
 
   state.bird.jump();
-  if (renderer) {
-    renderer.pulseBird();
-  }
+  renderer?.pulseBird?.();
 }
 
 export function teardownGameLoop() {
