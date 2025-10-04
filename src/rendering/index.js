@@ -1,3 +1,6 @@
+import { HudRoot } from "../hud/HudRoot.ts";
+import { PauseMenu } from "../hud/components/PauseMenu.ts";
+
 const noop = () => {};
 
 function resolveElement(element) {
@@ -20,6 +23,11 @@ export function createHudController(elements = {}) {
   const startButton = resolveElement(elements.startButton ?? "#startButton");
   const speedBar = resolveElement(elements.speedBar ?? "#speedFill");
   const speedProgress = resolveElement(elements.speedProgress ?? "#speedProgress");
+
+  const hudRootHost = overlay?.parentElement ?? document.body;
+  const hudRoot = new HudRoot({ host: hudRootHost });
+  const pauseMenu = new PauseMenu();
+  hudRoot.mount(pauseMenu.element, "modal");
 
   const safeText = (target, value) => {
     if (!target) return;
@@ -77,5 +85,7 @@ export function createHudController(elements = {}) {
     onRestart(handler = noop) {
       startButton?.addEventListener("click", handler);
     },
+    pauseMenu,
+    hudRoot,
   };
 }
