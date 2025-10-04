@@ -1,107 +1,151 @@
-# Flappy Bird Classic (TypeScript + Canvas)
+# Flappy Bird Web App
 
-A TypeScript and Webpack recreation of the original 288×512 Flappy Bird. The
-game boots through `src/main.ts`, which wires a responsive canvas, DOM HUD, and
-input bindings before handing control to the `ClassicGame` state machine. The
-entire experience renders with the Canvas 2D API, ships a deterministic game
-loop, and bundles static assets that can be deployed to GitHub Pages or any
-static host.
+A modern web-based recreation of the classic Flappy Bird game, built with TypeScript and HTML5 Canvas. This project mimics the retro gameplay while incorporating modern web technologies for a smooth, responsive experience.
 
 ## Features
 
-- **Classic resolution & pacing** – Game constants mirror the original release,
-  including pipe gaps, gravity, and base canvas size. The renderer maintains the
-  288×512 aspect ratio while scaling the DOM canvas responsively.
-- **Deterministic state machine** – `ClassicGame` owns the intro, running, and
-  game-over states, keeps an off-screen buffer for flicker-free draws, and
-  persists the best score via `localStorage`.
-- **Entity-based logic** – Bird physics, scrolling pipes, background parallax,
-  and the platform each live in dedicated entity classes so mechanics remain
-  isolated and testable.
-- **Web Audio synthesis** – Retro sound effects are produced at runtime with the
-  Web Audio API; there are no binary audio assets to ship.
-- **Accessible HUD** – DOM overlays expose score, best run, and control hints
-  with ARIA annotations. Keyboard, pointer, and touch inputs map to the same
-  primary action handler.
+- **Classic Gameplay**: Authentic Flappy Bird mechanics with precise physics
+- **Progressive Web App (PWA)**: Installable on mobile devices and desktops
+- **Offline Support**: Service worker for offline gameplay
+- **Responsive Design**: Adapts to different screen sizes
+- **Sound Effects**: Immersive audio feedback
+- **High Score Tracking**: Local storage for persistent scores
+- **Smooth Animations**: 60 FPS gameplay with optimized rendering
+- **Touch & Keyboard Controls**: Works on all devices
 
-## Getting Started
+## Technologies Used
 
-```bash
-npm install
-npm run dev
-```
+- **TypeScript**: Type-safe JavaScript for better development experience
+- **HTML5 Canvas**: Hardware-accelerated 2D graphics rendering
+- **Webpack**: Modern module bundling and asset optimization
+- **Sass/SCSS**: Enhanced CSS with variables and mixins
+- **Web Audio API**: High-performance audio processing
+- **Service Workers**: Offline functionality and caching
+- **PWA Manifest**: Native app-like experience
 
-`npm run dev` invokes Webpack in watch mode and serves the generated bundle from
-`dist/` via BrowserSync on `http://localhost:3000`. Edit TypeScript or style
-files under `src/` to trigger live rebuilds.
+## Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn package manager
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Alex-Unnippillil/flappy-bird.git
+   cd flappy-bird
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser**
+
+   The game will be available at `http://localhost:3000`
 
 ## Available Scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start Webpack in development mode with live reload. |
-| `npm run build` | Produce an optimized production bundle in `dist/`. |
-| `npm run start` | Alias for `npm run dev`. |
-| `npm run lint` | Run ESLint across the TypeScript sources. |
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Create production build
+- `npm run start` - Alias for `npm run dev`
+- `npm run prettier-format` - Format code with Prettier
+- `npm run lint` - Run ESLint for code quality checks
 
-## Project Structure Highlights
+## How to Play
 
-- `src/main.ts` – Bootstraps the canvas, hooks up responsive sizing, wires DOM
-  HUD elements, and forwards keyboard/touch inputs to the game instance.
-- `src/classic/Game.ts` – Central game orchestrator that manages entities,
-  animation frames, HUD updates, medals, and high-score persistence.
-- `src/classic/entities/` – Renderable actors such as `Bird`, `PipeField`,
-  `Background`, and `Platform`. Each class exposes `update` / `draw` to keep
-  physics and presentation encapsulated.
-- `src/classic/assets.ts` – Synthesizes flap, score, swoosh, hit, and die sound
-  effects using oscillator graphs. `preloadAudio()` primes the context so the
-  first interaction is responsive.
-- `src/classic/spriteSheet.ts` – Lazy-loads the sprite atlas and exposes helpers
-  for drawing scaled sprites when the texture is available. Vector fallbacks keep
-  the game playable without the atlas.
-- `styles.css` – Shared layout for the HUD, stage, and footer rendered around the
-  canvas.
+1. **Tap/Space**: Make the bird flap and gain height
+2. **Avoid Pipes**: Navigate through the gaps between pipes
+3. **Score Points**: Pass through pipes to increase your score
+4. **Don't Crash**: Hitting pipes or the ground ends the game
 
-## Game Logic Overview
+### Controls
+- **Desktop**: Spacebar or mouse click
+- **Mobile**: Tap the screen
 
-- **Input** – Pointer, touch, and keyboard events all drive `handlePrimaryAction`
-  on the active `ClassicGame`. The handler transitions from intro to running,
-  triggers bird flaps, or resets from game over depending on the current state.
-  Canvas focus management ensures accessibility on desktop browsers.
-- **Update loop** – A requestAnimationFrame loop computes frame deltas, advances
-  entity state, spawns pipes based on travelled distance, and clamps bird
-  velocity. Drawing happens on an off-screen buffer before copying to the visible
-  canvas to avoid tearing.
-- **Scoring & medals** – Passing a pipe pair increments the score, updates HUD
-  counters, and awards tiered medals at 10/20/30/40 points using sprite atlas
-  badges when available.
-- **Collisions** – `PipeField` owns an array of `PipePair` instances, each of
-  which checks bounding boxes against the bird. Platform height is injected so
-  ground collisions and gap placement match the classic difficulty curve.
-- **Audio cues** – Calls to `playSound()` during flaps, scoring, hits, and state
-  transitions schedule oscillator segments with decay envelopes for an 8-bit
-  aesthetic.
+## Project Structure
 
-See [docs/game-logic.md](docs/game-logic.md) for a deeper breakdown of the
-state machine, entity lifecycle, and render order.
+```
+flappy-bird/
+├── src/
+│   ├── abstracts/          # Base classes and interfaces
+│   ├── assets/             # Game sprites, sounds, and icons
+│   ├── lib/                # Utility libraries and services
+│   ├── model/              # Game entities (Bird, Pipes, etc.)
+│   ├── screens/            # Game screens (Intro, Gameplay)
+│   ├── styles/             # SCSS stylesheets
+│   ├── utils/              # Helper functions
+│   ├── constants.ts        # Game configuration
+│   ├── events.ts           # Event handling
+│   ├── game.ts             # Main game logic
+│   └── index.ts            # Application entry point
+├── types/                  # TypeScript type definitions
+├── webpack.config.js       # Build configuration
+├── package.json            # Dependencies and scripts
+└── tsconfig.json           # TypeScript configuration
+```
 
-## Deployment
+## Game Mechanics
 
-1. Build the production bundle:
-   ```bash
-   npm run build
-   ```
-2. Serve the contents of `dist/` from any static host. For GitHub Pages, publish
-   the folder to the `gh-pages` branch or copy the files into a tracked `docs/`
-   directory before committing.
-3. The generated `site.webmanifest` and service worker enable installable PWA
-   behavior when hosted over HTTPS.
+### Physics System
+- **Gravity**: Constant downward acceleration
+- **Lift**: Instant upward velocity on flap
+- **Rotation**: Dynamic bird rotation based on velocity
+- **Collision**: Precise hit detection with pipes and boundaries
 
-## Troubleshooting
+### Scoring System
+- Points awarded for successfully passing through pipes
+- High scores saved locally using browser storage
 
-- **Audio blocked until interaction** – Some browsers suspend the AudioContext
-  until the user interacts with the page. Call `preloadAudio()` (already invoked
-  during game init) from an input event if you fork the project.
-- **Viewport scaling** – The game expects a portrait viewport. Resize logic keeps
-  the canvas within 260–420 px wide; adjust the constants in `src/main.ts` if you
-  need different bounds.
+### Audio System
+- Background music and sound effects
+- Volume controls and mute functionality
+- Web Audio API for low-latency playback
+
+## Configuration
+
+Game parameters can be adjusted in `src/constants.ts`:
+
+- `GAME_SPEED`: Pipe movement speed
+- `BIRD_JUMP_HEIGHT`: Bird flap strength
+- `PIPE_DISTANCE`: Gap between pipes
+- `SFX_VOLUME`: Audio volume level
+
+## Progressive Web App
+
+This game is a fully functional PWA with:
+- **Installable**: Add to home screen on mobile devices
+- **Offline Play**: Cached assets for offline gameplay
+- **Fast Loading**: Optimized bundle sizes
+- **Native Feel**: App-like interface and navigation
+
+## Browser Support
+
+- Chrome/Chromium (recommended)
+- Firefox
+- Safari
+- Edge
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow TypeScript best practices
+- Use Prettier for code formatting
+- Run ESLint before committing
+- Test on multiple browsers
+- Keep bundle size optimized
+

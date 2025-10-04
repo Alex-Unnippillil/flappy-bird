@@ -1,6 +1,1 @@
-dist/
-node_modules/
-coverage/
-public/assets/models/bird.glb
-public/assets/textures/bird_atlas.png
-coverage/
+node_modules
