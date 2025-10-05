@@ -50,21 +50,37 @@ const GameUpdate = (): void => {
 };
 
 const ScreenResize = () => {
-  const sizeResult = rescaleDim(CANVAS_DIMENSION, {
-    height: window.innerHeight * 2 - 50
-  });
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const viewport = window.visualViewport;
+  const cssWidth = viewport?.width ?? window.innerWidth;
+  const cssHeight = viewport?.height ?? window.innerHeight;
 
-  canvas.style.maxWidth = String(sizeResult.width / 2) + 'px';
-  canvas.style.maxHeight = String(sizeResult.height / 2) + 'px';
+  const maxWidth = Math.max(cssWidth, 320) * dpr;
+  const maxHeight = Math.max(cssHeight, 480) * dpr;
+  const canvasRatio = CANVAS_DIMENSION.width / CANVAS_DIMENSION.height;
+  const viewportRatio = maxWidth / maxHeight;
 
-  canvas.height = sizeResult.height;
-  canvas.width = sizeResult.width;
-  virtualCanvas.height = sizeResult.height;
-  virtualCanvas.width = sizeResult.width;
+  const scaledDimension =
+    viewportRatio > canvasRatio
+      ? rescaleDim(CANVAS_DIMENSION, { height: maxHeight })
+      : rescaleDim(CANVAS_DIMENSION, { width: maxWidth });
 
-  console.log(`Canvas Size: ${sizeResult.width}x${sizeResult.height}`);
+  const displayWidth = scaledDimension.width / dpr;
+  const displayHeight = scaledDimension.height / dpr;
 
-  Game.Resize(sizeResult);
+  canvas.style.maxWidth = `${displayWidth}px`;
+  canvas.style.maxHeight = `${displayHeight}px`;
+  canvas.style.width = `${displayWidth}px`;
+  canvas.style.height = `${displayHeight}px`;
+
+  canvas.width = Math.round(scaledDimension.width);
+  canvas.height = Math.round(scaledDimension.height);
+  virtualCanvas.width = canvas.width;
+  virtualCanvas.height = canvas.height;
+
+  console.log(`Canvas Size: ${canvas.width}x${canvas.height}`);
+
+  Game.Resize({ width: canvas.width, height: canvas.height });
 };
 
 const removeLoadingScreen = () => {
@@ -97,6 +113,24 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('resize', () => {
+  if (!isLoaded) return;
+
+  ScreenResize();
+});
+
+window.addEventListener('orientationchange', () => {
+  if (!isLoaded) return;
+
+  window.setTimeout(ScreenResize, 0);
+});
+
+window.visualViewport?.addEventListener('resize', () => {
+  if (!isLoaded) return;
+
+  ScreenResize();
+});
+
+window.visualViewport?.addEventListener('scroll', () => {
   if (!isLoaded) return;
 
   ScreenResize();
