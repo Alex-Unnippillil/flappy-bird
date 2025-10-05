@@ -55,7 +55,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.bird.doWave(
       {
         x: this.canvasSize.width * 0.5,
-        y: this.canvasSize.height * 0.4
+        y: this.canvasSize.height * 0.46
       },
       1.4,
       9
@@ -84,7 +84,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     context.drawImage(
       this.flappyBirdBanner!,
       this.canvasSize.width * 0.5 - fbbScaled.width / 2,
-      this.canvasSize.height * 0.28 - fbbScaled.height / 2,
+      this.canvasSize.height * 0.36 - fbbScaled.height / 2,
       fbbScaled.width,
       fbbScaled.height
     );
