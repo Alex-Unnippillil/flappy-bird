@@ -1,4 +1,14 @@
-// File Overview: This module belongs to src/asset-preparation.ts.
+/**
+ * Prepares game assets in three stages:
+ * 1. Wait for the sprite atlas to load so `SpriteDestructor` can safely slice
+ *    every sprite region.
+ * 2. Kick off Web Audio decoding only after the atlas promise resolves,
+ *    preventing image and audio fetches from racing and keeping the slicing
+ *    queue intact (the `sd.then` callback must stay after the final `cutOut`).
+ * 3. Gate the external `prepareAssets` callback on both the sprite slicing
+ *    completion and the WebSfx preload so callers receive a single "everything
+ *    is ready" signal.
+ */
 import AssetLoader from './lib/asset-loader';
 
 import SpriteDestructor from './lib/sprite-destructor';
@@ -13,7 +23,7 @@ import sfWing from './assets/audio/wing.ogg';
 export default (callback: IEmptyFunction): void => {
   let isLoaded = false;
 
-  // Do not load images and sfx at the same time
+  // Wait for the atlas before touching sprites or audio so slice order stays deterministic.
   new AssetLoader([atlas]).then(() => {
     const sd = new SpriteDestructor(AssetLoader.get<HTMLImageElement>(atlas));
 
@@ -89,6 +99,8 @@ export default (callback: IEmptyFunction): void => {
     sd.cutOut('btn-mute', 816, 306, 90, 66);
     sd.cutOut('btn-speaker', 712, 306, 90, 66);
 
+    // Shared barrier: SpriteDestructor resolves after the last `cutOut` flushes,
+    // and WebSfx fires once decoding completes. Only then do we notify callers.
     const loadCallback = () => {
       if (isLoaded) callback();
       isLoaded = true;
