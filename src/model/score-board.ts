@@ -1,6 +1,11 @@
 // File Overview: This module belongs to src/model/score-board.ts.
 import { rescaleDim } from '../utils';
 
+import medalBronzeSprite from '../assets/medal-bronze.svg';
+import medalSilverSprite from '../assets/medal-silver.svg';
+import medalGoldSprite from '../assets/medal-gold.svg';
+import medalPlatinumSprite from '../assets/medal-platinum.svg';
+
 import ParentObject from '../abstracts/parent-class';
 import SparkModel from './spark';
 import PlayButton from './btn-play';
@@ -29,6 +34,11 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private readonly medalTiers: {
+    threshold: number;
+    label: string;
+    imageKey: string;
+  }[];
 
   constructor() {
     super();
@@ -41,6 +51,12 @@ export default class ScoreBoard extends ParentObject {
     this.currentHighScore = 0;
     this.currentGeneratedNumber = 0;
     this.currentScore = 0;
+    this.medalTiers = [
+      { threshold: 40, label: 'Platinum', imageKey: 'medal-platinum' },
+      { threshold: 30, label: 'Gold', imageKey: 'medal-gold' },
+      { threshold: 20, label: 'Silver', imageKey: 'medal-silver' },
+      { threshold: 10, label: 'Bronze', imageKey: 'medal-bronze' }
+    ];
     this.FlyInAnim = new Fly({
       duration: 500,
       from: {
@@ -65,11 +81,11 @@ export default class ScoreBoard extends ParentObject {
   public init(): void {
     this.images.set('banner-gameover', SpriteDestructor.asset('banner-game-over'));
     this.images.set('score-board', SpriteDestructor.asset('score-board'));
-    this.images.set('coin-10', SpriteDestructor.asset('coin-dull-bronze'));
-    this.images.set('coin-20', SpriteDestructor.asset('coin-dull-metal'));
-    this.images.set('coin-30', SpriteDestructor.asset('coin-shine-gold'));
-    this.images.set('coin-40', SpriteDestructor.asset('coin-shine-silver'));
     this.images.set('new-icon', SpriteDestructor.asset('toast-new'));
+    this.preloadImage('medal-bronze', medalBronzeSprite);
+    this.preloadImage('medal-silver', medalSilverSprite);
+    this.preloadImage('medal-gold', medalGoldSprite);
+    this.preloadImage('medal-platinum', medalPlatinumSprite);
 
     for (let i = 0; i < 10; ++i) {
       this.images.set(`number-${i}`, SpriteDestructor.asset(`number-md-${i}`));
@@ -91,6 +107,16 @@ export default class ScoreBoard extends ParentObject {
      * */
     const prevScore = Storage.get('highscore') as number;
     this.currentHighScore = typeof prevScore === 'number' ? prevScore : 0;
+  }
+
+  private preloadImage(key: string, src: string): void {
+    const img = new Image();
+    img.src = src;
+    if (typeof img.decode === 'function') {
+      void img.decode().catch(() => undefined);
+    }
+
+    this.images.set(key, img);
   }
 
   public resize({ width, height }: IDimension): void {
@@ -204,7 +230,11 @@ export default class ScoreBoard extends ParentObject {
   public showBoard(): void {
     this.flags |= ScoreBoard.FLAG_SHOW_SCOREBOARD;
     this.FlyInAnim.start();
-    this.spark.doSpark();
+    if (this.getMedalTier(this.currentScore)) {
+      this.spark.doSpark();
+    } else {
+      this.spark.stop();
+    }
   }
 
   public showButtons(): void {
@@ -228,37 +258,94 @@ export default class ScoreBoard extends ParentObject {
     coord: ICoordinate,
     parentSize: IDimension
   ): void {
-    if (this.currentScore < 10) return; // So sad having a no medal :)
-    let medal: HTMLImageElement | undefined;
+    const medalTier = this.getMedalTier(this.currentScore);
 
-    if (this.currentScore >= 10 && this.currentScore < 20) {
-      medal = this.images.get('coin-10');
-    } else if (this.currentScore >= 20 && this.currentScore < 30) {
-      medal = this.images.get('coin-20');
-    } else {
-      if (Math.floor(this.currentScore / 10) % 2 === 0) {
-        medal = this.images.get('coin-40');
-      } else {
-        medal = this.images.get('coin-30');
-      }
+    if (!medalTier) {
+      this.spark.stop();
+      return;
     }
+
+    const medal = this.images.get(medalTier.imageKey);
+
+    if (!medal || medal.width === 0 || medal.height === 0) return;
 
     const scaled = rescaleDim(
       {
-        width: medal!.width,
-        height: medal!.height
+        width: medal.width,
+        height: medal.height
       },
-      { width: parentSize.width * 0.1878 }
+      { width: parentSize.width * 0.22 }
     );
+
     const pos = {
-      x: (coord.x + parentSize.width / 2) * 0.36,
-      y: (coord.y + parentSize.height / 2) * 0.9196
+      x: coord.x + parentSize.width * 0.145,
+      y: coord.y + parentSize.height * 0.46
     };
 
-    context.drawImage(medal!, pos.x, pos.y, scaled.width, scaled.height);
+    context.drawImage(medal, pos.x, pos.y, scaled.width, scaled.height);
 
-    this.spark.move(pos, scaled);
+    const sparkOrigin = {
+      x: pos.x + (scaled.width - scaled.width * 0.7) / 2,
+      y: pos.y + (scaled.height - scaled.height * 0.7) / 2
+    };
+
+    this.spark.move(sparkOrigin, {
+      width: scaled.width * 0.7,
+      height: scaled.height * 0.7
+    });
     this.spark.Display(context);
+
+    this.drawMedalLabel(
+      context,
+      medalTier.label,
+      pos.x + scaled.width / 2,
+      pos.y + scaled.height + parentSize.height * 0.04,
+      parentSize
+    );
+  }
+
+  private getMedalTier(score: number):
+    | {
+        threshold: number;
+        label: string;
+        imageKey: string;
+      }
+    | undefined {
+    return this.medalTiers.find((tier) => score >= tier.threshold);
+  }
+
+  private drawMedalLabel(
+    context: CanvasRenderingContext2D,
+    label: string,
+    centerX: number,
+    topY: number,
+    parentSize: IDimension
+  ): void {
+    const prevFillStyle = context.fillStyle;
+    const prevStrokeStyle = context.strokeStyle;
+    const prevLineWidth = context.lineWidth;
+    const prevFont = context.font;
+    const prevAlign = context.textAlign;
+    const prevBaseline = context.textBaseline;
+
+    const fontSize = Math.max(parentSize.width * 0.06, 12);
+    context.font = `${fontSize}px 'Press Start 2P', 'Roboto', sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'top';
+    context.lineWidth = Math.max(parentSize.width * 0.007, 1.5);
+    context.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+    context.fillStyle = '#ffffff';
+
+    const text = label.toUpperCase();
+    context.strokeText(text, centerX, topY);
+    context.fillText(text, centerX, topY);
+
+    context.fillStyle = prevFillStyle;
+    context.strokeStyle = prevStrokeStyle;
+    context.lineWidth = prevLineWidth;
+    context.font = prevFont;
+    context.textAlign = prevAlign;
+    context.textBaseline = prevBaseline;
   }
 
   private displayScore(
