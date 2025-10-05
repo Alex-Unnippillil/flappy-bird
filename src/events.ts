@@ -6,9 +6,32 @@
 import Game from './game';
 import WebSfx from './lib/web-sfx';
 
+const ALWAYS_ALLOWED_CODES = new Set(['NumpadEnter']);
+const FALLBACK_CODES = ['Space', 'Enter', 'ArrowUp', 'KeyW'];
+
+const KEYCODE_LOOKUP: Record<number, string> = {
+  13: 'Enter',
+  32: 'Space',
+  38: 'ArrowUp',
+  87: 'KeyW'
+};
+
+const normalizeKeyFromEvent = (evt: KeyboardEvent): string => {
+  if (evt.code) return evt.code;
+  const legacy = KEYCODE_LOOKUP[evt.keyCode];
+  if (legacy) return legacy;
+  if (evt.key === ' ' || evt.key === 'Spacebar') return 'Space';
+  if (evt.key) return evt.key;
+  return '';
+};
+
+export interface IEventController {
+  updateKeyBindings: (codes: string[]) => void;
+}
+
 export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
 
-export default (Game: Game, canvas: HTMLCanvasElement) => {
+export default (Game: Game, canvas: HTMLCanvasElement, initialCodes: string[] = []): IEventController => {
   interface IMouse {
     down: boolean;
     position: ICoordinate;
@@ -120,50 +143,75 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
   });
 
-  // Keyboard event
-  document.addEventListener('keydown', (evt: KeyboardEvent) => {
-    const { key, keyCode, code } = evt;
+  let activeCodes = new Set<string>([
+    ...(initialCodes.length > 0 ? initialCodes : FALLBACK_CODES),
+    ...Array.from(ALWAYS_ALLOWED_CODES)
+  ]);
 
-    if (
-      key === ' ' ||
-      keyCode === 32 ||
-      code === 'Space' ||
-      key === 'Enter' ||
-      keyCode === 13 ||
-      code === 'NumpadEnter' ||
-      code === 'Enter'
-    ) {
-      Game.startAtKeyBoardEvent();
+  const matchesActiveKey = (evt: KeyboardEvent): boolean => {
+    const normalized = normalizeKeyFromEvent(evt);
+    if (normalized && activeCodes.has(normalized)) return true;
 
-      mouseDown(
-        {
-          x: canvas.width / 2,
-          y: canvas.height / 2
-        },
-        evt
+    const lowerKey = evt.key?.toLowerCase();
+    if (!lowerKey) return false;
+
+    if (lowerKey === 'w' && activeCodes.has('KeyW')) return true;
+    if (lowerKey === 'enter' && (activeCodes.has('Enter') || activeCodes.has('NumpadEnter'))) return true;
+    if ((lowerKey === ' ' || lowerKey === 'spacebar') && activeCodes.has('Space')) return true;
+    if (lowerKey === 'arrowup' && activeCodes.has('ArrowUp')) return true;
+
+    return false;
+  };
+
+  const handleKeyDown = (evt: KeyboardEvent) => {
+    if (!matchesActiveKey(evt)) return;
+
+    Game.startAtKeyBoardEvent();
+
+    mouseDown(
+      {
+        x: canvas.width / 2,
+        y: canvas.height / 2
+      },
+      evt
+    );
+  };
+
+  const handleKeyUp = (evt: KeyboardEvent) => {
+    if (!matchesActiveKey(evt)) return;
+
+    mouseUP(
+      {
+        x: canvas.width / 2,
+        y: canvas.height / 2
+      },
+      evt,
+      false
+    );
+  };
+
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
+
+  return {
+    updateKeyBindings: (codes: string[]) => {
+      const sanitized = Array.from(
+        new Set(
+          [...codes, ...Array.from(ALWAYS_ALLOWED_CODES)].filter(
+            (code) => typeof code === 'string' && code.length > 0
+          )
+        )
       );
-    }
-  });
 
-  document.addEventListener('keyup', (evt: KeyboardEvent) => {
-    const { key, keyCode, code } = evt;
-    if (
-      key === ' ' ||
-      keyCode === 32 ||
-      code === 'Space' ||
-      key === 'Enter' ||
-      keyCode === 13 ||
-      code === 'NumpadEnter' ||
-      code === 'Enter'
-    ) {
-      mouseUP(
-        {
-          x: canvas.width / 2,
-          y: canvas.height / 2
-        },
-        evt,
-        false
-      );
+      if (sanitized.length < 1) {
+        activeCodes = new Set<string>([
+          ...FALLBACK_CODES,
+          ...Array.from(ALWAYS_ALLOWED_CODES)
+        ]);
+        return;
+      }
+
+      activeCodes = new Set<string>(sanitized);
     }
-  });
+  };
 };

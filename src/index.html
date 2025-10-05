@@ -9,6 +9,47 @@
   </head>
   <body>
     <canvas id="main-canvas"></canvas>
+    <div id="control-settings" class="control-settings" aria-live="polite">
+      <button
+        type="button"
+        id="control-settings__toggle"
+        class="control-settings__toggle"
+        aria-expanded="false"
+        aria-controls="control-settings__form"
+      >
+        Controls
+      </button>
+      <form id="control-settings__form" class="control-settings__form" autocomplete="off">
+        <fieldset>
+          <legend>Jump keys</legend>
+          <p class="control-settings__hint">Click a field and press a key to remap.</p>
+          <div class="control-settings__grid">
+            <label>
+              <span>Key 1</span>
+              <input data-slot="primary" type="text" readonly />
+            </label>
+            <label>
+              <span>Key 2</span>
+              <input data-slot="secondary" type="text" readonly />
+            </label>
+            <label>
+              <span>Key 3</span>
+              <input data-slot="tertiary" type="text" readonly />
+            </label>
+            <label>
+              <span>Key 4</span>
+              <input data-slot="quaternary" type="text" readonly />
+            </label>
+          </div>
+          <p
+            class="control-settings__error"
+            id="control-settings__error"
+            role="alert"
+            hidden
+          ></p>
+        </fieldset>
+      </form>
+    </div>
     <div id="loading-modal">
       <div>Loading</div>
       <div class="lds-ellipsis">

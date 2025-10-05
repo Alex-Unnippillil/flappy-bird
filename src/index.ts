@@ -5,11 +5,12 @@ import '@total-typescript/ts-reset';
 
 import { framer as Framer, rescaleDim } from './utils';
 import { CANVAS_DIMENSION } from './constants';
-import EventHandler from './events';
+import EventHandler, { type IEventController } from './events';
 import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import initControlSettings from './settings';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -30,6 +31,7 @@ const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
 let isLoaded = false;
+let eventController: IEventController | undefined;
 
 gameIcon.src = gameSpriteIcon;
 
@@ -68,7 +70,11 @@ const ScreenResize = () => {
 };
 
 const removeLoadingScreen = () => {
-  EventHandler(Game, canvas);
+  const settingsState = initControlSettings((codes) => {
+    eventController?.updateKeyBindings(codes);
+  });
+
+  eventController = EventHandler(Game, canvas, settingsState.activeCodes);
   loadingScreen.style.display = 'none';
   document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
 };
