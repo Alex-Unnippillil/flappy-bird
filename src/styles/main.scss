@@ -1,9 +1,14 @@
-// File Overview: This stylesheet contributes to src/styles/main.scss.
+/*
+ * Main stylesheet controlling the Flappy Bird canvas experience.
+ * Establishes a viewport-filling body reset that centers the game canvas.
+ * Styles the fixed loading overlay, including responsive modal sizing and animation.
+ */
 html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
 }
 
 body {
+  // Viewport reset and canvas centering
   white-space: nowrap;
   min-height: 100vh;
   min-height: 100dvh;
@@ -19,6 +24,7 @@ body {
   transition: background-color 0.5s ease-in-out;
 
   > #main-canvas {
+    // Canvas scaling and interaction handling
     margin: auto;
     padding: 0;
     width: 100%;
@@ -39,6 +45,7 @@ body {
   }
 
   > #loading-modal {
+    // Loading overlay container
     display: flex;
     justify-content: center;
     align-items: center;
@@ -55,12 +62,14 @@ body {
     backdrop-filter: blur(8px);
 
     > img {
+      // Loading graphic proportions
       width: 30%;
       height: 30%;
       transform: scale(0.75);
     }
 
     > div {
+      // Loading message styling
       text-align: center;
       font-family: 'Arial', 'Sans-Serif';
       color: rgba(105, 105, 110, 1);
@@ -70,6 +79,7 @@ body {
     }
 
     > .lds-ellipsis {
+      // Animated ellipsis loader
       display: inline-block;
       position: relative;
       width: 80px;
