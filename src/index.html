@@ -9,6 +9,24 @@
   </head>
   <body>
     <canvas id="main-canvas"></canvas>
+    <div id="settings-panel" class="settings-panel">
+      <h2 class="settings-panel__title">Settings</h2>
+      <label class="settings-toggle">
+        <input
+          type="checkbox"
+          id="settings-smoothing-toggle"
+          class="settings-toggle__control"
+        />
+        <span class="settings-toggle__text">Smooth sprites</span>
+        <span
+          class="settings-toggle__status"
+          data-setting-smoothing-status
+          aria-live="polite"
+        >
+          Off
+        </span>
+      </label>
+    </div>
     <div id="loading-modal">
       <div>Loading</div>
       <div class="lds-ellipsis">

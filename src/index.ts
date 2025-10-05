@@ -26,6 +26,12 @@ const gameIcon = document.createElement('img');
 const canvas = document.querySelector<HTMLCanvasElement>('#main-canvas')!;
 const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
+const smoothingToggle = document.querySelector<HTMLInputElement>(
+  '#settings-smoothing-toggle'
+);
+const smoothingStatusLabel = document.querySelector<HTMLSpanElement>(
+  '[data-setting-smoothing-status]'
+);
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
@@ -37,6 +43,30 @@ gameIcon.src = gameSpriteIcon;
 fps.text({ x: 50, y: 50 }, '', ' Cycle');
 // prettier-ignore
 fps.container({ x: 10, y: 10}, { x: 230, y: 70});
+
+const updateSmoothingUIState = (enabled: boolean) => {
+  if (smoothingToggle) {
+    smoothingToggle.checked = enabled;
+    smoothingToggle.setAttribute('aria-pressed', String(enabled));
+  }
+
+  if (smoothingStatusLabel) {
+    smoothingStatusLabel.textContent = enabled ? 'On' : 'Off';
+    smoothingStatusLabel.dataset.state = enabled ? 'on' : 'off';
+  }
+};
+
+const bindSettingsPanel = () => {
+  if (!smoothingToggle) return;
+
+  updateSmoothingUIState(Game.isSmoothingEnabled);
+
+  smoothingToggle.addEventListener('change', () => {
+    const enabled = smoothingToggle.checked;
+    Game.setSmoothingPreference(enabled);
+    updateSmoothingUIState(enabled);
+  });
+};
 
 const GameUpdate = (): void => {
   physicalContext.drawImage(virtualCanvas, 0, 0);
@@ -85,6 +115,8 @@ window.addEventListener('DOMContentLoaded', () => {
     isLoaded = true;
 
     Game.init();
+
+    bindSettingsPanel();
 
     ScreenResize();
 

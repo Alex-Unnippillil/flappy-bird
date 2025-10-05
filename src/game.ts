@@ -12,6 +12,8 @@ import Sfx from './model/sfx';
 import Storage from './lib/storage';
 import FlashScreen from './model/flash-screen';
 
+const STORAGE_KEY_SMOOTHING = 'smoothingEnabled';
+
 export type IGameState = 'intro' | 'game';
 
 export default class Game extends ParentClass {
@@ -26,6 +28,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private smoothingEnabled: boolean;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -42,6 +45,7 @@ export default class Game extends ParentClass {
     this.gamePlay = new GamePlay(this);
     this.state = 'intro';
     this.bgPause = false;
+    this.smoothingEnabled = false;
     this.transition = new FlashScreen({
       interval: 700,
       strong: 1,
@@ -59,6 +63,13 @@ export default class Game extends ParentClass {
     this.background.init();
     this.platform.init();
     this.transition.init();
+
+    const storedSmoothing = Storage.get(STORAGE_KEY_SMOOTHING);
+    if (typeof storedSmoothing === 'boolean') {
+      this.smoothingEnabled = storedSmoothing;
+    } else if (typeof storedSmoothing === 'string') {
+      this.smoothingEnabled = storedSmoothing === 'true';
+    }
 
     void Sfx.init();
     Sfx.volume(SFX_VOLUME);
@@ -114,9 +125,9 @@ export default class Game extends ParentClass {
 
   public Display(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // Remove smoothing effect of an image
-    this.context.imageSmoothingEnabled = false;
-    this.context.imageSmoothingQuality = 'high';
+    // Apply smoothing preference to the canvas context
+    this.context.imageSmoothingEnabled = this.smoothingEnabled;
+    this.context.imageSmoothingQuality = this.smoothingEnabled ? 'high' : 'low';
 
     this.screenChanger.setState(this.state);
     this.background.Display(this.context);
@@ -167,5 +178,14 @@ export default class Game extends ParentClass {
 
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  public setSmoothingPreference(enabled: boolean): void {
+    this.smoothingEnabled = enabled;
+    Storage.save(STORAGE_KEY_SMOOTHING, enabled);
+  }
+
+  public get isSmoothingEnabled(): boolean {
+    return this.smoothingEnabled;
   }
 }
