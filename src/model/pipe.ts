@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import { settings } from '../lib/settings';
 
 export interface IPipePairPosition {
   top: ICoordinate;
@@ -147,7 +148,7 @@ export default class Pipe extends ParentClass {
    * Pipe Update
    * */
   public Update(): void {
-    this.coordinate.x -= this.velocity.x;
+    this.coordinate.x -= this.velocity.x * settings.motionScale;
   }
 
   public Display(context: CanvasRenderingContext2D): void {

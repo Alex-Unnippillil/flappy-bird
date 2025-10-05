@@ -15,6 +15,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
   }
 
   let clicked = false;
+  let holdTimer: number | undefined;
 
   // Trigger the event once
   let hasMouseDown = false;
@@ -36,10 +37,30 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     return { x: dx, y: dy };
   };
 
+  const clearHoldTimer = () => {
+    if (holdTimer === undefined) return;
+    window.clearInterval(holdTimer);
+    holdTimer = undefined;
+  };
+
+  const triggerPrimaryAction = () => {
+    Game.onClick(mouse.position);
+  };
+
   const likeClickedEvent = () => {
+    const scheme = Game.currentControlScheme;
+
+    if (scheme === 'hold') {
+      triggerPrimaryAction();
+      if (holdTimer === undefined) {
+        holdTimer = window.setInterval(triggerPrimaryAction, 140);
+      }
+      return;
+    }
+
     if (clicked) return;
 
-    Game.onClick(mouse.position);
+    triggerPrimaryAction();
     clicked = true;
   };
 
@@ -68,6 +89,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     Game.mouseUp(mouse.position);
     mouse.down = false;
     clicked = false;
+    clearHoldTimer();
   };
 
   const mouseDown = ({ x, y }: ICoordinate, evt: IEventParam): void => {
@@ -165,5 +187,10 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
         false
       );
     }
+  });
+
+  Game.setControlSchemeListener(() => {
+    clearHoldTimer();
+    clicked = false;
   });
 };
