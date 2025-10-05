@@ -16,8 +16,14 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import PauseButton from '../model/btn-pause';
 
 export type IGameState = 'died' | 'playing' | 'none';
+type PauseOverlayRenderer = (
+  context: CanvasRenderingContext2D,
+  size: IDimension
+) => void;
+
 export default class GetReady extends ParentClass implements IScreenChangerObject {
   private bird: BirdModel;
   private pipeGenerator: PipeGenerator;
@@ -31,8 +37,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private pauseButton: PauseButton;
+  private overlayRenderer?: PauseOverlayRenderer;
 
-  constructor(game: MainGameController) {
+  constructor(game: MainGameController, overlayRenderer?: PauseOverlayRenderer) {
     super();
     this.state = 'waiting';
     this.bird = new BirdModel();
@@ -56,6 +64,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.pauseButton = new PauseButton();
+    this.overlayRenderer = overlayRenderer;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -68,6 +78,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+    this.pauseButton.init();
+    this.pauseButton.registerToggle(() => this.game.togglePause());
   }
 
   public reset(): void {
@@ -82,6 +94,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.game.togglePause(false);
+    this.pauseButton.active = true;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -93,12 +107,15 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.scoreBoard.resize(this.canvasSize);
     this.flashScreen.resize(this.canvasSize);
     this.transition.resize(this.canvasSize);
+    this.pauseButton.resize(this.canvasSize);
   }
 
   public Update(): void {
     this.flashScreen.Update();
     this.transition.Update();
     this.scoreBoard.Update();
+    this.pauseButton.Update();
+    this.pauseButton.active = this.gameState !== 'died';
 
     if (!this.bird.alive) {
       this.game.bgPause = true;
@@ -161,6 +178,17 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
     this.flashScreen.Display(context);
     this.transition.Display(context);
+
+    if (
+      this.game.currentState === 'game' &&
+      (this.pauseButton.active || this.game.isPaused)
+    ) {
+      this.pauseButton.Display(context);
+    }
+
+    if (this.game.isPaused && this.overlayRenderer) {
+      this.overlayRenderer(context, this.canvasSize);
+    }
   }
 
   private setButtonEvent(): void {
@@ -176,6 +204,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public click({ x, y }: ICoordinate): void {
+    if (this.game.isPaused) return;
+
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
@@ -185,12 +215,20 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
+    this.pauseButton.mouseEvent('down', { x, y });
+
+    if (this.game.isPaused) return;
+
     if (this.gameState !== 'died') return;
 
     this.scoreBoard.mouseDown({ x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
+    this.pauseButton.mouseEvent('up', { x, y });
+
+    if (this.game.isPaused) return;
+
     if (this.gameState !== 'died') return;
 
     this.scoreBoard.mouseUp({ x, y });

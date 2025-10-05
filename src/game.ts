@@ -26,6 +26,8 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private paused: boolean;
+  private pendingPauseOverlaySize?: IDimension;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -39,7 +41,9 @@ export default class Game extends ParentClass {
     this.platform = new PlatformModel();
     this.pipeGenerator = new PipeGenerator();
     this.screenIntro = new Intro();
-    this.gamePlay = new GamePlay(this);
+    this.paused = false;
+    this.pendingPauseOverlaySize = void 0;
+    this.gamePlay = new GamePlay(this, this.queuePauseOverlay.bind(this));
     this.state = 'intro';
     this.bgPause = false;
     this.transition = new FlashScreen({
@@ -79,6 +83,7 @@ export default class Game extends ParentClass {
     this.background.reset();
     this.platform.reset();
     this.Resize(this.canvasSize);
+    this.setPaused(false);
   }
 
   public Resize({ width, height }: IDimension): void {
@@ -101,8 +106,13 @@ export default class Game extends ParentClass {
   }
 
   public Update(): void {
-    this.transition.Update();
     this.screenChanger.setState(this.state);
+
+    if (this.paused && this.state === 'game') {
+      return;
+    }
+
+    this.transition.Update();
 
     if (!this.bgPause) {
       this.background.Update();
@@ -128,6 +138,13 @@ export default class Game extends ParentClass {
     this.platform.Display(this.context);
     this.screenChanger.Display(this.context);
     this.transition.Display(this.context);
+
+    if (this.paused && this.state === 'game') {
+      const size = this.pendingPauseOverlaySize ?? this.canvasSize;
+      this.renderPauseOverlay(size);
+      this.pendingPauseOverlaySize = void 0;
+      this.drawPauseBanner(this.context);
+    }
   }
 
   public setEvent(): void {
@@ -165,7 +182,103 @@ export default class Game extends ParentClass {
     else this.gamePlay.startAtKeyBoardEvent();
   }
 
+  public togglePause(force?: boolean): boolean {
+    const desired = typeof force === 'boolean' ? force : !this.paused;
+
+    if (this.state !== 'game') {
+      this.setPaused(false);
+      return this.paused;
+    }
+
+    this.setPaused(desired);
+    return this.paused;
+  }
+
+  public get isPaused(): boolean {
+    return this.paused;
+  }
+
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  private setPaused(value: boolean): void {
+    if (this.paused === value) {
+      if (!value) {
+        this.pendingPauseOverlaySize = void 0;
+      }
+      this.dispatchPauseEvent(value);
+      return;
+    }
+
+    this.paused = value;
+    if (!value) {
+      this.pendingPauseOverlaySize = void 0;
+    }
+    this.dispatchPauseEvent(value);
+  }
+
+  private dispatchPauseEvent(paused: boolean): void {
+    window.dispatchEvent(
+      new CustomEvent('game:pause', {
+        detail: { paused }
+      })
+    );
+  }
+
+  private queuePauseOverlay(
+    _context: CanvasRenderingContext2D,
+    size: IDimension
+  ): void {
+    this.pendingPauseOverlaySize = size;
+  }
+
+  private renderPauseOverlay(size: IDimension): void {
+    this.context.save();
+    this.context.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    this.context.fillRect(0, 0, size.width, size.height);
+
+    const cardWidth = size.width * 0.6;
+    const cardHeight = size.height * 0.32;
+    const cardX = (size.width - cardWidth) / 2;
+    const cardY = (size.height - cardHeight) / 2;
+
+    this.context.fillStyle = 'rgba(28, 28, 30, 0.92)';
+    this.context.fillRect(cardX, cardY, cardWidth, cardHeight);
+    this.context.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    this.context.lineWidth = Math.max(2, size.width * 0.004);
+    this.context.strokeRect(cardX, cardY, cardWidth, cardHeight);
+
+    this.context.textAlign = 'center';
+    this.context.textBaseline = 'middle';
+    this.context.fillStyle = 'rgba(255, 255, 255, 0.95)';
+
+    const titleSize = Math.max(24, size.height * 0.08);
+    const subtitleSize = Math.max(14, size.height * 0.04);
+
+    this.context.font = `${titleSize}px 'Arial', sans-serif`;
+    this.context.fillText('Paused', size.width / 2, cardY + cardHeight * 0.4);
+
+    this.context.font = `${subtitleSize}px 'Arial', sans-serif`;
+    this.context.fillText(
+      'Press P or tap the pause button to resume',
+      size.width / 2,
+      cardY + cardHeight * 0.65
+    );
+
+    this.context.restore();
+  }
+
+  private drawPauseBanner(context: CanvasRenderingContext2D): void {
+    context.save();
+    const bannerHeight = Math.max(30, this.canvasSize.height * 0.08);
+    context.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    context.fillRect(0, 0, this.canvasSize.width, bannerHeight);
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = '#ffffff';
+    context.font = `${Math.max(18, this.canvasSize.height * 0.045)}px 'Arial', sans-serif`;
+    context.fillText('Game Paused', this.canvasSize.width / 2, bannerHeight / 2);
+    context.restore();
   }
 }

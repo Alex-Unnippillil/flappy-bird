@@ -28,6 +28,15 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     }
   };
 
+  const pauseToggleBtn = document.querySelector<HTMLButtonElement>('#pause-toggle');
+
+  const updatePauseToggle = (paused: boolean): void => {
+    if (!pauseToggleBtn) return;
+    pauseToggleBtn.setAttribute('aria-pressed', String(paused));
+    pauseToggleBtn.dataset.state = paused ? 'paused' : 'running';
+    pauseToggleBtn.textContent = paused ? 'Resume' : 'Pause';
+  };
+
   const getBoundedPosition = ({ x, y }: ICoordinate): ICoordinate => {
     const { left, top, width, height } = canvas.getBoundingClientRect();
     const dx: number = ((x - left) / width) * canvas.width;
@@ -124,6 +133,12 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
   document.addEventListener('keydown', (evt: KeyboardEvent) => {
     const { key, keyCode, code } = evt;
 
+    if (code === 'KeyP' || key.toLowerCase() === 'p') {
+      if (evt.repeat) return;
+      updatePauseToggle(Game.togglePause());
+      return;
+    }
+
     if (
       key === ' ' ||
       keyCode === 32 ||
@@ -147,6 +162,10 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
   document.addEventListener('keyup', (evt: KeyboardEvent) => {
     const { key, keyCode, code } = evt;
+
+    if (code === 'KeyP' || key.toLowerCase() === 'p') {
+      return;
+    }
     if (
       key === ' ' ||
       keyCode === 32 ||
@@ -166,4 +185,20 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
       );
     }
   });
+
+  if (pauseToggleBtn) {
+    pauseToggleBtn.addEventListener('click', (evt: MouseEvent) => {
+      evt.preventDefault();
+      updatePauseToggle(Game.togglePause());
+    });
+
+    window.addEventListener('game:pause', (event) => {
+      const detail = (event as CustomEvent<{ paused: boolean }>).detail;
+      if (detail && typeof detail.paused === 'boolean') {
+        updatePauseToggle(detail.paused);
+      }
+    });
+
+    updatePauseToggle(Game.isPaused);
+  }
 };
