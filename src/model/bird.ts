@@ -24,6 +24,8 @@ export default class Bird extends ParentClass {
   private static readonly FLAG_IS_ALIVE = 0b0001;
   private static readonly FLAG_DIED = 0b0010;
   private static readonly FLAG_DOES_LANDED = 0b0100;
+  public static readonly MIN_FLAP_STRENGTH = 0.7;
+  public static readonly MAX_FLAP_STRENGTH = 1.4;
   private flags: number;
 
   /**
@@ -185,7 +187,7 @@ export default class Bird extends ParentClass {
   /**
    * Add lift to bird that slowly decrease by weight
    * */
-  public flap(): void {
+  public flap(strength?: number): void {
     // Prevent flapping when the height of bird is
     // at the very top of canvas or the bird is not alive
     if (this.coordinate.y < 0 || (this.flags & Bird.FLAG_IS_ALIVE) === 0) {
@@ -193,7 +195,12 @@ export default class Bird extends ParentClass {
     }
 
     Sfx.wing();
-    this.velocity.y = this.force;
+    const multiplier =
+      typeof strength === 'number' && Number.isFinite(strength)
+        ? clamp(Bird.MIN_FLAP_STRENGTH, Bird.MAX_FLAP_STRENGTH, strength)
+        : 1;
+
+    this.velocity.y = this.force * multiplier;
     this.lastCoord = this.coordinate.y;
   }
 

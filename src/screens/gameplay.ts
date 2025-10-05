@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import { clamp } from '../utils';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -175,13 +176,22 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(_coordinate: ICoordinate, pressure?: number): void {
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
     this.gameState = 'playing';
     this.bannerInstruction.tap();
-    this.bird.flap();
+
+    if (typeof pressure === 'number' && Number.isFinite(pressure)) {
+      const normalized = clamp(0, 1, pressure);
+      const strength =
+        BirdModel.MIN_FLAP_STRENGTH +
+        (BirdModel.MAX_FLAP_STRENGTH - BirdModel.MIN_FLAP_STRENGTH) * normalized;
+      this.bird.flap(strength);
+    } else {
+      this.bird.flap();
+    }
   }
 
   public mouseDown({ x, y }: ICoordinate): void {

@@ -5,13 +5,15 @@
 
 import Game from './game';
 import WebSfx from './lib/web-sfx';
+import { clamp } from './utils';
 
-export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
+export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent | PointerEvent;
 
 export default (Game: Game, canvas: HTMLCanvasElement) => {
   interface IMouse {
     down: boolean;
     position: ICoordinate;
+    pressure: number;
   }
 
   let clicked = false;
@@ -25,7 +27,33 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     position: {
       x: 0,
       y: 0
+    },
+    pressure: 1
+  };
+
+  const supportsPointerEvents = typeof window !== 'undefined' && 'PointerEvent' in window;
+
+  const getNormalizedPressure = (evt: IEventParam): number => {
+    if (supportsPointerEvents && evt instanceof PointerEvent) {
+      if (evt.pointerType === 'pen') {
+        return clamp(0, 1, evt.pressure ?? 0);
+      }
+
+      if (evt.pointerType === 'touch') {
+        return clamp(0, 1, evt.pressure ?? 0);
+      }
+
+      return 1;
     }
+
+    if ('touches' in evt && evt.touches.length > 0) {
+      const force = evt.touches[0].force;
+      if (typeof force === 'number' && force > 0) {
+        return clamp(0, 1, force);
+      }
+    }
+
+    return 1;
   };
 
   const getBoundedPosition = ({ x, y }: ICoordinate): ICoordinate => {
@@ -39,13 +67,17 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
   const likeClickedEvent = () => {
     if (clicked) return;
 
-    Game.onClick(mouse.position);
+    Game.onClick(mouse.position, mouse.pressure);
     clicked = true;
   };
 
   const mouseMove = ({ x, y }: ICoordinate, evt: IEventParam): void => {
     evt.preventDefault();
     mouse.position = getBoundedPosition({ x, y });
+    const nextPressure = getNormalizedPressure(evt);
+    if (Number.isFinite(nextPressure)) {
+      mouse.pressure = nextPressure;
+    }
   };
 
   const mouseUP = (
@@ -64,6 +96,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
     evt.preventDefault();
     if (!isRetreive) mouse.position = getBoundedPosition({ x, y });
+    mouse.pressure = 1;
 
     Game.mouseUp(mouse.position);
     mouse.down = false;
@@ -83,42 +116,70 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
     evt.preventDefault();
     mouse.position = getBoundedPosition({ x, y });
-    Game.mouseDown(mouse.position);
+    const normalizedPressure = getNormalizedPressure(evt);
+    mouse.pressure = Number.isFinite(normalizedPressure) ? normalizedPressure : 1;
+    Game.mouseDown(mouse.position, mouse.pressure);
     mouse.down = true;
 
     likeClickedEvent();
   };
 
-  // Mouse Event
-  canvas.addEventListener('mousedown', (evt: MouseEvent) => {
-    mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
-  });
+  if (supportsPointerEvents) {
+    canvas.addEventListener('pointerdown', (evt: PointerEvent) => {
+      if (typeof canvas.setPointerCapture === 'function') {
+        try {
+          canvas.setPointerCapture(evt.pointerId);
+        } catch (_error) {
+          // Ignore capture errors (e.g. unsupported pointer types)
+        }
+      }
 
-  canvas.addEventListener('mouseup', (evt: MouseEvent) => {
-    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
-  });
+      mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
+    });
 
-  canvas.addEventListener('mousemove', (evt: MouseEvent) => {
-    mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
-  });
+    canvas.addEventListener('pointerup', (evt: PointerEvent) => {
+      mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+    });
 
-  // Touch Event
-  canvas.addEventListener('touchstart', (evt: TouchEvent) => {
-    mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+    canvas.addEventListener('pointercancel', (evt: PointerEvent) => {
+      mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+    });
 
-  canvas.addEventListener('touchend', (evt: TouchEvent) => {
-    if (evt.touches.length < 1) {
-      mouseUP(mouse.position, evt, true);
-      return;
-    }
+    canvas.addEventListener('pointermove', (evt: PointerEvent) => {
+      mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
+    });
+  } else {
+    // Mouse Event
+    canvas.addEventListener('mousedown', (evt: MouseEvent) => {
+      mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
+    });
 
-    mouseUP({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt, false);
-  });
+    canvas.addEventListener('mouseup', (evt: MouseEvent) => {
+      mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+    });
 
-  canvas.addEventListener('touchmove', (evt: TouchEvent) => {
-    mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+    canvas.addEventListener('mousemove', (evt: MouseEvent) => {
+      mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
+    });
+
+    // Touch Event
+    canvas.addEventListener('touchstart', (evt: TouchEvent) => {
+      mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
+    });
+
+    canvas.addEventListener('touchend', (evt: TouchEvent) => {
+      if (evt.touches.length < 1) {
+        mouseUP(mouse.position, evt, true);
+        return;
+      }
+
+      mouseUP({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt, false);
+    });
+
+    canvas.addEventListener('touchmove', (evt: TouchEvent) => {
+      mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
+    });
+  }
 
   // Keyboard event
   document.addEventListener('keydown', (evt: KeyboardEvent) => {

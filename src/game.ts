@@ -144,13 +144,13 @@ export default class Game extends ParentClass {
     });
   }
 
-  public onClick({ x, y }: ICoordinate): void {
+  public onClick({ x, y }: ICoordinate, pressure?: number): void {
     if (this.state === 'game') {
-      this.gamePlay.click({ x, y });
+      this.gamePlay.click({ x, y }, pressure);
     }
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
+  public mouseDown({ x, y }: ICoordinate, _pressure?: number): void {
     this.screenIntro.mouseDown({ x, y });
     this.gamePlay.mouseDown({ x, y });
   }
