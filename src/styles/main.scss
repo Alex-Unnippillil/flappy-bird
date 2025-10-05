@@ -28,6 +28,7 @@ body {
     border: none;
     background-color: #fff;
     position: absolute;
+    touch-action: none;
   }
 
   > #loading-modal {
