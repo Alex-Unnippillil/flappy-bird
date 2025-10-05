@@ -8,12 +8,15 @@ import { CANVAS_DIMENSION } from './constants';
 import EventHandler from './events';
 import GameObject from './game';
 import prepareAssets from './asset-preparation';
-import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import { settings } from './lib/settings';
+import type { FpsCapOption } from './lib/settings';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
 }
+
+settings.applyThemeToDocument();
 
 /**
  * Enabling desynchronized to reduce latency
@@ -70,13 +73,42 @@ const ScreenResize = () => {
 const removeLoadingScreen = () => {
   EventHandler(Game, canvas);
   loadingScreen.style.display = 'none';
-  document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
+  document.body.style.backgroundColor = '';
 };
 
 //
 // Quick Fix. Locking to 60fps
 // Quick fix.Long term :)
-const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
+let running = false;
+let frameInterval = 1000 / Math.max(1, settings.get('fpsCap') || 60);
+let lastFrameTime = 0;
+
+const tick = (timestamp: number) => {
+  if (!running) return;
+
+  if (frameInterval <= 0 || timestamp - lastFrameTime >= frameInterval) {
+    lastFrameTime = timestamp;
+    GameUpdate();
+  }
+
+  window.requestAnimationFrame(tick);
+};
+
+const startLoop = () => {
+  if (running) return;
+  running = true;
+  lastFrameTime = performance.now();
+  window.requestAnimationFrame(tick);
+};
+
+const applyFpsCap = (fps: FpsCapOption) => {
+  if (!fps) {
+    frameInterval = 0;
+    return;
+  }
+
+  frameInterval = 1000 / fps;
+};
 
 window.addEventListener('DOMContentLoaded', () => {
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
@@ -88,8 +120,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
     ScreenResize();
 
-    // raf(GameUpdate); Issue #16
-    if (!game_running()) game_start(); // Quick fix. Long term :)
+    applyFpsCap(settings.get('fpsCap'));
+
+    Game.setFpsPreferenceListener((fps) => {
+      applyFpsCap(fps);
+      if (!running) {
+        startLoop();
+      }
+    });
+
+    settings.applyThemeToDocument();
+
+    startLoop();
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();
     else window.setTimeout(removeLoadingScreen, 1000);
