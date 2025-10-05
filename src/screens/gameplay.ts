@@ -1,10 +1,25 @@
 // File Overview: This module belongs to src/screens/gameplay.ts.
 /**
- * Display "Get Ready" & "Instruction"
- * Let the bird swing while waiting...
- * No Pipes
- * Wait for the tap event
- * */
+ * Gameplay screen orchestrating the active run experience once ScreenChanger
+ * hands control off from the intro. It coordinates BirdModel, pipes, banners,
+ * score display, ghost playback, and transition overlays while exposing the
+ * ParentClass lifecycle contract so the screen can be resized or paused and
+ * later re-mounted without state leakage.
+ *
+ * Initialization provisions all dependent models (bird, pipe generator,
+ * countdown, instructions, scoreboard, flash overlays) and connects scoreboard
+ * callbacks to FlashScreen transitions that notify ScreenChanger when the
+ * player restarts. Resetting rewinds environmental models and clears ghost
+ * samples to maintain deterministic restarts.
+ *
+ * Event handlers gate tap/click input based on death state: active runs convert
+ * clicks into flap commands and start ghost recording, while post-death input
+ * is routed exclusively to the scoreboard so the replay and restart buttons
+ * remain responsive. UX-specific touches include delaying scoreboard reveal
+ * behind paired swoosh SFX, pausing the background when the bird dies, hiding
+ * the bird during scoreboard presentation, and rendering a translucent ghost
+ * trail to preview the prior attempt for coaching-oriented feedback.
+ */
 
 import BannerInstruction from '../model/banner-instruction';
 import BirdModel from '../model/bird';
