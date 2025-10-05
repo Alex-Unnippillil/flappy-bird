@@ -1,4 +1,11 @@
-// File Overview: This script belongs to webpack.config.js.
+/**
+ * Webpack configuration for Flappy Bird.
+ * Responsibilities:
+ * - Define bundle entry/output behavior for TypeScript sources and extracted assets.
+ * - Wire up development tooling (BrowserSync) while switching production-only optimizations.
+ * - Generate the PWA manifest and offline service worker via Workbox when building for production.
+ * - Inject Google Analytics (GA4) tracking only on production branches determined by NODE_ENV.
+ */
 const path = require('path');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -58,8 +65,8 @@ const CONFIG = {
 };
 
 /**
- * Production Plugins
- * */
+ * Production-only PWA assets and offline caching.
+ */
 let prodPlugins = [
   new WebpackPwaManifest({
     name: CONFIG.appName,
@@ -168,6 +175,7 @@ module.exports = function (env, config) {
     },
 
     plugins: [
+      // Environment variables and analytics instrumentation.
       new webpack.DefinePlugin({
         'process.env': Object.fromEntries(
           Object.entries(CONFIG.env).map((x) => [x[0], JSON.stringify(x[1])])
@@ -179,6 +187,7 @@ module.exports = function (env, config) {
         callPageView: true
       }),
 
+      // Development server helpers.
       new BrowserSyncPlugin({
         host: 'localhost',
         port: 3000,
@@ -192,6 +201,7 @@ module.exports = function (env, config) {
         open: false // Open browser after initiation
       }),
 
+      // HTML templating, metadata, and asset interpolation.
       new HtmlWebpackPlugin({
         filename: 'index.html',
         favicon: './' + path.join(CONFIG.input.dir, CONFIG.favicon),
@@ -317,11 +327,13 @@ module.exports = function (env, config) {
         }
       }),
 
+      // Stylesheet extraction for production-friendly CSS files.
       new MiniCssExtractPlugin({
         filename: CONFIG.output.name + '.css',
         chunkFilename: CONFIG.output.chunk + '.css'
       }),
 
+      // Placeholder values injected into the HTML template.
       new InterpolateHtmlPlugin({
         CDN: '',
         PUBLIC_URL: '',
