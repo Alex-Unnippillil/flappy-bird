@@ -30,6 +30,53 @@ body {
     position: absolute;
   }
 
+  > #orientation-hint {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translate(-50%, -10px);
+    max-width: min(90vw, 28rem);
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background-color: rgba(12, 12, 12, 0.92);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    color: rgba(255, 255, 255, 0.94);
+    font-family: 'Arial', 'Sans-Serif';
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    text-align: left;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease;
+
+    &.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+    }
+
+    > .orientation-hint__icon {
+      font-size: 1.4rem;
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+    }
+
+    > .orientation-hint__message {
+      flex: 1 1 auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    > #orientation-hint {
+      transition: none;
+    }
+  }
+
   > #loading-modal {
     display: flex;
     justify-content: center;

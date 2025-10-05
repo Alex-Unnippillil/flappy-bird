@@ -26,10 +26,36 @@ const gameIcon = document.createElement('img');
 const canvas = document.querySelector<HTMLCanvasElement>('#main-canvas')!;
 const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
+const orientationHint = document.querySelector<HTMLDivElement>('#orientation-hint');
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
 let isLoaded = false;
+
+const SMALL_LANDSCAPE_MAX_SHORT_EDGE = 600;
+
+const shouldShowOrientationHint = () => {
+  if (!orientationHint) return false;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const isLandscape = width > height;
+  const shortEdge = Math.min(width, height);
+
+  return isLandscape && shortEdge <= SMALL_LANDSCAPE_MAX_SHORT_EDGE;
+};
+
+const updateOrientationHint = () => {
+  if (!orientationHint) return;
+
+  const shouldShow = shouldShowOrientationHint();
+  orientationHint.classList.toggle('is-visible', shouldShow);
+  orientationHint.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+};
+
+const scheduleOrientationHintUpdate = () => {
+  window.requestAnimationFrame(updateOrientationHint);
+};
 
 gameIcon.src = gameSpriteIcon;
 
@@ -81,6 +107,8 @@ const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
 window.addEventListener('DOMContentLoaded', () => {
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
 
+  updateOrientationHint();
+
   prepareAssets(() => {
     isLoaded = true;
 
@@ -97,7 +125,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('resize', () => {
+  scheduleOrientationHintUpdate();
+
   if (!isLoaded) return;
 
   ScreenResize();
 });
+
+window.addEventListener('orientationchange', scheduleOrientationHintUpdate);
