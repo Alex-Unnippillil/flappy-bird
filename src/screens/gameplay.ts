@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import ShakeController from '../lib/shake-controller';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +32,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private shakeController: ShakeController;
+  private lastScoreValue: number;
+  private lastMilestoneScore: number;
+  private pendingDeathShake: boolean;
+  private deathShakeTriggered: boolean;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +62,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.shakeController = new ShakeController();
+    this.lastScoreValue = 0;
+    this.lastMilestoneScore = 0;
+    this.pendingDeathShake = false;
+    this.deathShakeTriggered = false;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -68,6 +79,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+    this.shakeController.reset();
   }
 
   public reset(): void {
@@ -82,6 +94,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.shakeController.reset();
+    this.lastScoreValue = 0;
+    this.lastMilestoneScore = 0;
+    this.pendingDeathShake = false;
+    this.deathShakeTriggered = false;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -99,6 +116,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.flashScreen.Update();
     this.transition.Update();
     this.scoreBoard.Update();
+    this.shakeController.Update();
+    this.processDeathShake();
 
     if (!this.bird.alive) {
       this.game.bgPause = true;
@@ -122,11 +141,19 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.pipeGenerator.Update();
     this.bird.Update();
 
+    const previousScore = this.lastScoreValue;
+    this.lastScoreValue = this.bird.score;
+    if (this.lastScoreValue > previousScore) {
+      this.handleScoreMilestone(this.lastScoreValue);
+    }
+
     if (this.bird.isDead(this.pipeGenerator.pipes)) {
       this.flashScreen.reset();
       this.flashScreen.start();
 
       this.gameState = 'died';
+      this.pendingDeathShake = true;
+      this.deathShakeTriggered = false;
 
       window.setTimeout(() => {
         this.scoreBoard.setScore(this.bird.score);
@@ -146,6 +173,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    const shake = this.shakeController.value;
+    const useShake = shake.x !== 0 || shake.y !== 0;
+
+    if (useShake) {
+      context.save();
+      context.translate(shake.x, shake.y);
+    }
+
     if (this.state === 'playing' || this.state === 'waiting') {
       this.bannerInstruction.Display(context);
 
@@ -157,6 +192,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
       if (!this.hideBird) this.bird.Display(context);
 
       this.scoreBoard.Display(context);
+    }
+
+    if (useShake) {
+      context.restore();
     }
 
     this.flashScreen.Display(context);
@@ -197,5 +236,36 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  private handleScoreMilestone(score: number): void {
+    if (score === 0) return;
+
+    if (score % 10 !== 0 || score === this.lastMilestoneScore) return;
+
+    this.lastMilestoneScore = score;
+
+    const amplitude = Math.min(6, this.canvasSize.width * 0.0125);
+    this.shakeController.trigger({
+      amplitude,
+      duration: 220,
+      frequency: 32
+    });
+  }
+
+  private processDeathShake(): void {
+    if (!this.pendingDeathShake || this.deathShakeTriggered) return;
+
+    const status = this.flashScreen.status;
+    if (!status.running && status.complete) {
+      const amplitude = Math.min(8, this.canvasSize.width * 0.0175);
+      this.shakeController.trigger({
+        amplitude,
+        duration: 320,
+        frequency: 26
+      });
+      this.deathShakeTriggered = true;
+      this.pendingDeathShake = false;
+    }
   }
 }

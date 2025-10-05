@@ -69,6 +69,7 @@ export default class Game extends ParentClass {
 
     this.screenIntro.playButton.active = true;
     this.screenIntro.rankingButton.active = true;
+    this.screenIntro.toggleMotionButton.active = true;
 
     // Register screens
     this.screenChanger.register('intro', this.screenIntro);
@@ -138,6 +139,7 @@ export default class Game extends ParentClass {
       this.screenIntro.playButton.active = false;
       this.screenIntro.rankingButton.active = false;
       this.screenIntro.toggleSpeakerButton.active = false;
+      this.screenIntro.toggleMotionButton.active = false;
 
       this.transition.reset();
       this.transition.start();
