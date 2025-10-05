@@ -17,6 +17,8 @@
  * */
 
 import { rescaleDim } from '../utils';
+import type { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export type IMouseState = 'down' | 'up';
 
@@ -24,7 +26,7 @@ export default abstract class ButtonEventHandler {
   public active: boolean;
 
   protected coordinate: ICoordinate;
-  protected img: HTMLImageElement | undefined;
+  protected img: SpriteAsset | undefined;
   protected initialWidth: number; // lerp - %
   protected dimension: IDimension;
   protected calcCoord: ICoordinate;
@@ -151,5 +153,5 @@ export default abstract class ButtonEventHandler {
    * touch event, sliding the finger out of button
    * */
   public abstract click(): void;
-  public abstract Display(context: CanvasRenderingContext2D): void;
+  public abstract Display(context: RenderingContext2D): void;
 }

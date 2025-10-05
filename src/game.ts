@@ -17,8 +17,8 @@ export type IGameState = 'intro' | 'game';
 export default class Game extends ParentClass {
   public background: BgModel;
   public platform: PlatformModel;
-  public canvas: HTMLCanvasElement;
-  public context: CanvasRenderingContext2D;
+  public canvas: HTMLCanvasElement | OffscreenCanvas;
+  public context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   public pipeGenerator: PipeGenerator;
   public bgPause: boolean;
   private screenChanger: ScreenChanger;
@@ -27,15 +27,21 @@ export default class Game extends ParentClass {
   private gamePlay: GamePlay;
   private state: IGameState;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement | OffscreenCanvas) {
     super();
     this.screenChanger = new ScreenChanger();
     this.background = new BgModel();
     this.canvas = canvas;
-    this.context = this.canvas.getContext('2d', {
+    const context = this.canvas.getContext('2d', {
       desynchronized: true,
       alpha: false
-    })!;
+    });
+
+    if (!context) {
+      throw new Error('Failed to acquire 2D rendering context');
+    }
+
+    this.context = context as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
     this.platform = new PlatformModel();
     this.pipeGenerator = new PipeGenerator();
     this.screenIntro = new Intro();

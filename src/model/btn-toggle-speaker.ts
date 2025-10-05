@@ -1,10 +1,11 @@
 // File Overview: This module belongs to src/model/btn-toggle-speaker.ts.
 import Parent from '../abstracts/button-event-handler';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
 import Sfx from './sfx';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export default class ToggleSpeakerBtn extends Parent {
-  private assets: Map<string, HTMLImageElement>;
+  private assets: Map<string, SpriteAsset>;
   private is_mute: boolean;
 
   constructor() {
@@ -51,7 +52,7 @@ export default class ToggleSpeakerBtn extends Parent {
     super.Update();
   }
 
-  public Display(ctx: CanvasRenderingContext2D): void {
+  public Display(ctx: RenderingContext2D): void {
     const xLoc = this.calcCoord.x;
     const yLoc = this.calcCoord.y;
     const xRad = this.dimension.width / 2;

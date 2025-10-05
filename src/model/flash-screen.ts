@@ -1,5 +1,6 @@
 // File Overview: This module belongs to src/model/flash-screen.ts.
 import ParentClass from '../abstracts/parent-class';
+import type { RenderingContext2D } from '../types/rendering-context';
 import { FadeOut } from '../lib/animation';
 import { IEasingKey } from '../lib/animation/easing';
 import { IFadingStatus } from '../lib/animation/abstracts/fading';
@@ -89,7 +90,7 @@ export default class FlashScreen extends ParentClass {
     }
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     context.globalAlpha = this.strong * this.value;
     context.fillStyle = this.style;
     context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);

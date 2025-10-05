@@ -1,11 +1,12 @@
 // File Overview: This module belongs to src/model/spark.ts.
 import ParentClass from '../abstracts/parent-class';
 import { rescaleDim, randomClamp } from '../utils';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 import { TimingEvent } from '../lib/animation';
 
 export default class Spark extends ParentClass {
-  private images: Map<string, HTMLImageElement>;
+  private images: Map<string, SpriteAsset>;
   private scaled: IDimension;
   private status: string;
   private timingEvent: TimingEvent;
@@ -16,7 +17,7 @@ export default class Spark extends ParentClass {
 
   constructor() {
     super();
-    this.images = new Map<string, HTMLImageElement>();
+    this.images = new Map<string, SpriteAsset>();
     this.timingEvent = new TimingEvent({
       diff: 200
     });
@@ -96,7 +97,7 @@ export default class Spark extends ParentClass {
     }
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     if (this.status === 'stopped') return;
     context.drawImage(
       this.images.get(this.sparkList[this.currentSparkIndex])!,

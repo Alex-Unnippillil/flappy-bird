@@ -3,12 +3,18 @@
  * Interactive
  */
 
-import Game from './game';
 import WebSfx from './lib/web-sfx';
 
 export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
 
-export default (Game: Game, canvas: HTMLCanvasElement) => {
+export interface GameInputTarget {
+  onClick(position: ICoordinate): void;
+  mouseDown(position: ICoordinate): void;
+  mouseUp(position: ICoordinate): void;
+  startAtKeyBoardEvent(): void;
+}
+
+export default (Game: GameInputTarget, canvas: HTMLCanvasElement) => {
   interface IMouse {
     down: boolean;
     position: ICoordinate;

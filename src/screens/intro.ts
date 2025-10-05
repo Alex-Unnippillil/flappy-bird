@@ -17,7 +17,8 @@ import ParentClass from '../abstracts/parent-class';
 import PlayButton from '../model/btn-play';
 import RankingButton from '../model/btn-ranking';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
@@ -25,7 +26,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
   public toggleSpeakerButton: ToggleSpeaker;
 
   private bird: BirdModel;
-  private flappyBirdBanner: HTMLImageElement | undefined;
+  private flappyBirdBanner: SpriteAsset | undefined;
 
   constructor() {
     super();
@@ -67,7 +68,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.toggleSpeakerButton.Update();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     this.toggleSpeakerButton.Display(context);
     this.playButton.Display(context);
     this.rankingButton.Display(context);

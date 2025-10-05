@@ -2,11 +2,12 @@
 import { BG_SPEED } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 import SceneGenerator from './scene-generator';
 
 export type ITheme = string;
-export type IRecords = Map<ITheme, HTMLImageElement>;
+export type IRecords = Map<ITheme, SpriteAsset>;
 export default class Background extends ParentClass {
   /**
    * background dimension.
@@ -18,7 +19,7 @@ export default class Background extends ParentClass {
 
   constructor() {
     super();
-    this.images = new Map<ITheme, HTMLImageElement>();
+    this.images = new Map<ITheme, SpriteAsset>();
     this.theme = 'day';
 
     this.velocity.x = BG_SPEED;
@@ -81,7 +82,7 @@ export default class Background extends ParentClass {
     this.coordinate.y += this.velocity.y;
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const { width, height } = this.backgroundSize;
     const { x, y } = this.coordinate;
 

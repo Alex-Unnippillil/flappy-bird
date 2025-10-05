@@ -3,11 +3,12 @@ import { rescaleDim } from '../utils';
 
 import { GAME_SPEED } from '../constants';
 import ParentClass from '../abstracts/parent-class';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export default class Platform extends ParentClass {
   public platformSize: IDimension;
-  private img: undefined | HTMLImageElement;
+  private img: undefined | SpriteAsset;
 
   constructor() {
     super();
@@ -51,7 +52,7 @@ export default class Platform extends ParentClass {
     this.coordinate.y += this.velocity.y;
   }
 
-  public Display(context: CanvasRenderingContext2D) {
+  public Display(context: RenderingContext2D) {
     /**
      * Similar to the background but drawing the image into bottom of screen
      * */

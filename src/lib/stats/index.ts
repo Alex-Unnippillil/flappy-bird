@@ -13,12 +13,12 @@ interface IContainerProperties {
 export default class Stats {
   private fps: number;
   private timeArray: number[];
-  private context: CanvasRenderingContext2D;
+  private context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   private containerOpacity: number;
   private textProps: ITextProperties;
   private containerProps: IContainerProperties;
 
-  constructor(context: CanvasRenderingContext2D) {
+  constructor(context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
     this.fps = 0;
     this.timeArray = [];
     this.context = context;

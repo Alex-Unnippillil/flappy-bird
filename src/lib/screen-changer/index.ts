@@ -1,7 +1,9 @@
 // File Overview: This module belongs to src/lib/screen-changer/index.ts.
+import type { RenderingContext2D } from '../../types/rendering-context';
+
 export interface IScreenChangerObject {
   Update(): void;
-  Display(context: CanvasRenderingContext2D): void;
+  Display(context: RenderingContext2D): void;
 }
 
 export default class ScreenChanger implements IScreenChangerObject {
@@ -31,7 +33,7 @@ export default class ScreenChanger implements IScreenChangerObject {
     classObject.Update();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const classObject = this.objects.get(this.currentState);
 
     if (classObject === void 0) {

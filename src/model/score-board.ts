@@ -6,7 +6,8 @@ import SparkModel from './spark';
 import PlayButton from './btn-play';
 import RankingButton from './btn-ranking';
 import ToggleSpeaker from './btn-toggle-speaker';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
 
@@ -18,7 +19,7 @@ export default class ScoreBoard extends ParentObject {
 
   private flags: number;
 
-  private images: Map<string, HTMLImageElement>;
+  private images: Map<string, SpriteAsset>;
   private playButton: PlayButton;
   private rankingButton: RankingButton;
   private toggleSpeakerButton: ToggleSpeaker;
@@ -33,7 +34,7 @@ export default class ScoreBoard extends ParentObject {
   constructor() {
     super();
     this.flags = 0;
-    this.images = new Map<string, HTMLImageElement>();
+    this.images = new Map<string, SpriteAsset>();
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
@@ -109,7 +110,7 @@ export default class ScoreBoard extends ParentObject {
     this.toggleSpeakerButton.Update();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BANNER) !== 0) {
       const bgoScaled = rescaleDim(
         {
@@ -224,12 +225,12 @@ export default class ScoreBoard extends ParentObject {
   }
 
   private addMedal(
-    context: CanvasRenderingContext2D,
+    context: RenderingContext2D,
     coord: ICoordinate,
     parentSize: IDimension
   ): void {
     if (this.currentScore < 10) return; // So sad having a no medal :)
-    let medal: HTMLImageElement | undefined;
+    let medal: SpriteAsset | undefined;
 
     if (this.currentScore >= 10 && this.currentScore < 20) {
       medal = this.images.get('coin-10');
@@ -262,7 +263,7 @@ export default class ScoreBoard extends ParentObject {
   }
 
   private displayScore(
-    context: CanvasRenderingContext2D,
+    context: RenderingContext2D,
     coord: ICoordinate,
     parentSize: IDimension
   ): void {
@@ -292,7 +293,7 @@ export default class ScoreBoard extends ParentObject {
   }
 
   private displayBestScore(
-    context: CanvasRenderingContext2D,
+    context: RenderingContext2D,
     coord: ICoordinate,
     parentSize: IDimension,
     _p0: boolean

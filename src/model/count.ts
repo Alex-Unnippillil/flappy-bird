@@ -3,9 +3,10 @@ import { COUNT_COORDINATE, COUNT_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 
 import ParentClass from '../abstracts/parent-class';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
-export type INumberString = Record<string, HTMLImageElement>;
+export type INumberString = Record<string, SpriteAsset>;
 
 export default class Count extends ParentClass {
   private currentValue: number;
@@ -57,7 +58,7 @@ export default class Count extends ParentClass {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   public Update(): void {}
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const numArr: string[] = String(this.currentValue).split('');
     const totalWidth = numArr.length * this.numberDimension.width;
     let lastWidth: number = this.coordinate.x - totalWidth / 2;

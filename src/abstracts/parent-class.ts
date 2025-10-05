@@ -1,4 +1,6 @@
 // File Overview: This module belongs to src/abstracts/parent-class.ts.
+import type { RenderingContext2D } from '../types/rendering-context';
+
 export default abstract class ParentObject {
   protected canvasSize: IDimension;
   public velocity: IVelocity;
@@ -27,5 +29,5 @@ export default abstract class ParentObject {
 
   public abstract init(): void;
   public abstract Update(): void;
-  public abstract Display(context: CanvasRenderingContext2D): void;
+  public abstract Display(context: RenderingContext2D): void;
 }

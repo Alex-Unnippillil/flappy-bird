@@ -2,6 +2,7 @@
 import Parent from '../abstracts/button-event-handler';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export default class PlayButton extends Parent {
   protected callback?: IEmptyFunction;
@@ -42,7 +43,7 @@ export default class PlayButton extends Parent {
     super.Update();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const xLoc = this.calcCoord.x;
     const yLoc = this.calcCoord.y;
     const xRad = this.dimension.width / 2;

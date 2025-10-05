@@ -2,7 +2,8 @@
 import { GAME_SPEED, PIPE_HOLL_SIZE, PIPE_INITIAL_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 import SceneGenerator from './scene-generator';
 
 export interface IPipePairPosition {
@@ -15,7 +16,7 @@ export interface IPipeScaled {
 }
 
 export type IPipeColor = string;
-export type IPipeRecords = Map<IPipeColor, HTMLImageElement>;
+export type IPipeRecords = Map<IPipeColor, SpriteAsset>;
 
 export default class Pipe extends ParentClass {
   /**
@@ -36,7 +37,7 @@ export default class Pipe extends ParentClass {
 
   constructor() {
     super();
-    this.images = new Map<string, HTMLImageElement>();
+    this.images = new Map<string, SpriteAsset>();
     this.color = 'green';
     this.hollSize = 0;
     this.pipePosition = {
@@ -150,7 +151,7 @@ export default class Pipe extends ParentClass {
     this.coordinate.x -= this.velocity.x;
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const width = Pipe.pipeSize.width / 2;
 
     const posX = this.coordinate.x;

@@ -8,6 +8,8 @@ export interface IPromiseImageHandled {
   img: HTMLImageElement;
 }
 
+export type SpriteAsset = HTMLImageElement | ImageBitmap;
+
 export type ICallbackModify = (
   name: string,
   img: HTMLImageElement
@@ -21,7 +23,7 @@ export default class SpriteDestructor {
   /**
    * Cache for later use
    * */
-  private static readonly cached = new Map<string, HTMLImageElement>();
+  private static readonly cached = new Map<string, SpriteAsset>();
 
   private loading: Promise<IPromiseImageHandled>[];
 
@@ -45,7 +47,7 @@ export default class SpriteDestructor {
 
         for (const result of resolved) {
           if (result.status === 'fulfilled' && 'value' in result) {
-            SpriteDestructor.cached.set(result.value.name, result.value.img);
+            SpriteDestructor.register(result.value.name, result.value.img);
             continue;
           }
           ++error_count;
@@ -61,7 +63,15 @@ export default class SpriteDestructor {
     );
   }
 
-  public static asset(key: string): HTMLImageElement {
+  public static register(name: string, asset: SpriteAsset): void {
+    SpriteDestructor.cached.set(name, asset);
+  }
+
+  public static entries(): IterableIterator<[string, SpriteAsset]> {
+    return SpriteDestructor.cached.entries();
+  }
+
+  public static asset(key: string): SpriteAsset {
     if (SpriteDestructor.cached.has(key)) return SpriteDestructor.cached.get(key)!;
 
     throw new TypeError(`Key: ${key} does not defined on SpriteDestructor`);

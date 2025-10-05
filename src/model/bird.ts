@@ -14,11 +14,12 @@ import { clamp, flipRange, rescaleDim, sine as sineWave } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import Pipe from './pipe';
 import Sfx from './sfx';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 import SceneGenerator from './scene-generator';
 
 export type IBirdColor = string;
-export type IBirdRecords = Map<IBirdColor, HTMLImageElement>;
+export type IBirdRecords = Map<IBirdColor, SpriteAsset>;
 
 export default class Bird extends ParentClass {
   private static readonly FLAG_IS_ALIVE = 0b0001;
@@ -76,7 +77,7 @@ export default class Bird extends ParentClass {
   constructor() {
     super();
     this.color = 'yellow';
-    this.images = new Map<string, HTMLImageElement>();
+    this.images = new Map<string, SpriteAsset>();
     this.force = 0;
     this.scaled = {
       width: 0,
@@ -336,7 +337,7 @@ export default class Bird extends ParentClass {
     this.handleRotation();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     const birdKeyString = `${this.color}.${this.wingState}`;
 
     // Save our previous created picture

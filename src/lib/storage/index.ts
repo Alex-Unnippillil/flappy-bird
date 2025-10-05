@@ -6,23 +6,34 @@ export interface IData {
 }
 
 export default class Storage {
-  private static sk: RegExpMatchArray | null | string = window.location.href
-    .toString()
-    .match(/([a-zA-Z-]+\.github\.io\/[a-zA-Z\-.]+\/)/i);
-  private static isAvailable: boolean;
+  private static sk: string | null = null;
+  private static isAvailable = false;
+  private static fallbackStore = new Map<string, IStoreValue>();
+  private static fallbackHandler?: (key: string, value: IStoreValue) => void;
 
   constructor() {
-    if ((Storage.sk ?? []).length < 1) Storage.sk = ['brrrrrrrrrrr'];
-    Storage.sk = Storage.utoa(Storage.sk![0]);
+    if (Storage.sk === null) {
+      const href =
+        typeof window !== 'undefined'
+          ? window.location.href
+          : typeof location !== 'undefined'
+            ? location.href
+            : 'flappy-bird';
+      const match = href.toString().match(/([a-zA-Z-]+\.github\.io\/[a-zA-Z\-.]+\/)/i);
+      const key = Array.isArray(match) && match.length > 0 ? match[0] : 'flappy-bird';
+      Storage.sk = Storage.utoa(key);
+    }
 
     Storage.isAvailable = false;
 
-    try {
-      if ('localStorage' in window && typeof window.localStorage === 'object') {
-        Storage.isAvailable = true;
+    if (typeof window !== 'undefined') {
+      try {
+        if ('localStorage' in window && typeof window.localStorage === 'object') {
+          Storage.isAvailable = true;
+        }
+      } catch (err) {
+        Storage.isAvailable = false;
       }
-    } catch (err) {
-      Storage.isAvailable = false;
     }
   }
 
@@ -35,13 +46,15 @@ export default class Storage {
   }
 
   static save(key: string, value: IStoreValue): void {
-    if (!Storage.isAvailable) {
-      console.warn('Storage is not available');
-      return;
-    }
     const mode = typeof value;
+    const originalValue = value;
     if (typeof value !== 'string') {
       value = String(value);
+    }
+    if (!Storage.isAvailable) {
+      Storage.fallbackStore.set(key, originalValue);
+      Storage.fallbackHandler?.(key, originalValue);
+      return;
     }
     window.localStorage.setItem(
       `__${Storage.sk! as string}_${key}__`,
@@ -51,8 +64,7 @@ export default class Storage {
 
   static get(key: string): IStoreValue | undefined {
     if (!Storage.isAvailable) {
-      console.warn('Storage is not available');
-      return void 0;
+      return Storage.fallbackStore.get(key);
     }
 
     try {
@@ -83,5 +95,14 @@ export default class Storage {
       console.error('Failed to fetch highscore');
       return void 0;
     }
+  }
+
+  static primeFallback(key: string, value: IStoreValue | undefined): void {
+    if (typeof value === 'undefined') return;
+    Storage.fallbackStore.set(key, value);
+  }
+
+  static registerFallbackHandler(handler: (key: string, value: IStoreValue) => void): void {
+    Storage.fallbackHandler = handler;
   }
 }

@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -128,10 +129,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
       this.gameState = 'died';
 
-      window.setTimeout(() => {
+      setTimeout(() => {
         this.scoreBoard.setScore(this.bird.score);
         this.showScoreBoard = true;
-        window.setTimeout(() => {
+        setTimeout(() => {
           this.scoreBoard.showBoard();
           Sfx.swoosh();
         }, 700);
@@ -145,7 +146,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     if (this.state === 'playing' || this.state === 'waiting') {
       this.bannerInstruction.Display(context);
 

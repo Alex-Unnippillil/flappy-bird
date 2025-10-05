@@ -3,7 +3,8 @@ import { rescaleDim } from '../utils';
 
 import { FadeOut } from '../lib/animation';
 import ParentClass from '../abstracts/parent-class';
-import SpriteDestructor from '../lib/sprite-destructor';
+import SpriteDestructor, { SpriteAsset } from '../lib/sprite-destructor';
+import type { RenderingContext2D } from '../types/rendering-context';
 
 export interface IImagePositions {
   instructImage: ICoordinate;
@@ -35,7 +36,7 @@ export interface ITextureProperties {
 
   // System Variables
   position: ICoordinate;
-  image: HTMLImageElement | undefined;
+  image: SpriteAsset | undefined;
   scaled: IDimension;
 }
 
@@ -140,7 +141,7 @@ export default class BannerInstruction extends ParentClass {
     this.opacity = this.fadeOut.value;
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Display(context: RenderingContext2D): void {
     if (this.opacity <= 0) return;
 
     context.globalAlpha = this.opacity;
