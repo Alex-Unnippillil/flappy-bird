@@ -4,6 +4,9 @@
 
 A polished, fully offline-capable recreation of the classic Flappy Bird experience built with TypeScript, HTML5 Canvas, and modern tooling. The project is structured for maintainability, extensibility, and developer productivity, making it a solid reference for browser-based arcade games and PWA implementations.
 
+
+<img width="425" height="791" alt="image" src="https://github.com/user-attachments/assets/dc707bdc-aee8-4f45-a213-0709870f04de" />
+
 ## Table of Contents
 
 1. [Key Features](#key-features)

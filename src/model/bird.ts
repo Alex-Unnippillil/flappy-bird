@@ -360,4 +360,12 @@ export default class Bird extends ParentClass {
     // Restore the previously created picture but keeping the bird
     context.restore();
   }
+
+  public getRotation(): number {
+    return this.rotation;
+  }
+
+  public getSize(): IDimension {
+    return { ...this.scaled };
+  }
 }
