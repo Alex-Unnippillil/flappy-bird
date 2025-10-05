@@ -17,6 +17,13 @@ import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
 
+interface BirdGhostSample {
+  frame: number;
+  time: number;
+  position: ICoordinate;
+  rotation: number;
+}
+
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
   private bird: BirdModel;
@@ -31,6 +38,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private currentRunSamples: BirdGhostSample[];
+  private ghostPath: BirdGhostSample[] | null;
+  private ghostPlaybackStart: number | null;
+  private ghostPlaybackIndex: number;
+  private frameIndex: number;
+  private runStartTime: number | null;
+  private ghostDuration: number;
+  private hasSavedGhost: boolean;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +71,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.currentRunSamples = [];
+    this.ghostPath = null;
+    this.ghostPlaybackStart = null;
+    this.ghostPlaybackIndex = 0;
+    this.frameIndex = 0;
+    this.runStartTime = null;
+    this.ghostDuration = 0;
+    this.hasSavedGhost = false;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -82,6 +105,12 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.currentRunSamples = [];
+    this.frameIndex = 0;
+    this.runStartTime = null;
+    this.hasSavedGhost = false;
+    this.ghostPlaybackStart = null;
+    this.ghostPlaybackIndex = 0;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -121,12 +150,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.bannerInstruction.Update();
     this.pipeGenerator.Update();
     this.bird.Update();
+    this.recordFrameSample();
 
     if (this.bird.isDead(this.pipeGenerator.pipes)) {
       this.flashScreen.reset();
       this.flashScreen.start();
 
       this.gameState = 'died';
+      this.finalizeGhostRun();
 
       window.setTimeout(() => {
         this.scoreBoard.setScore(this.bird.score);
@@ -146,6 +177,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    this.displayGhost(context);
+
     if (this.state === 'playing' || this.state === 'waiting') {
       this.bannerInstruction.Display(context);
 
@@ -175,11 +208,16 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(coordinate: ICoordinate): void {
+    void coordinate;
     if (this.gameState === 'died') return;
 
+    const shouldStartRun = this.state !== 'playing';
     this.state = 'playing';
     this.gameState = 'playing';
+    if (shouldStartRun) {
+      this.startRunRecording();
+    }
     this.bannerInstruction.tap();
     this.bird.flap();
   }
@@ -197,5 +235,136 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  private startRunRecording(): void {
+    const now = performance.now();
+    this.currentRunSamples = [];
+    this.frameIndex = 0;
+    this.runStartTime = now;
+    this.hasSavedGhost = false;
+
+    if (this.ghostPath && this.ghostPath.length > 0) {
+      this.ghostPlaybackStart = now;
+      this.ghostPlaybackIndex = 0;
+    } else {
+      this.ghostPlaybackStart = null;
+      this.ghostPlaybackIndex = 0;
+    }
+  }
+
+  private recordFrameSample(): void {
+    if (
+      this.state !== 'playing' ||
+      this.runStartTime === null ||
+      !this.bird.alive
+    ) {
+      return;
+    }
+
+    const time = performance.now() - this.runStartTime;
+    this.currentRunSamples[this.frameIndex] = {
+      frame: this.frameIndex,
+      time,
+      position: { ...this.bird.coordinate },
+      rotation: this.bird.getRotation()
+    };
+
+    this.frameIndex += 1;
+  }
+
+  private finalizeGhostRun(): void {
+    if (this.hasSavedGhost) return;
+
+    if (this.currentRunSamples.length > 0) {
+      this.ghostPath = this.currentRunSamples.slice(0, this.frameIndex);
+      const lastSample = this.ghostPath[this.ghostPath.length - 1];
+      this.ghostDuration = lastSample.time;
+    } else {
+      this.ghostPath = null;
+      this.ghostDuration = 0;
+    }
+
+    this.hasSavedGhost = true;
+    this.currentRunSamples = [];
+    this.frameIndex = 0;
+    this.runStartTime = null;
+    this.ghostPlaybackStart = null;
+    this.ghostPlaybackIndex = 0;
+  }
+
+  private displayGhost(context: CanvasRenderingContext2D): void {
+    if (
+      !this.ghostPath ||
+      this.ghostPath.length === 0 ||
+      this.ghostPlaybackStart === null
+    ) {
+      return;
+    }
+
+    if (this.ghostDuration <= 0) {
+      this.ghostPlaybackStart = null;
+      return;
+    }
+
+    const elapsed = performance.now() - this.ghostPlaybackStart;
+
+    if (elapsed > this.ghostDuration) {
+      this.ghostPlaybackStart = null;
+      this.ghostPlaybackIndex = 0;
+      return;
+    }
+
+    while (
+      this.ghostPlaybackIndex + 1 < this.ghostPath.length &&
+      this.ghostPath[this.ghostPlaybackIndex + 1].time <= elapsed
+    ) {
+      this.ghostPlaybackIndex += 1;
+    }
+
+    const current = this.ghostPath[this.ghostPlaybackIndex];
+
+    let x = current.position.x;
+    let y = current.position.y;
+    let rotation = current.rotation;
+
+    if (this.ghostPlaybackIndex + 1 < this.ghostPath.length) {
+      const next = this.ghostPath[this.ghostPlaybackIndex + 1];
+      if (next.time > current.time) {
+        const progress = (elapsed - current.time) / (next.time - current.time);
+        x += (next.position.x - current.position.x) * progress;
+        y += (next.position.y - current.position.y) * progress;
+        rotation += (next.rotation - current.rotation) * progress;
+      }
+    }
+
+    const size = this.bird.getSize();
+    const radius = Math.max(size.width, size.height) * 0.6;
+
+    context.save();
+    context.globalAlpha = 0.35;
+    context.translate(x, y);
+    context.rotate((rotation * Math.PI) / 180);
+    context.fillStyle = '#ffffff';
+    context.beginPath();
+    context.ellipse(0, 0, radius, radius * 0.75, 0, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+
+    if (this.ghostPlaybackIndex > 0) {
+      context.save();
+      context.globalAlpha = 0.15;
+      context.strokeStyle = '#ffffff';
+      context.lineWidth = 2;
+      context.beginPath();
+      const start = this.ghostPath[0].position;
+      context.moveTo(start.x, start.y);
+      for (let i = 1; i <= this.ghostPlaybackIndex; i++) {
+        const sample = this.ghostPath[i].position;
+        context.lineTo(sample.x, sample.y);
+      }
+      context.stroke();
+      context.restore();
+    }
   }
 }
