@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import { clamp } from '../utils';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +32,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private slowMoController: {
+    active: boolean;
+    modifier: number;
+    minFactor: number;
+    start: () => void;
+    reset: () => void;
+    update: () => number;
+  };
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +65,45 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.slowMoController = {
+      active: false,
+      modifier: 1,
+      minFactor: 0.25,
+      start: () => {
+        if (this.slowMoController.active) return;
+        this.slowMoController.active = true;
+        this.slowMoController.modifier = this.slowMoController.minFactor;
+        this.bird.setScoreEnabled(false);
+      },
+      reset: () => {
+        this.slowMoController.active = false;
+        this.slowMoController.modifier = 1;
+        this.bird.setScoreEnabled(true);
+      },
+      update: () => {
+        if (!this.slowMoController.active) {
+          return 1;
+        }
+
+        const status = this.flashScreen.status;
+
+        if ((!status.running && status.complete) || status.value === 0) {
+          this.slowMoController.reset();
+          return 1;
+        }
+
+        const modifier =
+          1 - (1 - this.slowMoController.minFactor) * status.value;
+
+        this.slowMoController.modifier = clamp(
+          this.slowMoController.minFactor,
+          1,
+          modifier
+        );
+
+        return this.slowMoController.modifier;
+      }
+    };
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -82,6 +130,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.slowMoController.reset();
   }
 
   public resize({ width, height }: IDimension): void {
@@ -100,9 +149,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.transition.Update();
     this.scoreBoard.Update();
 
+    const deltaModifier = this.slowMoController.update();
+
     if (!this.bird.alive) {
       this.game.bgPause = true;
-      this.bird.Update();
+      this.bird.Update(deltaModifier);
       return;
     }
 
@@ -119,12 +170,13 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
 
     this.bannerInstruction.Update();
-    this.pipeGenerator.Update();
-    this.bird.Update();
+    this.pipeGenerator.Update(deltaModifier, !this.slowMoController.active);
+    this.bird.Update(deltaModifier);
 
     if (this.bird.isDead(this.pipeGenerator.pipes)) {
       this.flashScreen.reset();
       this.flashScreen.start();
+      this.slowMoController.start();
 
       this.gameState = 'died';
 
@@ -132,6 +184,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
         this.scoreBoard.setScore(this.bird.score);
         this.showScoreBoard = true;
         window.setTimeout(() => {
+          this.slowMoController.reset();
           this.scoreBoard.showBoard();
           Sfx.swoosh();
         }, 700);

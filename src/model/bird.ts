@@ -72,6 +72,7 @@ export default class Bird extends ParentClass {
   private lastCoord: number;
   private max_lift_velocity: number;
   private max_fall_velocity: number;
+  private canAccrueScore: boolean;
 
   constructor() {
     super();
@@ -90,6 +91,7 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.canAccrueScore = true;
   }
 
   /**
@@ -121,6 +123,7 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.canAccrueScore = true;
   }
 
   public reset(): void {
@@ -237,7 +240,7 @@ export default class Bird extends ParentClass {
         if (Math.abs(hcx - width) <= this.coordinate.x + boundary) {
           // Will get score after passing the
           // center width of pipe
-          if (hcx < this.coordinate.x && !pipe.isPassed) {
+          if (this.canAccrueScore && hcx < this.coordinate.x && !pipe.isPassed) {
             this.score++;
             Sfx.point();
             pipe.isPassed = true;
@@ -297,8 +300,9 @@ export default class Bird extends ParentClass {
   /**
    * Handling Bird Rotation
    * */
-  private handleRotation(): void {
-    this.rotation += this.coordinate.y < this.lastCoord ? -7.2 : 6.5;
+  private handleRotation(delta: number): void {
+    const rotationDelta = (this.coordinate.y < this.lastCoord ? -7.2 : 6.5) * delta;
+    this.rotation += rotationDelta;
     this.rotation = clamp(BIRD_MIN_ROTATION, BIRD_MAX_ROTATION, this.rotation);
 
     if ((this.flags & Bird.FLAG_IS_ALIVE) === 0) {
@@ -312,14 +316,18 @@ export default class Bird extends ParentClass {
     this.flapWing(flipRange(4, 8.2, f));
   }
 
-  public Update(): void {
+  public setScoreEnabled(enabled: boolean): void {
+    this.canAccrueScore = enabled;
+  }
+
+  public Update(delta = 1): void {
     // Always above the floor
     if (this.doesHitTheFloor() || (this.flags & Bird.FLAG_DOES_LANDED) !== 0) {
       this.flags |= Bird.FLAG_DOES_LANDED;
 
       this.coordinate.y =
         this.canvasSize.height - Bird.platformHeight - this.rotatedDimension().height;
-      this.handleRotation();
+      this.handleRotation(delta);
       return;
     }
 
@@ -328,12 +336,12 @@ export default class Bird extends ParentClass {
       this.max_lift_velocity,
       this.max_fall_velocity,
       this.velocity.y
-    );
+    ) * delta;
 
     // Slowly reduce the Y velocity by given weights
-    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT;
+    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT * delta;
 
-    this.handleRotation();
+    this.handleRotation(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {

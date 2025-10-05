@@ -120,8 +120,8 @@ export default class PipeGenerator {
     };
   }
 
-  public Update(): void {
-    if (this.needPipe()) {
+  public Update(delta = 1, allowSpawn = true): void {
+    if (allowSpawn && this.needPipe()) {
       const pipe = new Pipe();
 
       pipe.init();
@@ -134,7 +134,7 @@ export default class PipeGenerator {
     }
 
     for (let index = 0; index < this.pipes.length; index++) {
-      this.pipes[index].Update();
+      this.pipes[index].Update(delta);
       if (this.pipes[index].isOut()) {
         this.pipes.splice(index, 1);
         index--;
