@@ -28,10 +28,16 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     }
   };
 
+  const getLogicalSize = () => ({
+    width: Number(canvas.dataset.logicalWidth ?? canvas.width),
+    height: Number(canvas.dataset.logicalHeight ?? canvas.height)
+  });
+
   const getBoundedPosition = ({ x, y }: ICoordinate): ICoordinate => {
     const { left, top, width, height } = canvas.getBoundingClientRect();
-    const dx: number = ((x - left) / width) * canvas.width;
-    const dy: number = ((y - top) / height) * canvas.height;
+    const logicalSize = getLogicalSize();
+    const dx: number = ((x - left) / width) * logicalSize.width;
+    const dy: number = ((y - top) / height) * logicalSize.height;
 
     return { x: dx, y: dy };
   };
@@ -135,10 +141,12 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     ) {
       Game.startAtKeyBoardEvent();
 
+      const logicalSize = getLogicalSize();
+
       mouseDown(
         {
-          x: canvas.width / 2,
-          y: canvas.height / 2
+          x: logicalSize.width / 2,
+          y: logicalSize.height / 2
         },
         evt
       );
@@ -156,10 +164,12 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
       code === 'NumpadEnter' ||
       code === 'Enter'
     ) {
+      const logicalSize = getLogicalSize();
+
       mouseUP(
         {
-          x: canvas.width / 2,
-          y: canvas.height / 2
+          x: logicalSize.width / 2,
+          y: logicalSize.height / 2
         },
         evt,
         false
