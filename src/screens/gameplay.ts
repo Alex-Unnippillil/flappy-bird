@@ -31,6 +31,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private lastPointerInput: IPointerDetails | null;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +57,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.lastPointerInput = null;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -82,6 +84,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.lastPointerInput = null;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -175,7 +178,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(pointer: IPointerDetails): void {
+    this.lastPointerInput = pointer;
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
@@ -184,16 +188,22 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.bird.flap();
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
+  public mouseDown(pointer: IPointerDetails): void {
+    this.lastPointerInput = pointer;
     if (this.gameState !== 'died') return;
 
-    this.scoreBoard.mouseDown({ x, y });
+    this.scoreBoard.mouseDown(pointer);
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
+  public mouseUp(pointer: IPointerDetails): void {
+    this.lastPointerInput = pointer;
     if (this.gameState !== 'died') return;
 
-    this.scoreBoard.mouseUp({ x, y });
+    this.scoreBoard.mouseUp(pointer);
+  }
+
+  public get pointerInput(): IPointerDetails | null {
+    return this.lastPointerInput;
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();

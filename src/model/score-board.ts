@@ -173,12 +173,7 @@ export default class ScoreBoard extends ParentObject {
       }
 
       this.displayScore(context, anim, sbScaled);
-      this.displayBestScore(
-        context,
-        anim,
-        sbScaled,
-        (this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0
-      );
+      this.displayBestScore(context, anim, sbScaled);
 
       if (this.FlyInAnim.status.complete && !this.FlyInAnim.status.running) {
         this.TimingEventAnim.start();
@@ -294,8 +289,7 @@ export default class ScoreBoard extends ParentObject {
   private displayBestScore(
     context: CanvasRenderingContext2D,
     coord: ICoordinate,
-    parentSize: IDimension,
-    _p0: boolean
+    parentSize: IDimension
   ): void {
     const numSize = rescaleDim(
       {
@@ -361,7 +355,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.onClick(cb);
   }
 
-  public onShowRanks(_cb: IEmptyFunction): void {
+  public onShowRanks(): void {
     /**
      * I don't know what to do on ranking?
      *
@@ -369,16 +363,16 @@ export default class ScoreBoard extends ParentObject {
      * */
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
-    this.playButton.mouseEvent('down', { x, y });
-    this.rankingButton.mouseEvent('down', { x, y });
-    this.toggleSpeakerButton.mouseEvent('down', { x, y });
+  public mouseDown(pointer: IPointerDetails): void {
+    this.playButton.mouseEvent('down', pointer);
+    this.rankingButton.mouseEvent('down', pointer);
+    this.toggleSpeakerButton.mouseEvent('down', pointer);
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
-    this.playButton.mouseEvent('up', { x, y });
-    this.rankingButton.mouseEvent('up', { x, y });
-    this.toggleSpeakerButton.mouseEvent('up', { x, y });
+  public mouseUp(pointer: IPointerDetails): void {
+    this.playButton.mouseEvent('up', pointer);
+    this.rankingButton.mouseEvent('up', pointer);
+    this.toggleSpeakerButton.mouseEvent('up', pointer);
   }
 
   public triggerPlayATKeyboardEvent(): void {

@@ -93,16 +93,16 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
-    this.toggleSpeakerButton.mouseEvent('down', { x, y });
-    this.playButton.mouseEvent('down', { x, y });
-    this.rankingButton.mouseEvent('down', { x, y });
+  public mouseDown(pointer: IPointerDetails): void {
+    this.toggleSpeakerButton.mouseEvent('down', pointer);
+    this.playButton.mouseEvent('down', pointer);
+    this.rankingButton.mouseEvent('down', pointer);
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
-    this.toggleSpeakerButton.mouseEvent('up', { x, y });
-    this.playButton.mouseEvent('up', { x, y });
-    this.rankingButton.mouseEvent('up', { x, y });
+  public mouseUp(pointer: IPointerDetails): void {
+    this.toggleSpeakerButton.mouseEvent('up', pointer);
+    this.playButton.mouseEvent('up', pointer);
+    this.rankingButton.mouseEvent('up', pointer);
   }
 
   public startAtKeyBoardEvent(): void {

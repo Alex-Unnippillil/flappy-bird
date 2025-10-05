@@ -144,20 +144,20 @@ export default class Game extends ParentClass {
     });
   }
 
-  public onClick({ x, y }: ICoordinate): void {
+  public onClick(pointer: IPointerDetails): void {
     if (this.state === 'game') {
-      this.gamePlay.click({ x, y });
+      this.gamePlay.click(pointer);
     }
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
-    this.screenIntro.mouseDown({ x, y });
-    this.gamePlay.mouseDown({ x, y });
+  public mouseDown(pointer: IPointerDetails): void {
+    this.screenIntro.mouseDown(pointer);
+    this.gamePlay.mouseDown(pointer);
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
-    this.screenIntro.mouseUp({ x, y });
-    this.gamePlay.mouseUp({ x, y });
+  public mouseUp(pointer: IPointerDetails): void {
+    this.screenIntro.mouseUp(pointer);
+    this.gamePlay.mouseUp(pointer);
   }
 
   public startAtKeyBoardEvent(): void {

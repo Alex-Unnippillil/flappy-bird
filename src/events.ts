@@ -6,27 +6,18 @@
 import Game from './game';
 import WebSfx from './lib/web-sfx';
 
-export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
+interface IActivePointerState {
+  down: boolean;
+  clicked: boolean;
+  details: IPointerDetails;
+}
+
+const SYNTHETIC_POINTER_ID = -1;
 
 export default (Game: Game, canvas: HTMLCanvasElement) => {
-  interface IMouse {
-    down: boolean;
-    position: ICoordinate;
-  }
+  const activePointers = new Map<number, IActivePointerState>();
 
-  let clicked = false;
-
-  // Trigger the event once
-  let hasMouseDown = false;
-  let hasMouseUp = true;
-
-  const mouse: IMouse = {
-    down: false,
-    position: {
-      x: 0,
-      y: 0
-    }
-  };
+  canvas.style.touchAction = 'none';
 
   const getBoundedPosition = ({ x, y }: ICoordinate): ICoordinate => {
     const { left, top, width, height } = canvas.getBoundingClientRect();
@@ -36,44 +27,69 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     return { x: dx, y: dy };
   };
 
-  const likeClickedEvent = () => {
-    if (clicked) return;
+  const buildPointerDetails = (evt: PointerEvent): IPointerDetails => {
+    const position = getBoundedPosition({ x: evt.clientX, y: evt.clientY });
 
-    Game.onClick(mouse.position);
-    clicked = true;
+    return {
+      ...position,
+      pointerId: evt.pointerId,
+      pointerType: evt.pointerType,
+      pressure: evt.pressure,
+      tangentialPressure: evt.tangentialPressure,
+      tiltX: evt.tiltX,
+      tiltY: evt.tiltY,
+      twist: evt.twist,
+      altitudeAngle: evt.altitudeAngle,
+      azimuthAngle: evt.azimuthAngle,
+      width: evt.width,
+      height: evt.height,
+      isPrimary: evt.isPrimary
+    };
   };
 
-  const mouseMove = ({ x, y }: ICoordinate, evt: IEventParam): void => {
-    evt.preventDefault();
-    mouse.position = getBoundedPosition({ x, y });
+  const ensurePointerState = (
+    pointerId: number,
+    details: IPointerDetails
+  ): IActivePointerState => {
+    const existing = activePointers.get(pointerId);
+    if (existing !== undefined) {
+      existing.details = details;
+      return existing;
+    }
+
+    const state: IActivePointerState = {
+      down: false,
+      clicked: false,
+      details
+    };
+
+    activePointers.set(pointerId, state);
+    return state;
   };
 
-  const mouseUP = (
-    { x, y }: ICoordinate,
-    evt: IEventParam,
-    isRetreive: boolean
+  const triggerClick = (pointerId: number): void => {
+    const state = activePointers.get(pointerId);
+    if (!state || state.clicked) return;
+
+    Game.onClick(state.details);
+    state.clicked = true;
+  };
+
+  const pointerMove = (
+    pointerId: number,
+    details: IPointerDetails,
+    evt?: Event
   ): void => {
-    if (hasMouseUp) return;
-    hasMouseUp = true;
-    hasMouseDown = false;
-
-    /**
-     * Required due to autoplay restriction
-     * */
-    void WebSfx.init();
-
-    evt.preventDefault();
-    if (!isRetreive) mouse.position = getBoundedPosition({ x, y });
-
-    Game.mouseUp(mouse.position);
-    mouse.down = false;
-    clicked = false;
+    if (evt) evt.preventDefault();
+    ensurePointerState(pointerId, details);
   };
 
-  const mouseDown = ({ x, y }: ICoordinate, evt: IEventParam): void => {
-    if (hasMouseDown) return;
-    hasMouseUp = false;
-    hasMouseDown = true;
+  const pointerDown = (
+    pointerId: number,
+    details: IPointerDetails,
+    evt?: Event
+  ): void => {
+    const state = ensurePointerState(pointerId, details);
 
     /**
      * Trigger multiple times
@@ -81,44 +97,94 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
      * */
     void WebSfx.init();
 
-    evt.preventDefault();
-    mouse.position = getBoundedPosition({ x, y });
-    Game.mouseDown(mouse.position);
-    mouse.down = true;
+    if (evt) evt.preventDefault();
 
-    likeClickedEvent();
+    state.down = true;
+    state.details = details;
+    state.clicked = false;
+
+    Game.mouseDown(details);
+    triggerClick(pointerId);
   };
 
-  // Mouse Event
-  canvas.addEventListener('mousedown', (evt: MouseEvent) => {
-    mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
+  const pointerUp = (
+    pointerId: number,
+    details: IPointerDetails,
+    evt?: Event
+  ): void => {
+    const state = ensurePointerState(pointerId, details);
+
+    /**
+     * Required due to autoplay restriction
+     * */
+    void WebSfx.init();
+
+    if (evt) evt.preventDefault();
+
+    state.down = false;
+    state.clicked = false;
+    state.details = details;
+
+    Game.mouseUp(details);
+
+    activePointers.delete(pointerId);
+  };
+
+  const pointerCancel = (pointerId: number, evt?: Event): void => {
+    const state = activePointers.get(pointerId);
+    if (!state) return;
+
+    if (evt) evt.preventDefault();
+
+    state.down = false;
+    state.clicked = false;
+
+    Game.mouseUp(state.details);
+    activePointers.delete(pointerId);
+  };
+
+  const createSyntheticPointerDetails = ({ x, y }: ICoordinate): IPointerDetails => ({
+    x,
+    y,
+    pointerId: SYNTHETIC_POINTER_ID,
+    pointerType: 'keyboard',
+    pressure: 1,
+    isPrimary: true
   });
 
-  canvas.addEventListener('mouseup', (evt: MouseEvent) => {
-    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
-  });
+  canvas.addEventListener(
+    'pointerdown',
+    (evt: PointerEvent) => {
+      const details = buildPointerDetails(evt);
+      pointerMove(evt.pointerId, details, evt);
+      pointerDown(evt.pointerId, details, evt);
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener('mousemove', (evt: MouseEvent) => {
-    mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
-  });
+  canvas.addEventListener(
+    'pointermove',
+    (evt: PointerEvent) => {
+      pointerMove(evt.pointerId, buildPointerDetails(evt), evt);
+    },
+    { passive: false }
+  );
 
-  // Touch Event
-  canvas.addEventListener('touchstart', (evt: TouchEvent) => {
-    mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+  canvas.addEventListener(
+    'pointerup',
+    (evt: PointerEvent) => {
+      pointerUp(evt.pointerId, buildPointerDetails(evt), evt);
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener('touchend', (evt: TouchEvent) => {
-    if (evt.touches.length < 1) {
-      mouseUP(mouse.position, evt, true);
-      return;
-    }
-
-    mouseUP({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt, false);
-  });
-
-  canvas.addEventListener('touchmove', (evt: TouchEvent) => {
-    mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+  canvas.addEventListener(
+    'pointercancel',
+    (evt: PointerEvent) => {
+      pointerCancel(evt.pointerId, evt);
+    },
+    { passive: false }
+  );
 
   // Keyboard event
   document.addEventListener('keydown', (evt: KeyboardEvent) => {
@@ -135,11 +201,12 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     ) {
       Game.startAtKeyBoardEvent();
 
-      mouseDown(
-        {
+      pointerDown(
+        SYNTHETIC_POINTER_ID,
+        createSyntheticPointerDetails({
           x: canvas.width / 2,
           y: canvas.height / 2
-        },
+        }),
         evt
       );
     }
@@ -156,13 +223,13 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
       code === 'NumpadEnter' ||
       code === 'Enter'
     ) {
-      mouseUP(
-        {
+      pointerUp(
+        SYNTHETIC_POINTER_ID,
+        createSyntheticPointerDetails({
           x: canvas.width / 2,
           y: canvas.height / 2
-        },
-        evt,
-        false
+        }),
+        evt
       );
     }
   });
