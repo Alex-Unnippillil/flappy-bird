@@ -10,6 +10,8 @@ import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import HighContrastManager from './lib/high-contrast-manager';
+import SettingsPanel from './lib/settings-panel';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -70,7 +72,6 @@ const ScreenResize = () => {
 const removeLoadingScreen = () => {
   EventHandler(Game, canvas);
   loadingScreen.style.display = 'none';
-  document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
 };
 
 //
@@ -79,6 +80,10 @@ const removeLoadingScreen = () => {
 const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
 
 window.addEventListener('DOMContentLoaded', () => {
+  HighContrastManager.init();
+  // Initialise settings controls after ensuring the DOM is ready.
+  void new SettingsPanel();
+
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
 
   prepareAssets(() => {

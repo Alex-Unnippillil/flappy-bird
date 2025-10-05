@@ -1,4 +1,67 @@
 // File Overview: This stylesheet contributes to src/styles/main.scss.
+
+:root {
+  --app-background: #ffffff;
+  --app-canvas-bg: #ffffff;
+  --app-text-color: rgba(105, 105, 110, 1);
+  --app-overlay-bg: rgba(242, 242, 244, 0.5);
+  --app-overlay-border: rgba(248, 248, 252, 1);
+  --app-overlay-shadow: rgba(28, 28, 30, 0.18);
+  --app-loading-dot: rgba(105, 105, 110, 1);
+  --settings-button-bg: rgba(28, 28, 30, 0.82);
+  --settings-button-color: #ffffff;
+  --settings-button-shadow: rgba(0, 0, 0, 0.25);
+  --settings-backdrop: rgba(0, 0, 0, 0.35);
+  --settings-panel-bg: #ffffff;
+  --settings-panel-border: rgba(0, 0, 0, 0.08);
+  --settings-panel-text: #1c1c1e;
+  --settings-panel-muted: rgba(28, 28, 30, 0.64);
+  --settings-switch-track: rgba(28, 28, 30, 0.3);
+  --settings-switch-handle: #ffffff;
+  --settings-switch-active: #0a84ff;
+  --hc-pipe-fill: #3b3b3b;
+  --hc-pipe-stroke: #f9f9f9;
+  --hc-pipe-accent: #0a84ff;
+  --hc-bird-fill: #f9f9f9;
+  --hc-bird-stroke: #151515;
+  --hc-bird-accent: #ff8c00;
+  --hc-scoreboard-bg: rgba(21, 21, 23, 0.9);
+  --hc-scoreboard-border: #f9f9f9;
+  --hc-scoreboard-text: #f9f9f9;
+  --hc-scoreboard-accent: #0a84ff;
+}
+
+body.high-contrast {
+  --app-background: #000000;
+  --app-canvas-bg: #000000;
+  --app-text-color: #f9f9f9;
+  --app-overlay-bg: rgba(0, 0, 0, 0.85);
+  --app-overlay-border: #f9f9f9;
+  --app-overlay-shadow: rgba(0, 0, 0, 0.7);
+  --app-loading-dot: #f9f9f9;
+  --settings-button-bg: rgba(249, 249, 249, 0.92);
+  --settings-button-color: #0a0a0a;
+  --settings-button-shadow: rgba(0, 0, 0, 0.5);
+  --settings-backdrop: rgba(0, 0, 0, 0.7);
+  --settings-panel-bg: #0a0a0a;
+  --settings-panel-border: #f9f9f9;
+  --settings-panel-text: #f9f9f9;
+  --settings-panel-muted: rgba(249, 249, 249, 0.7);
+  --settings-switch-track: rgba(249, 249, 249, 0.32);
+  --settings-switch-handle: #0a0a0a;
+  --settings-switch-active: #ffd60a;
+  --hc-pipe-fill: #111111;
+  --hc-pipe-stroke: #f9f9f9;
+  --hc-pipe-accent: #ffd60a;
+  --hc-bird-fill: #f9f9f9;
+  --hc-bird-stroke: #000000;
+  --hc-bird-accent: #ff8c00;
+  --hc-scoreboard-bg: rgba(0, 0, 0, 0.92);
+  --hc-scoreboard-border: #f9f9f9;
+  --hc-scoreboard-text: #f9f9f9;
+  --hc-scoreboard-accent: #ffd60a;
+}
+
 html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
 }
@@ -13,7 +76,9 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: #fff;
+  color: var(--app-text-color);
+  font-family: 'Arial', 'Sans-Serif';
+  background-color: var(--app-background);
   transition: background-color 0.5s ease-in-out;
 
   > #main-canvas {
@@ -26,7 +91,7 @@ body {
     right: 0;
     bottom: 0;
     border: none;
-    background-color: #fff;
+    background-color: var(--app-canvas-bg);
     position: absolute;
   }
 
@@ -41,10 +106,11 @@ body {
     transform: translate(-50%, -50%);
     width: 40vh;
     height: 40vh;
-    border: 1px solid rgba(248, 248, 252, 1);
+    border: 1px solid var(--app-overlay-border);
     border-radius: 14px;
-    background-color: rgba(242, 242, 244, 0.5);
+    background-color: var(--app-overlay-bg);
     backdrop-filter: blur(8px);
+    box-shadow: 0 20px 40px var(--app-overlay-shadow);
 
     > img {
       width: 30%;
@@ -54,8 +120,7 @@ body {
 
     > div {
       text-align: center;
-      font-family: 'Arial', 'Sans-Serif';
-      color: rgba(105, 105, 110, 1);
+      color: var(--app-text-color);
       font-size: 1.7rem;
       letter-spacing: 3px;
       font-weight: 600;
@@ -72,7 +137,7 @@ body {
         width: 13px;
         height: 13px;
         border-radius: 50%;
-        background: rgba(105, 105, 110, 1);
+        background: var(--app-loading-dot);
         animation-timing-function: cubic-bezier(0, 1, 1, 0);
 
         &:nth-child(1) {
@@ -96,6 +161,177 @@ body {
   }
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.settings-button {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--settings-button-bg);
+  color: var(--settings-button-color);
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 8px 16px var(--settings-button-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 10;
+
+  &:hover,
+  &:focus-visible {
+    transform: scale(1.05);
+    box-shadow: 0 12px 24px var(--settings-button-shadow);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--settings-switch-active);
+    outline-offset: 3px;
+  }
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-panel {
+  position: fixed;
+  inset: 0;
+  background-color: var(--settings-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.settings-panel__content {
+  min-width: min(420px, 90vw);
+  max-width: 90vw;
+  background-color: var(--settings-panel-bg);
+  color: var(--settings-panel-text);
+  border: 2px solid var(--settings-panel-border);
+  border-radius: 18px;
+  box-shadow: 0 32px 80px var(--settings-backdrop);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.settings-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  > h2 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  > .settings-panel__close {
+    border: none;
+    background: transparent;
+    color: var(--settings-panel-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+
+    &:hover,
+    &:focus-visible {
+      background-color: rgba(128, 128, 128, 0.15);
+      outline: 2px solid var(--settings-switch-active);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.settings-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1rem;
+}
+
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  font-weight: 600;
+}
+
+.settings-panel__label {
+  flex: 1;
+}
+
+.settings-panel__control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-panel__control input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.settings-panel__switch {
+  width: 3.25rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background-color: var(--settings-switch-track);
+  position: relative;
+  transition: background-color 0.3s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0.2rem;
+    left: 0.25rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background-color: var(--settings-switch-handle);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+  }
+}
+
+.settings-panel__control input:checked + .settings-panel__switch {
+  background-color: var(--settings-switch-active);
+
+  &::after {
+    transform: translateX(1.4rem);
+  }
+}
+
+.settings-panel__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--settings-panel-muted);
+  line-height: 1.5;
+}
+
 @keyframes lds-ellipsis1 {
   0% {
     transform: scale(0);
@@ -104,6 +340,7 @@ body {
     transform: scale(1);
   }
 }
+
 @keyframes lds-ellipsis3 {
   0% {
     transform: scale(1);
@@ -112,6 +349,7 @@ body {
     transform: scale(0);
   }
 }
+
 @keyframes lds-ellipsis2 {
   0% {
     transform: translate(0, 0);

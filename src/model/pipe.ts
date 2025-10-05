@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import HighContrastManager from '../lib/high-contrast-manager';
 
 export interface IPipePairPosition {
   top: ICoordinate;
@@ -110,18 +111,20 @@ export default class Pipe extends ParentClass {
     // Update velocity. Converting percentages to pixels
     this.velocity.x = width * GAME_SPEED;
 
+    const baseColor = this.images.has(`${this.color}.top`) ? this.color : 'green';
+
     this.scaled.top = rescaleDim(
       {
-        width: this.images.get(`${this.color}.top`)!.width,
-        height: this.images.get(`${this.color}.top`)!.height
+        width: this.images.get(`${baseColor}.top`)!.width,
+        height: this.images.get(`${baseColor}.top`)!.height
       },
       { width: min }
     );
 
     this.scaled.bottom = rescaleDim(
       {
-        width: this.images.get(`${this.color}.bottom`)!.width,
-        height: this.images.get(`${this.color}.bottom`)!.height
+        width: this.images.get(`${baseColor}.bottom`)!.width,
+        height: this.images.get(`${baseColor}.bottom`)!.height
       },
       { width: min }
     );
@@ -151,22 +154,21 @@ export default class Pipe extends ParentClass {
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    if (HighContrastManager.isEnabled()) {
+      this.displayHighContrast(context);
+      return;
+    }
+
     const width = Pipe.pipeSize.width / 2;
 
     const posX = this.coordinate.x;
     const posY = this.coordinate.y;
     const radius = this.hollSize / 2;
 
-    /**
-     * To draw off canvas, subtract the height of pipe to holl position.
-     * The result should be the height of pipe that we don't need or out of canvas
-     * Then pass the result to the function height parameter as negative value.
-     *
-     * And thats it for the top pipe
-     * */
+    const colorKey = this.images.has(`${this.color}.top`) ? this.color : 'green';
 
     context.drawImage(
-      this.images.get(`${this.color}.top`)!,
+      this.images.get(`${colorKey}.top`)!,
       posX - width,
       -(this.scaled.top.height - Math.abs(posY - radius)),
       this.scaled.top.width,
@@ -174,11 +176,57 @@ export default class Pipe extends ParentClass {
     );
 
     context.drawImage(
-      this.images.get(`${this.color}.bottom`)!,
+      this.images.get(`${colorKey}.bottom`)!,
       posX - width,
       posY + radius,
       this.scaled.bottom.width,
       this.scaled.bottom.height
     );
+  }
+
+  private displayHighContrast(context: CanvasRenderingContext2D): void {
+    const palette = HighContrastManager.getPalette();
+    const width = Pipe.pipeSize.width / 2;
+    const posX = this.coordinate.x - width;
+    const radius = this.hollSize / 2;
+    const topY = -(this.scaled.top.height - Math.abs(this.coordinate.y - radius));
+    const bottomY = this.coordinate.y + radius;
+    const lineWidth = Math.max(4, this.canvasSize.width * 0.01);
+    const topAccent = Math.min(
+      this.scaled.top.height * 0.35,
+      Math.max(lineWidth * 1.2, this.canvasSize.height * 0.015)
+    );
+    const bottomAccent = Math.min(
+      this.scaled.bottom.height * 0.35,
+      Math.max(lineWidth * 1.2, this.canvasSize.height * 0.015)
+    );
+
+    context.save();
+    context.fillStyle = palette.pipeFill;
+    context.strokeStyle = palette.pipeStroke;
+    context.lineWidth = lineWidth;
+    context.lineJoin = 'round';
+
+    this.drawPipeRect(context, posX, topY, this.scaled.top.width, this.scaled.top.height);
+    this.drawPipeRect(context, posX, bottomY, this.scaled.bottom.width, this.scaled.bottom.height);
+
+    context.fillStyle = palette.pipeAccent;
+    this.drawPipeRect(context, posX, topY + this.scaled.top.height - topAccent, this.scaled.top.width, topAccent);
+    this.drawPipeRect(context, posX, bottomY, this.scaled.bottom.width, bottomAccent);
+
+    context.restore();
+  }
+
+  private drawPipeRect(
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): void {
+    context.beginPath();
+    context.rect(x, y, width, height);
+    context.fill();
+    context.stroke();
   }
 }

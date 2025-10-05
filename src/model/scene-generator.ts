@@ -3,6 +3,7 @@ import { randomClamp } from '../utils';
 import { ITheme } from './background';
 import { IBirdColor } from './bird';
 import { IPipeColor } from './pipe';
+import HighContrastManager from '../lib/high-contrast-manager';
 
 export default class SceneGenerator {
   public static birdColorList: IBirdColor[] = [];
@@ -20,6 +21,10 @@ export default class SceneGenerator {
   }
 
   public static get bird(): IBirdColor {
+    if (HighContrastManager.isEnabled()) {
+      return 'contrast' as IBirdColor;
+    }
+
     if (SceneGenerator.birdColorList.length < 1)
       throw new Error('No available bird color');
 
@@ -29,6 +34,10 @@ export default class SceneGenerator {
   }
 
   public static get pipe(): IPipeColor {
+    if (HighContrastManager.isEnabled()) {
+      return 'high-contrast' as IPipeColor;
+    }
+
     if (SceneGenerator.pipeColorList.length < 1)
       throw new Error('No available pipe color');
 
