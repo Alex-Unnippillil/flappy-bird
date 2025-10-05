@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/btn-rate.ts.
+/**
+ * Model Summary:
+ * Purpose: Defines the rate button, a PlayButton derivative that links players to the repository.
+ * Update/Display: Reuses PlayButton's hover-driven `Update()` and centered `Display()` logic.
+ * Public API: init(), click(), inherited onClick handling if needed.
+ * Constants: None.
+ * Interactions: Extends PlayButton, swaps the sprite via SpriteDestructor, and uses openInNewTab to launch the external URL.
+ */
 import PlayButton from './btn-play'; // Instead of duplicating
 import SpriteDestructor from '../lib/sprite-destructor';
 import { openInNewTab } from '../utils';

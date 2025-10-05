@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/btn-toggle-speaker.ts.
+/**
+ * Model Summary:
+ * Purpose: Implements the mute/unmute toggle button including sprite swapping and click feedback.
+ * Update/Display: `Update()` handles hover offsets, refreshes the active sprite, and delegates to the shared button logic; `Display()` renders the current icon centered on the canvas coordinate.
+ * Public API: init(), click(), Update(), Display(ctx).
+ * Constants: None.
+ * Interactions: Uses Sfx to flip global audio volume and SpriteDestructor for assets; inherits event behavior from the base button handler.
+ */
 import Parent from '../abstracts/button-event-handler';
 import SpriteDestructor from '../lib/sprite-destructor';
 import Sfx from './sfx';

@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/pipe-generator.ts.
+/**
+ * Model Summary:
+ * Purpose: Manages pooling and spawning of Pipe pairs at the appropriate spacing.
+ * Update/Display: `Update()` checks spacing thresholds, instantiates/resizes new Pipe instances, and prunes off-screen pipes; rendering is delegated to each Pipe.
+ * Public API: reset(), resize(options), needPipe(), generate(), Update().
+ * Constants: PIPE_DISTANCE, PIPE_MIN_GAP.
+ * Interactions: Creates Pipe models, seeds their color from SceneGenerator, and exposes the shared `pipes` array for Game/Bird collision checks.
+ */
 import { PIPE_DISTANCE, PIPE_MIN_GAP } from '../constants';
 import { randomClamp } from '../utils';
 import Pipe from './pipe';

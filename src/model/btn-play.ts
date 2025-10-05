@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/btn-play.ts.
+/**
+ * Model Summary:
+ * Purpose: Represents the primary play button, handling hover motion and click callbacks.
+ * Update/Display: `Update()` repositions based on hover state before deferring to the shared button handler; `Display()` draws the sprite centered at its canvas coordinate.
+ * Public API: init(), onClick(cb), click(), Update(), Display(ctx).
+ * Constants: None.
+ * Interactions: Plays swoosh effects through Sfx and relies on SpriteDestructor for assets; reused by other button models via inheritance.
+ */
 import Parent from '../abstracts/button-event-handler';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';

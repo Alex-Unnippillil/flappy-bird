@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/count.ts.
+/**
+ * Model Summary:
+ * Purpose: Renders the in-game score counter using sprite digits.
+ * Update/Display: `Update()` is a no-op because digits only change when `setNum()` is called; `Display()` draws the current value centered at the configured coordinate.
+ * Public API: init(), setNum(value), resize(size), Update(), Display(ctx).
+ * Constants: COUNT_COORDINATE, COUNT_DIMENSION.
+ * Interactions: Receives score updates from gameplay controllers and uses SpriteDestructor for digit assets.
+ */
 import { COUNT_COORDINATE, COUNT_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 

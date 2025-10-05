@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/flash-screen.ts.
+/**
+ * Model Summary:
+ * Purpose: Provides a fade-to-color overlay that can trigger callbacks as the fade progresses.
+ * Update/Display: `Update()` advances the FadeOut animation, fires registered range events, and resets when complete; `Display()` draws the translucent fill based on the current value.
+ * Public API: init(), reset(), start(), setEvent(range, cb), status getter, Update(), Display(ctx).
+ * Constants: None (timing provided via constructor options).
+ * Interactions: Acts as a utility overlay; other models (e.g., screens) subscribe to fade events but no direct model coupling.
+ */
 import ParentClass from '../abstracts/parent-class';
 import { FadeOut } from '../lib/animation';
 import { IEasingKey } from '../lib/animation/easing';

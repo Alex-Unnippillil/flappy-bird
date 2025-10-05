@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/platform.ts.
+/**
+ * Model Summary:
+ * Purpose: Scrolls and renders the ground platform strip beneath the bird.
+ * Update/Display: `Update()` advances the horizontal offset based on `GAME_SPEED`; `Display()` tiles the platform sprite along the bottom edge.
+ * Public API: init(), reset(), resize(size), Update(), Display(ctx).
+ * Constants: GAME_SPEED.
+ * Interactions: Exposes `platformSize` so Game can set `Bird.platformHeight`, keeping the bird's physics in sync with the ground level.
+ */
 import { rescaleDim } from '../utils';
 
 import { GAME_SPEED } from '../constants';

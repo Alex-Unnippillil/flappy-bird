@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/sfx.ts.
+/**
+ * Model Summary:
+ * Purpose: Provides a centralized audio facade for game sound effects with shared volume control.
+ * Update/Display: Non-visual model; exposes synchronous methods that trigger WebSfx playback.
+ * Public API: init(), volume(num), die(), point(), hit(cb), swoosh(), wing().
+ * Constants: None.
+ * Interactions: Wraps WebSfx and is invoked by Bird, button models, and other gameplay systems to produce sound.
+ */
 import WebSfx from '../lib/web-sfx';
 import sfDie from '../assets/audio/die.ogg';
 import sfHit from '../assets/audio/hit.ogg';

@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/scene-generator.ts.
+/**
+ * Model Summary:
+ * Purpose: Centralizes random selection of background themes, bird colors, and pipe palettes.
+ * Update/Display: Not a renderable model; static getters compute selections on demand when other models call them.
+ * Public API: static background, bird, and pipe getters plus the shared color/theme lists populated by other models.
+ * Constants: None.
+ * Interactions: Receives asset registries from Background, Bird, and Pipe so gameplay systems can request synchronized scene variations.
+ */
 import { randomClamp } from '../utils';
 import { ITheme } from './background';
 import { IBirdColor } from './bird';
