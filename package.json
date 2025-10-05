@@ -1,5 +1,5 @@
 {
-  "_comment": "This file (package.json) defines configuration or metadata for the project.",
+  "_comment": "Webpack + TypeScript PWA build: use npm run dev for the watch server, npm run build for production, and note manifest/service worker assets are generated via the configured plugins.",
   "name": "flappybird",
   "description": "Mimicking the old retro game FlappyBird but as a web app",
   "version": "0.5.5",
