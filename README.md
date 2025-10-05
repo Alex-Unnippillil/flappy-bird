@@ -1,151 +1,174 @@
 # Flappy Bird Web App
 
-A modern web-based recreation of the classic Flappy Bird game, built with TypeScript and HTML5 Canvas. This project mimics the retro gameplay while incorporating modern web technologies for a smooth, responsive experience.
+A polished, fully offline-capable recreation of the classic Flappy Bird experience built with TypeScript, HTML5 Canvas, and modern tooling. The project is structured for maintainability, extensibility, and developer productivity, making it a solid reference for browser-based arcade games and PWA implementations.
 
-## Features
+## Table of Contents
 
-- **Classic Gameplay**: Authentic Flappy Bird mechanics with precise physics
-- **Progressive Web App (PWA)**: Installable on mobile devices and desktops
-- **Offline Support**: Service worker for offline gameplay
-- **Responsive Design**: Adapts to different screen sizes
-- **Sound Effects**: Immersive audio feedback
-- **High Score Tracking**: Local storage for persistent scores
-- **Smooth Animations**: 60 FPS gameplay with optimized rendering
-- **Touch & Keyboard Controls**: Works on all devices
+1. [Key Features](#key-features)
+2. [Architecture Overview](#architecture-overview)
+3. [Getting Started](#getting-started)
+4. [Available Scripts](#available-scripts)
+5. [How to Play](#how-to-play)
+6. [Project Structure](#project-structure)
+7. [Core Game Systems](#core-game-systems)
+8. [Configuration](#configuration)
+9. [Progressive Web App Capabilities](#progressive-web-app-capabilities)
+10. [Development Workflow](#development-workflow)
+11. [Browser Support](#browser-support)
 
-## Technologies Used
+## Key Features
 
-- **TypeScript**: Type-safe JavaScript for better development experience
-- **HTML5 Canvas**: Hardware-accelerated 2D graphics rendering
-- **Webpack**: Modern module bundling and asset optimization
-- **Sass/SCSS**: Enhanced CSS with variables and mixins
-- **Web Audio API**: High-performance audio processing
-- **Service Workers**: Offline functionality and caching
-- **PWA Manifest**: Native app-like experience
+- **Authentic Gameplay** – Pixel-perfect physics, timing, and pacing that mirror the original Flappy Bird challenge.
+- **Installable PWA** – Ships with a manifest, icons, and service worker for install-once, play-anywhere convenience.
+- **Offline-First** – Aggressive caching delivers a seamless experience without a network connection.
+- **Responsive by Design** – Layout and input handling adapt to phones, tablets, and desktops.
+- **Immersive Audio** – Low-latency sound effects powered by the Web Audio API.
+- **Persistent Scores** – Local storage keeps track of personal bests across sessions.
+- **60 FPS Rendering** – Optimized draw cycle and sprite batching keep animations smooth.
 
-## Prerequisites
+## Architecture Overview
 
-- Node.js (v14 or higher)
-- npm or yarn package manager
+The application follows a modular architecture centered around the `Game` class (`src/game.ts`) and a lightweight screen manager. Major building blocks include:
 
-## Installation
+| Layer | Responsibility |
+| --- | --- |
+| **Entry Point** | `src/index.ts` bootstraps assets, instantiates the game, and binds global listeners. |
+| **Game Loop** | `Game` orchestrates update and render ticks, timekeeping, and screen transitions. |
+| **Screens** | Located in `src/screens/`, each screen encapsulates UI state (intro, gameplay, etc.) and implements a common interface. |
+| **Models** | Entities in `src/model/` (bird, pipes, background, score) store physics state and rendering logic. |
+| **Utilities & Constants** | Shared helpers live in `src/utils/`; tunable values reside in `src/constants.ts`. |
+| **Assets & Styles** | Static assets and SCSS styles are organized under `src/assets/` and `src/styles/`. |
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Alex-Unnippillil/flappy-bird.git
-   cd flappy-bird
-   ```
+Webpack assembles the TypeScript sources, SCSS, and static assets into an optimized bundle. Additional tooling such as Workbox (via `lib/workbox-work-offline`) enables offline caching strategies.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
+### Prerequisites
 
-4. **Open your browser**
+- Node.js **14+** (Node 18+ recommended)
+- npm (bundled with Node) or Yarn
 
-   The game will be available at `http://localhost:3000`
+### Installation & Local Development
+
+```bash
+git clone https://github.com/Alex-Unnippillil/flappy-bird.git
+cd flappy-bird
+npm install
+npm run dev
+```
+
+The development server exposes the game at **http://localhost:3000** with automatic browser refresh for rapid iteration.
+
+### Production Build
+
+```bash
+npm run build
+```
+
+Bundles the application into the `dist/` directory with minified JavaScript, extracted CSS, hashed assets, and a production-ready service worker.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Create production build
-- `npm run start` - Alias for `npm run dev`
-- `npm run prettier-format` - Format code with Prettier
-- `npm run lint` - Run ESLint for code quality checks
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Runs Webpack in watch mode with BrowserSync-powered live reloading. |
+| `npm run start` | Alias for `npm run dev`. |
+| `npm run build` | Generates a production build via Webpack. |
+| `npm run lint` | Runs ESLint with the project ruleset. |
+| `npm run prettier-format` | Applies Prettier formatting to supported file types. |
 
 ## How to Play
 
-1. **Tap/Space**: Make the bird flap and gain height
-2. **Avoid Pipes**: Navigate through the gaps between pipes
-3. **Score Points**: Pass through pipes to increase your score
-4. **Don't Crash**: Hitting pipes or the ground ends the game
+1. Press **Space** (desktop) or **tap** (touch devices) to flap and gain altitude.
+2. Navigate through pipe gaps without colliding with obstacles or the ground.
+3. Each successful pass awards a point; the session ends on collision.
 
-### Controls
-- **Desktop**: Spacebar or mouse click
-- **Mobile**: Tap the screen
+### Input Methods
+
+- **Desktop** – Spacebar, left mouse button, or touchpad tap.
+- **Mobile** – Single-finger tap anywhere on the game canvas.
 
 ## Project Structure
 
 ```
 flappy-bird/
 ├── src/
-│   ├── abstracts/          # Base classes and interfaces
-│   ├── assets/             # Game sprites, sounds, and icons
-│   ├── lib/                # Utility libraries and services
-│   ├── model/              # Game entities (Bird, Pipes, etc.)
-│   ├── screens/            # Game screens (Intro, Gameplay)
-│   ├── styles/             # SCSS stylesheets
-│   ├── utils/              # Helper functions
-│   ├── constants.ts        # Game configuration
-│   ├── events.ts           # Event handling
-│   ├── game.ts             # Main game logic
+│   ├── abstracts/          # Base classes and shared interfaces
+│   ├── assets/             # Sprites, audio files, and manifest icons
+│   ├── lib/                # Framework integrations (e.g., Workbox helpers)
+│   ├── model/              # Core game entities (Bird, Pipe, Background, etc.)
+│   ├── screens/            # Screen implementations (IntroScreen, GameScreen)
+│   ├── styles/             # SCSS source files
+│   ├── utils/              # General-purpose helper functions
+│   ├── constants.ts        # Tunable gameplay and system constants
+│   ├── events.ts           # Centralized event definitions
+│   ├── game.ts             # Main game loop and state manager
 │   └── index.ts            # Application entry point
-├── types/                  # TypeScript type definitions
-├── webpack.config.js       # Build configuration
-├── package.json            # Dependencies and scripts
-└── tsconfig.json           # TypeScript configuration
+├── types/                  # Shared TypeScript type declarations
+├── webpack.config.js       # Build and bundling configuration
+├── package.json            # Scripts, dependencies, and metadata
+└── tsconfig.json           # TypeScript compiler configuration
 ```
 
-## Game Mechanics
+## Core Game Systems
 
-### Physics System
-- **Gravity**: Constant downward acceleration
-- **Lift**: Instant upward velocity on flap
-- **Rotation**: Dynamic bird rotation based on velocity
-- **Collision**: Precise hit detection with pipes and boundaries
+### Game Loop & Rendering
 
-### Scoring System
-- Points awarded for successfully passing through pipes
-- High scores saved locally using browser storage
+- Uses `requestAnimationFrame` for a time-synced update/render loop.
+- Calculates delta times to ensure consistent physics at varying frame rates.
+- Draws sprites to an HTML5 Canvas context with z-ordering for parallax effects.
 
-### Audio System
-- Background music and sound effects
-- Volume controls and mute functionality
-- Web Audio API for low-latency playback
+### Physics & Collision
+
+- Gravity applies continuous downward acceleration.
+- Flaps inject an instantaneous upward velocity defined by `BIRD_JUMP_HEIGHT`.
+- Rotational tilt is derived from vertical velocity for visual feedback.
+- Collision checks use axis-aligned bounding boxes for the bird, pipes, and ground.
+
+### Scoring & Progression
+
+- Score increments on successful traversal of pipe pairs.
+- Local storage persists the highest score achieved per device.
+- Difficulty pacing derives from configurable pipe spacing and speed variables.
+
+### Audio Pipeline
+
+- Web Audio API plays short-form SFX (flap, score, collision) with minimal latency.
+- Audio assets are preloaded to avoid runtime delays.
+- Volume and mute toggles are managed per session and cached locally.
 
 ## Configuration
 
-Game parameters can be adjusted in `src/constants.ts`:
+Gameplay and system parameters are centralized in `src/constants.ts`. Frequently adjusted values include:
 
-- `GAME_SPEED`: Pipe movement speed
-- `BIRD_JUMP_HEIGHT`: Bird flap strength
-- `PIPE_DISTANCE`: Gap between pipes
-- `SFX_VOLUME`: Audio volume level
+- `GAME_SPEED` – Horizontal scroll velocity of obstacles and background layers.
+- `BIRD_JUMP_HEIGHT` – Vertical impulse applied per flap.
+- `PIPE_DISTANCE` – Horizontal spacing between consecutive pipe pairs.
+- `PIPE_GAP` – Vertical gap size between upper and lower pipes.
+- `SFX_VOLUME` – Default master volume for all sound effects.
 
-## Progressive Web App
+Modifying these constants enables quick experimentation with difficulty curves and feel.
 
-This game is a fully functional PWA with:
-- **Installable**: Add to home screen on mobile devices
-- **Offline Play**: Cached assets for offline gameplay
-- **Fast Loading**: Optimized bundle sizes
-- **Native Feel**: App-like interface and navigation
+## Progressive Web App Capabilities
+
+- **Service Worker** – Generated via Workbox to precache core assets and manage runtime caching.
+- **App Manifest** – Provides metadata, icons, and splash screens for installability.
+- **Offline Mode** – Critical resources are cached on first load, enabling gameplay without connectivity.
+- **Add to Home Screen** – Supports installation prompts on compatible mobile and desktop browsers.
+
+## Development Workflow
+
+1. **Code Quality** – Run `npm run lint` before committing; configure editors to auto-run Prettier.
+2. **Testing** – Manually exercise gameplay changes in multiple viewport sizes and input methods.
+3. **Branching** – Use feature branches (`feature/<description>`) and descriptive commit messages.
+4. **Pull Requests** – Summarize gameplay-visible changes and outline manual test steps for reviewers.
 
 ## Browser Support
 
-- Chrome/Chromium (recommended)
+- Chrome / Chromium (desktop & mobile)
 - Firefox
-- Safari
-- Edge
-- Mobile browsers (iOS Safari, Chrome Mobile)
+- Safari (iOS & macOS)
+- Microsoft Edge
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Use Prettier for code formatting
-- Run ESLint before committing
-- Test on multiple browsers
-- Keep bundle size optimized
+The app targets evergreen browsers; ensure service workers and Web Audio are enabled when testing older devices.
 
