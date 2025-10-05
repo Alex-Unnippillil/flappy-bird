@@ -50,21 +50,30 @@ const GameUpdate = (): void => {
 };
 
 const ScreenResize = () => {
-  const sizeResult = rescaleDim(CANVAS_DIMENSION, {
-    height: window.innerHeight * 2 - 50
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const logicalHeight = Math.max(window.innerHeight - 50, 1);
+  const logicalSize = rescaleDim(CANVAS_DIMENSION, {
+    height: logicalHeight
   });
+  const physicalWidth = Math.round(logicalSize.width * devicePixelRatio);
+  const physicalHeight = Math.round(logicalSize.height * devicePixelRatio);
 
-  canvas.style.maxWidth = String(sizeResult.width / 2) + 'px';
-  canvas.style.maxHeight = String(sizeResult.height / 2) + 'px';
+  canvas.style.width = `${logicalSize.width}px`;
+  canvas.style.height = `${logicalSize.height}px`;
+  canvas.dataset.logicalWidth = String(logicalSize.width);
+  canvas.dataset.logicalHeight = String(logicalSize.height);
+  canvas.dataset.devicePixelRatio = String(devicePixelRatio);
 
-  canvas.height = sizeResult.height;
-  canvas.width = sizeResult.width;
-  virtualCanvas.height = sizeResult.height;
-  virtualCanvas.width = sizeResult.width;
+  canvas.width = physicalWidth;
+  canvas.height = physicalHeight;
+  virtualCanvas.width = physicalWidth;
+  virtualCanvas.height = physicalHeight;
 
-  console.log(`Canvas Size: ${sizeResult.width}x${sizeResult.height}`);
+  console.log(
+    `Canvas Size: ${logicalSize.width}x${logicalSize.height} (DPR: ${devicePixelRatio})`
+  );
 
-  Game.Resize(sizeResult);
+  Game.Resize(logicalSize, devicePixelRatio);
 };
 
 const removeLoadingScreen = () => {

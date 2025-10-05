@@ -26,6 +26,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private devicePixelRatio: number;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -42,6 +43,7 @@ export default class Game extends ParentClass {
     this.gamePlay = new GamePlay(this);
     this.state = 'intro';
     this.bgPause = false;
+    this.devicePixelRatio = 1;
     this.transition = new FlashScreen({
       interval: 700,
       strong: 1,
@@ -78,10 +80,11 @@ export default class Game extends ParentClass {
   public reset(): void {
     this.background.reset();
     this.platform.reset();
-    this.Resize(this.canvasSize);
+    this.Resize(this.canvasSize, this.devicePixelRatio);
   }
 
-  public Resize({ width, height }: IDimension): void {
+  public Resize({ width, height }: IDimension, devicePixelRatio = 1): void {
+    this.devicePixelRatio = devicePixelRatio;
     super.resize({ width, height });
     this.background.resize(this.canvasSize);
     this.platform.resize(this.canvasSize);
@@ -96,8 +99,14 @@ export default class Game extends ParentClass {
 
     this.screenIntro.resize(this.canvasSize);
     this.gamePlay.resize(this.canvasSize);
-    this.canvas.width = width;
-    this.canvas.height = height;
+    const scaledWidth = Math.round(width * this.devicePixelRatio);
+    const scaledHeight = Math.round(height * this.devicePixelRatio);
+
+    this.canvas.width = scaledWidth;
+    this.canvas.height = scaledHeight;
+
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+    this.context.scale(this.devicePixelRatio, this.devicePixelRatio);
   }
 
   public Update(): void {
@@ -113,7 +122,7 @@ export default class Game extends ParentClass {
   }
 
   public Display(): void {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height);
     // Remove smoothing effect of an image
     this.context.imageSmoothingEnabled = false;
     this.context.imageSmoothingQuality = 'high';
