@@ -1,4 +1,4 @@
-// File Overview: This module belongs to types/custom.d.ts.
+// Provides shared geometry interfaces and utility function signatures consumed across the game codebase.
 interface IDimension {
   width: number;
   height: number;
@@ -15,3 +15,5 @@ interface IVelocity {
 }
 
 type IEmptyFunction = (...args) => void;
+
+// Add new global interfaces here using the existing `I`-prefixed naming so shared ambient types stay consistent.
