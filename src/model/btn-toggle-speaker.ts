@@ -2,16 +2,19 @@
 import Parent from '../abstracts/button-event-handler';
 import SpriteDestructor from '../lib/sprite-destructor';
 import Sfx from './sfx';
+import { settings } from '../lib/settings';
 
 export default class ToggleSpeakerBtn extends Parent {
   private assets: Map<string, HTMLImageElement>;
   private is_mute: boolean;
+  private previousVolume: number;
 
   constructor() {
     super();
     this.initialWidth = 0.1;
     this.assets = new Map();
-    this.is_mute = false;
+    this.is_mute = settings.get('volume') <= 0;
+    this.previousVolume = settings.get('volume') || 0.6;
     this.coordinate.x = 0.93;
     this.coordinate.y = 0.04;
     this.active = true;
@@ -19,9 +22,13 @@ export default class ToggleSpeakerBtn extends Parent {
 
   public click(): void {
     Sfx.swoosh();
-    this.is_mute = !this.is_mute;
-
-    Sfx.currentVolume = this.is_mute ? 0 : 1;
+    if (this.is_mute) {
+      const restored = this.previousVolume > 0 ? this.previousVolume : 0.6;
+      settings.set('volume', Math.min(1, restored));
+    } else {
+      this.previousVolume = settings.get('volume');
+      settings.set('volume', 0);
+    }
   }
 
   private setImg(): void {
@@ -34,6 +41,13 @@ export default class ToggleSpeakerBtn extends Parent {
     this.assets.set('unmute', SpriteDestructor.asset('btn-speaker'));
 
     this.setImg();
+
+    settings.subscribe('volume', (volume) => {
+      this.is_mute = volume <= 0;
+      if (!this.is_mute) {
+        this.previousVolume = volume;
+      }
+    });
   }
 
   public Update(): void {

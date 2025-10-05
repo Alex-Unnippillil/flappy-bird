@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 import { GAME_SPEED } from '../constants';
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
+import { settings } from '../lib/settings';
 
 export default class Platform extends ParentClass {
   public platformSize: IDimension;
@@ -47,7 +48,8 @@ export default class Platform extends ParentClass {
      * We use linear interpolation instead of by pixel to move the object.
      * It is to keep the speed same in different Screen Sizes & Screen DPI
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
+    this.coordinate.x +=
+      this.canvasSize.width * this.velocity.x * settings.motionScale;
     this.coordinate.y += this.velocity.y;
   }
 
