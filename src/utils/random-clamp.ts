@@ -8,6 +8,12 @@
  * @returns Random Number between min and max
  */
 
-export const randomClamp = (min: number, max: number): number => {
-  return Math.floor(Math.random() * (max - min)) + min;
+import type { RandomGenerator } from './seeded-rng';
+
+export const randomClamp = (
+  min: number,
+  max: number,
+  rng: RandomGenerator = Math.random
+): number => {
+  return Math.floor(rng() * (max - min)) + min;
 };

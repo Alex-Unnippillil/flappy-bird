@@ -6,7 +6,9 @@ import Intro from './screens/intro';
 import ParentClass from './abstracts/parent-class';
 import PipeGenerator from './model/pipe-generator';
 import PlatformModel from './model/platform';
+import SceneGenerator from './model/scene-generator';
 import { SFX_VOLUME } from './constants';
+import { createSeededRng, normalizeSeed } from './utils';
 import ScreenChanger from './lib/screen-changer';
 import Sfx from './model/sfx';
 import Storage from './lib/storage';
@@ -26,6 +28,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private seed: number;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -48,6 +51,7 @@ export default class Game extends ParentClass {
       style: 'black',
       easing: 'sineWaveHS'
     });
+    this.seed = 0;
 
     this.transition.setEvent([0.98, 1], () => {
       this.state = 'game';
@@ -76,6 +80,7 @@ export default class Game extends ParentClass {
   }
 
   public reset(): void {
+    this.resetSeedState();
     this.background.reset();
     this.platform.reset();
     this.Resize(this.canvasSize);
@@ -167,5 +172,20 @@ export default class Game extends ParentClass {
 
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  public setSeed(seed: number): void {
+    this.seed = normalizeSeed(seed);
+    this.resetSeedState();
+  }
+
+  public resetSeedState(): void {
+    const rng = createSeededRng(this.seed);
+    this.pipeGenerator.setRandomGenerator(rng);
+    SceneGenerator.useRng(rng);
+  }
+
+  public get currentSeed(): number {
+    return this.seed;
   }
 }

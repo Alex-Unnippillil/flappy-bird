@@ -3,13 +3,14 @@ import './styles/main.scss';
 import gameSpriteIcon from './assets/icon.png';
 import '@total-typescript/ts-reset';
 
-import { framer as Framer, rescaleDim } from './utils';
+import { framer as Framer, rescaleDim, randomSeed, normalizeSeed } from './utils';
 import { CANVAS_DIMENSION } from './constants';
 import EventHandler from './events';
 import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import Storage from './lib/storage';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -26,8 +27,74 @@ const gameIcon = document.createElement('img');
 const canvas = document.querySelector<HTMLCanvasElement>('#main-canvas')!;
 const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
+
+new Storage();
+
+const SESSION_RUN_STORAGE_KEY = 'session-run';
+
+interface ISessionRunRecord {
+  seed: number;
+}
+
+const parseSessionRunRecord = (): ISessionRunRecord | undefined => {
+  const rawRecord = Storage.get(SESSION_RUN_STORAGE_KEY);
+
+  if (typeof rawRecord === 'number') {
+    return { seed: normalizeSeed(rawRecord) };
+  }
+
+  if (typeof rawRecord === 'string') {
+    try {
+      const parsed = JSON.parse(rawRecord) as Partial<ISessionRunRecord>;
+      if (typeof parsed.seed === 'number') {
+        return { seed: normalizeSeed(parsed.seed) };
+      }
+    } catch (error) {
+      console.warn('Failed to parse session run record', error);
+    }
+  }
+
+  return void 0;
+};
+
+const persistSessionRunRecord = (record: ISessionRunRecord): void => {
+  Storage.save(SESSION_RUN_STORAGE_KEY, JSON.stringify(record));
+};
+
+const ensureSeed = (): number => {
+  const url = new URL(window.location.href);
+  const paramSeed = url.searchParams.get('seed');
+
+  const candidateFromUrl =
+    paramSeed !== null ? Number.parseInt(paramSeed, 10) : Number.NaN;
+
+  const record = parseSessionRunRecord();
+  let seed: number;
+
+  if (!Number.isNaN(candidateFromUrl)) {
+    seed = candidateFromUrl;
+  } else if (record) {
+    seed = record.seed;
+  } else {
+    seed = randomSeed();
+  }
+
+  seed = normalizeSeed(seed);
+
+  if (paramSeed !== String(seed)) {
+    url.searchParams.set('seed', String(seed));
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  persistSessionRunRecord({ seed });
+
+  return seed;
+};
+
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
+const sessionSeed = ensureSeed();
+Game.setSeed(sessionSeed);
 
 let isLoaded = false;
 

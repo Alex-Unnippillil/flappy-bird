@@ -73,6 +73,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   public reset(): void {
     this.gameState = 'none';
     this.state = 'waiting';
+    this.game.resetSeedState();
     this.game.background.reset();
     this.game.platform.reset();
     this.pipeGenerator.reset();

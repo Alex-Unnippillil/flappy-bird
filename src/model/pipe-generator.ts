@@ -1,6 +1,7 @@
 // File Overview: This module belongs to src/model/pipe-generator.ts.
 import { PIPE_DISTANCE, PIPE_MIN_GAP } from '../constants';
 import { randomClamp } from '../utils';
+import type { RandomGenerator } from '../utils';
 import Pipe from './pipe';
 import SceneGenerator from './scene-generator';
 import { IPipeColor } from './pipe';
@@ -51,6 +52,7 @@ export default class PipeGenerator {
   private canvasSize: IDimension;
 
   private pipeColor: IPipeColor;
+  private rng: RandomGenerator;
 
   constructor() {
     this.range = { max: 0, min: 0 };
@@ -63,6 +65,7 @@ export default class PipeGenerator {
       height: 0
     };
     this.pipeColor = 'green';
+    this.rng = Math.random;
   }
 
   public reset(): void {
@@ -115,9 +118,13 @@ export default class PipeGenerator {
     return {
       position: {
         x: this.initialXPos,
-        y: randomClamp(this.range.min, this.range.max - this.range.min)
+        y: randomClamp(this.range.min, this.range.max - this.range.min, this.rng)
       }
     };
+  }
+
+  public setRandomGenerator(rng: RandomGenerator): void {
+    this.rng = rng;
   }
 
   public Update(): void {
