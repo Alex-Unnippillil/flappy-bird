@@ -9,6 +9,8 @@ import ToggleSpeaker from './btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
+import MotionSettings from '../lib/settings/motion';
+import type { MotionPreferenceState } from '../lib/settings/motion';
 
 export default class ScoreBoard extends ParentObject {
   private static readonly FLAG_SHOW_BANNER = 0b0001;
@@ -29,6 +31,7 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private reduceMotion: boolean;
 
   constructor() {
     super();
@@ -59,6 +62,11 @@ export default class ScoreBoard extends ParentObject {
         bounce: 300,
         fading: 100
       }
+    });
+    this.reduceMotion = MotionSettings.shouldReduceMotion();
+    MotionSettings.subscribe((state: MotionPreferenceState) => {
+      this.reduceMotion = state.reduceMotion;
+      this.applyReducedMotionState();
     });
   }
 
@@ -105,7 +113,11 @@ export default class ScoreBoard extends ParentObject {
   public Update(): void {
     this.rankingButton.Update();
     this.playButton.Update();
-    this.spark.Update();
+    if (this.reduceMotion) {
+      this.spark.stop();
+    } else {
+      this.spark.Update();
+    }
     this.toggleSpeakerButton.Update();
   }
 
@@ -154,38 +166,45 @@ export default class ScoreBoard extends ParentObject {
         sbScaled.height
       );
 
-      if (this.TimingEventAnim.value && this.currentScore > this.currentGeneratedNumber) {
-        this.currentGeneratedNumber++;
-      }
-
-      /**
-       * Only show the buttons, medal, Update high score if possible
-       * and 'new' icon after counting
-       * */
-      if (this.TimingEventAnim.status.complete && !this.TimingEventAnim.status.running) {
-        if (this.currentGeneratedNumber > this.currentHighScore) {
-          this.setHighScore(this.currentGeneratedNumber);
-          this.flags |= ScoreBoard.FLAG_NEW_HIGH_SCORE;
+      if (!this.reduceMotion) {
+        if (
+          this.TimingEventAnim.value &&
+          this.currentScore > this.currentGeneratedNumber
+        ) {
+          this.currentGeneratedNumber++;
         }
 
+        /**
+         * Only show the buttons, medal, Update high score if possible
+         * and 'new' icon after counting
+         * */
+        if (
+          this.TimingEventAnim.status.complete &&
+          !this.TimingEventAnim.status.running
+        ) {
+          if (this.currentGeneratedNumber > this.currentHighScore) {
+            this.setHighScore(this.currentGeneratedNumber);
+            this.flags |= ScoreBoard.FLAG_NEW_HIGH_SCORE;
+          }
+
+          this.addMedal(context, anim, sbScaled);
+          this.showButtons();
+        }
+
+        this.displayScore(context, anim, sbScaled);
+        this.displayBestScore(context, anim, sbScaled);
+
+        if (this.FlyInAnim.status.complete && !this.FlyInAnim.status.running) {
+          this.TimingEventAnim.start();
+
+          if (this.currentGeneratedNumber === this.currentScore) {
+            this.TimingEventAnim.stop();
+          }
+        }
+      } else {
         this.addMedal(context, anim, sbScaled);
-        this.showButtons();
-      }
-
-      this.displayScore(context, anim, sbScaled);
-      this.displayBestScore(
-        context,
-        anim,
-        sbScaled,
-        (this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0
-      );
-
-      if (this.FlyInAnim.status.complete && !this.FlyInAnim.status.running) {
-        this.TimingEventAnim.start();
-
-        if (this.currentGeneratedNumber === this.currentScore) {
-          this.TimingEventAnim.stop();
-        }
+        this.displayScore(context, anim, sbScaled);
+        this.displayBestScore(context, anim, sbScaled);
       }
     }
 
@@ -198,11 +217,26 @@ export default class ScoreBoard extends ParentObject {
 
   public showBanner(): void {
     this.flags |= ScoreBoard.FLAG_SHOW_BANNER;
+
+    if (this.reduceMotion) {
+      this.applyReducedMotionState();
+      return;
+    }
+
+    this.BounceInAnim.reset();
     this.BounceInAnim.start();
   }
 
   public showBoard(): void {
     this.flags |= ScoreBoard.FLAG_SHOW_SCOREBOARD;
+    this.flags &= ~ScoreBoard.FLAG_NEW_HIGH_SCORE;
+
+    if (this.reduceMotion) {
+      this.applyReducedMotionState();
+      return;
+    }
+
+    this.FlyInAnim.reset();
     this.FlyInAnim.start();
     this.spark.doSpark();
   }
@@ -257,8 +291,10 @@ export default class ScoreBoard extends ParentObject {
 
     context.drawImage(medal!, pos.x, pos.y, scaled.width, scaled.height);
 
-    this.spark.move(pos, scaled);
-    this.spark.Display(context);
+    if (!this.reduceMotion) {
+      this.spark.move(pos, scaled);
+      this.spark.Display(context);
+    }
   }
 
   private displayScore(
@@ -294,8 +330,7 @@ export default class ScoreBoard extends ParentObject {
   private displayBestScore(
     context: CanvasRenderingContext2D,
     coord: ICoordinate,
-    parentSize: IDimension,
-    _p0: boolean
+    parentSize: IDimension
   ): void {
     const numSize = rescaleDim(
       {
@@ -362,6 +397,7 @@ export default class ScoreBoard extends ParentObject {
   }
 
   public onShowRanks(_cb: IEmptyFunction): void {
+    void _cb;
     /**
      * I don't know what to do on ranking?
      *
@@ -383,5 +419,34 @@ export default class ScoreBoard extends ParentObject {
 
   public triggerPlayATKeyboardEvent(): void {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) this.playButton.click();
+  }
+
+  private applyReducedMotionState(): void {
+    if (!this.reduceMotion) return;
+
+    if ((this.flags & ScoreBoard.FLAG_SHOW_BANNER) !== 0) {
+      this.BounceInAnim.reset();
+      this.BounceInAnim.start();
+      this.BounceInAnim.stop();
+    }
+
+    if ((this.flags & ScoreBoard.FLAG_SHOW_SCOREBOARD) === 0) return;
+
+    this.FlyInAnim.reset();
+    this.FlyInAnim.start();
+    this.FlyInAnim.stop();
+
+    this.flags &= ~ScoreBoard.FLAG_NEW_HIGH_SCORE;
+    this.currentGeneratedNumber = this.currentScore;
+
+    if (this.currentGeneratedNumber > this.currentHighScore) {
+      this.setHighScore(this.currentGeneratedNumber);
+      this.flags |= ScoreBoard.FLAG_NEW_HIGH_SCORE;
+    }
+
+    this.showButtons();
+    this.spark.stop();
+    this.TimingEventAnim.reset();
+    this.TimingEventAnim.stop();
   }
 }

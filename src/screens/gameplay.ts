@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import MotionSettings from '../lib/settings/motion';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -128,16 +129,31 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
       this.gameState = 'died';
 
+      const reduceMotion = MotionSettings.shouldReduceMotion();
+      const scoreboardDelay = reduceMotion ? 120 : 500;
+
       window.setTimeout(() => {
+        const shouldReduce = MotionSettings.shouldReduceMotion();
         this.scoreBoard.setScore(this.bird.score);
         this.showScoreBoard = true;
-        window.setTimeout(() => {
+        if (shouldReduce) {
           this.scoreBoard.showBoard();
           Sfx.swoosh();
-        }, 700);
+        } else {
+          window.setTimeout(() => {
+            const reducedDuringDelay = MotionSettings.shouldReduceMotion();
+            if (reducedDuringDelay) {
+              this.scoreBoard.showBoard();
+              Sfx.swoosh();
+              return;
+            }
+            this.scoreBoard.showBoard();
+            Sfx.swoosh();
+          }, 700);
+        }
         this.scoreBoard.showBanner();
         Sfx.swoosh();
-      }, 500);
+      }, scoreboardDelay);
 
       Sfx.hit(() => {
         this.bird.playDead();
@@ -175,7 +191,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(coordinate: ICoordinate): void {
+    void coordinate;
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
@@ -184,16 +201,16 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.bird.flap();
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
+  public mouseDown(coordinate: ICoordinate): void {
     if (this.gameState !== 'died') return;
 
-    this.scoreBoard.mouseDown({ x, y });
+    this.scoreBoard.mouseDown(coordinate);
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
+  public mouseUp(coordinate: ICoordinate): void {
     if (this.gameState !== 'died') return;
 
-    this.scoreBoard.mouseUp({ x, y });
+    this.scoreBoard.mouseUp(coordinate);
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();

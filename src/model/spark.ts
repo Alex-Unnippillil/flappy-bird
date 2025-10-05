@@ -3,6 +3,7 @@ import ParentClass from '../abstracts/parent-class';
 import { rescaleDim, randomClamp } from '../utils';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { TimingEvent } from '../lib/animation';
+import MotionSettings from '../lib/settings/motion';
 
 export default class Spark extends ParentClass {
   private images: Map<string, HTMLImageElement>;
@@ -58,6 +59,10 @@ export default class Spark extends ParentClass {
 
   public doSpark(): void {
     if (this.status === 'running') return;
+    if (MotionSettings.shouldReduceMotion()) {
+      this.stop();
+      return;
+    }
     this.status = 'running';
     this.timingEvent.start();
   }
@@ -84,6 +89,11 @@ export default class Spark extends ParentClass {
   }
 
   public Update(): void {
+    if (MotionSettings.shouldReduceMotion()) {
+      this.stop();
+      return;
+    }
+
     if (this.status === 'stopped') return;
 
     if (this.timingEvent.value) {
@@ -97,6 +107,7 @@ export default class Spark extends ParentClass {
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    if (MotionSettings.shouldReduceMotion()) return;
     if (this.status === 'stopped') return;
     context.drawImage(
       this.images.get(this.sparkList[this.currentSparkIndex])!,

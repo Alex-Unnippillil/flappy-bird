@@ -18,5 +18,14 @@
         <div></div>
       </div>
     </div>
+    <section id="settings-panel" aria-label="Settings">
+      <label for="motion-preference">Motion</label>
+      <select id="motion-preference" aria-describedby="motion-preference-status">
+        <option value="system">System default</option>
+        <option value="reduce">Reduce motion</option>
+        <option value="full">Full motion</option>
+      </select>
+      <p id="motion-preference-status" aria-live="polite"></p>
+    </section>
   </body>
 </html>

@@ -16,6 +16,7 @@ import Pipe from './pipe';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import MotionSettings from '../lib/settings/motion';
 
 export type IBirdColor = string;
 export type IBirdRecords = Map<IBirdColor, HTMLImageElement>;
@@ -164,7 +165,11 @@ export default class Bird extends ParentClass {
    * */
   public doWave({ x, y }: ICoordinate, frequency: number, amplitude: number): void {
     this.flapWing(3);
-    y += sineWave(frequency, amplitude);
+    const reduceMotion = MotionSettings.shouldReduceMotion();
+    const amplitudeScale = reduceMotion ? 0.3 : 1;
+    const frequencyScale = reduceMotion ? 0.5 : 1;
+
+    y += sineWave(frequency * frequencyScale, amplitude * amplitudeScale);
     this.coordinate = { x, y };
   }
 

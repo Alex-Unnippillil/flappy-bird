@@ -91,12 +91,13 @@ export default abstract class ButtonEventHandler {
       this.canvasSize.height * this.coordinate.y + this.additionalTranslate.y;
   }
 
-  public mouseEvent(state: IMouseState, { x, y }: ICoordinate): void {
+  public mouseEvent(state: IMouseState, coordinate: ICoordinate): void {
     if (state === 'down') {
-      this.onMouseDown({ x, y });
-    } else if (state === 'up') {
-      this.onMouseup({ x, y });
+      this.onMouseDown(coordinate);
+      return;
     }
+
+    this.onMouseup(coordinate);
   }
 
   protected reset(): void {

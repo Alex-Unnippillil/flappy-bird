@@ -10,6 +10,11 @@ import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import MotionSettings from './lib/settings/motion';
+import type {
+  MotionPreference,
+  MotionPreferenceState
+} from './lib/settings/motion';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -26,6 +31,10 @@ const gameIcon = document.createElement('img');
 const canvas = document.querySelector<HTMLCanvasElement>('#main-canvas')!;
 const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
+const motionSelect = document.querySelector<HTMLSelectElement>('#motion-preference');
+const motionStatus = document.querySelector<HTMLParagraphElement>(
+  '#motion-preference-status'
+);
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
@@ -72,6 +81,55 @@ const removeLoadingScreen = () => {
   loadingScreen.style.display = 'none';
   document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
 };
+
+const describeMotionPreference = (state: MotionPreferenceState): string => {
+  if (state.preference === 'system') {
+    return state.systemPrefersReduced
+      ? 'Following system preference: reduced motion.'
+      : 'Following system preference: full motion.';
+  }
+
+  return state.preference === 'reduce'
+    ? 'Reduced motion enabled.'
+    : 'Full motion enabled.';
+};
+
+let lastMotionState: MotionPreferenceState | undefined;
+
+const applyMotionState = (state: MotionPreferenceState): void => {
+  if (!document.body) return;
+
+  document.body.dataset.motionPreference = state.preference;
+  document.body.dataset.motionReduced = state.reduceMotion ? 'true' : 'false';
+};
+
+MotionSettings.subscribe((state) => {
+  lastMotionState = state;
+
+  if (motionSelect && motionSelect.value !== state.preference) {
+    motionSelect.value = state.preference;
+  }
+
+  if (motionStatus) {
+    motionStatus.textContent = describeMotionPreference(state);
+  }
+
+  applyMotionState(state);
+});
+
+if (!document.body) {
+  window.addEventListener('DOMContentLoaded', () => {
+    if (lastMotionState) {
+      applyMotionState(lastMotionState);
+    }
+  });
+}
+
+motionSelect?.addEventListener('change', (event) => {
+  const target = event.target as HTMLSelectElement;
+  const preference = target.value as MotionPreference;
+  MotionSettings.setPreference(preference);
+});
 
 //
 // Quick Fix. Locking to 60fps

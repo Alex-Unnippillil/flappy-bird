@@ -3,6 +3,7 @@ import ParentClass from '../abstracts/parent-class';
 import { FadeOut } from '../lib/animation';
 import { IEasingKey } from '../lib/animation/easing';
 import { IFadingStatus } from '../lib/animation/abstracts/fading';
+import MotionSettings from '../lib/settings/motion';
 
 export interface IFlashScreenConstructorOption {
   style: string;
@@ -90,7 +91,10 @@ export default class FlashScreen extends ParentClass {
   }
 
   public Display(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.strong * this.value;
+    const strength = MotionSettings.shouldReduceMotion()
+      ? this.strong * 0.35
+      : this.strong;
+    context.globalAlpha = strength * this.value;
     context.fillStyle = this.style;
     context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
     context.fill();
