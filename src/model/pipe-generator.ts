@@ -4,6 +4,7 @@ import { randomClamp } from '../utils';
 import Pipe from './pipe';
 import SceneGenerator from './scene-generator';
 import { IPipeColor } from './pipe';
+import HighContrastManager from '../lib/high-contrast-manager';
 export interface IRange {
   min: number;
   max: number;
@@ -63,6 +64,21 @@ export default class PipeGenerator {
       height: 0
     };
     this.pipeColor = 'green';
+
+    HighContrastManager.subscribe((enabled) => {
+      if (enabled) {
+        this.pipeColor = 'high-contrast' as IPipeColor;
+      } else if (SceneGenerator.pipeColorList.length > 0) {
+        this.pipeColor = SceneGenerator.pipe;
+      }
+
+      if (this.canvasSize.width === 0 || this.canvasSize.height === 0) return;
+
+      for (const pipe of this.pipes) {
+        pipe.use(this.pipeColor);
+        pipe.resize(this.canvasSize);
+      }
+    });
   }
 
   public reset(): void {

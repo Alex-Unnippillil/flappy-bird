@@ -9,6 +9,7 @@ import ToggleSpeaker from './btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
+import HighContrastManager from '../lib/high-contrast-manager';
 
 export default class ScoreBoard extends ParentObject {
   private static readonly FLAG_SHOW_BANNER = 0b0001;
@@ -146,13 +147,19 @@ export default class ScoreBoard extends ParentObject {
       anim.x = this.canvasSize.width * anim.x - sbScaled.width / 2;
       anim.y = this.canvasSize.height * anim.y - sbScaled.height / 2;
 
-      context.drawImage(
-        this.images.get('score-board')!,
-        anim.x,
-        anim.y,
-        sbScaled.width,
-        sbScaled.height
-      );
+      const highContrast = HighContrastManager.isEnabled();
+
+      if (highContrast) {
+        this.drawHighContrastPanel(context, anim, sbScaled);
+      } else {
+        context.drawImage(
+          this.images.get('score-board')!,
+          anim.x,
+          anim.y,
+          sbScaled.width,
+          sbScaled.height
+        );
+      }
 
       if (this.TimingEventAnim.value && this.currentScore > this.currentGeneratedNumber) {
         this.currentGeneratedNumber++;
@@ -168,17 +175,22 @@ export default class ScoreBoard extends ParentObject {
           this.flags |= ScoreBoard.FLAG_NEW_HIGH_SCORE;
         }
 
-        this.addMedal(context, anim, sbScaled);
+        if (highContrast) this.addHighContrastMedal(context, anim, sbScaled);
+        else this.addMedal(context, anim, sbScaled);
         this.showButtons();
       }
 
-      this.displayScore(context, anim, sbScaled);
-      this.displayBestScore(
-        context,
-        anim,
-        sbScaled,
-        (this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0
-      );
+      if (highContrast) {
+        this.displayHighContrastScores(context, anim, sbScaled);
+      } else {
+        this.displayScore(context, anim, sbScaled);
+        this.displayBestScore(
+          context,
+          anim,
+          sbScaled,
+          (this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0
+        );
+      }
 
       if (this.FlyInAnim.status.complete && !this.FlyInAnim.status.running) {
         this.TimingEventAnim.start();
@@ -339,6 +351,158 @@ export default class ScoreBoard extends ParentObject {
       toastSize.width,
       toastSize.height
     );
+  }
+
+  private drawHighContrastPanel(
+    context: CanvasRenderingContext2D,
+    coord: ICoordinate,
+    parentSize: IDimension
+  ): void {
+    const palette = HighContrastManager.getPalette();
+    const radius = parentSize.width * 0.08;
+    const stroke = Math.max(4, parentSize.width * 0.02);
+
+    context.save();
+    context.fillStyle = palette.scoreboardBackground;
+    context.strokeStyle = palette.scoreboardBorder;
+    context.lineWidth = stroke;
+
+    this.roundedRect(context, coord.x, coord.y, parentSize.width, parentSize.height, radius);
+    context.fill();
+    context.stroke();
+
+    context.fillStyle = palette.scoreboardText;
+    context.font = `700 ${Math.max(18, parentSize.height * 0.14)}px 'Arial', 'Sans-Serif'`;
+    context.textAlign = 'left';
+    context.textBaseline = 'top';
+    context.fillText('Results', coord.x + parentSize.width * 0.08, coord.y + parentSize.height * 0.12);
+    context.restore();
+  }
+
+  private displayHighContrastScores(
+    context: CanvasRenderingContext2D,
+    coord: ICoordinate,
+    parentSize: IDimension
+  ): void {
+    const palette = HighContrastManager.getPalette();
+    const labelFont = Math.max(16, parentSize.height * 0.12);
+    const numberFont = Math.max(24, parentSize.height * 0.22);
+    const strokeWidth = Math.max(2, parentSize.width * 0.01);
+    const right = coord.x + parentSize.width * 0.9;
+
+    context.save();
+    context.textAlign = 'right';
+    context.strokeStyle = palette.scoreboardBorder;
+    context.fillStyle = palette.scoreboardText;
+    context.lineWidth = strokeWidth;
+
+    context.font = `600 ${labelFont}px 'Arial', 'Sans-Serif'`;
+    context.fillText('SCORE', right, coord.y + parentSize.height * 0.3);
+
+    context.font = `700 ${numberFont}px 'Arial', 'Sans-Serif'`;
+    const scoreY = coord.y + parentSize.height * 0.44;
+    context.strokeText(String(this.currentGeneratedNumber), right, scoreY);
+    context.fillText(String(this.currentGeneratedNumber), right, scoreY);
+
+    context.font = `600 ${labelFont}px 'Arial', 'Sans-Serif'`;
+    const bestLabelY = coord.y + parentSize.height * 0.62;
+    context.fillText('BEST', right, bestLabelY);
+
+    context.font = `700 ${numberFont}px 'Arial', 'Sans-Serif'`;
+    const bestValueY = coord.y + parentSize.height * 0.76;
+    context.strokeText(String(this.currentHighScore), right, bestValueY);
+    context.fillText(String(this.currentHighScore), right, bestValueY);
+
+    if ((this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0) {
+      context.textAlign = 'center';
+      context.fillStyle = palette.scoreboardAccent;
+      context.font = `700 ${labelFont * 0.95}px 'Arial', 'Sans-Serif'`;
+      context.fillText(
+        'NEW BEST!',
+        coord.x + parentSize.width * 0.55,
+        coord.y + parentSize.height * 0.88
+      );
+    }
+
+    context.restore();
+  }
+
+  private addHighContrastMedal(
+    context: CanvasRenderingContext2D,
+    coord: ICoordinate,
+    parentSize: IDimension
+  ): void {
+    if (this.currentScore < 10) return;
+
+    const palette = HighContrastManager.getPalette();
+    const medalSize = parentSize.width * 0.22;
+    const centerX = coord.x + parentSize.width * 0.28;
+    const centerY = coord.y + parentSize.height * 0.64;
+
+    let inner = '#c47135';
+    let outer = '#f3a683';
+
+    if (this.currentScore >= 20 && this.currentScore < 30) {
+      inner = '#e5ecf6';
+      outer = '#8a97ab';
+    } else if (this.currentScore >= 30) {
+      if (Math.floor(this.currentScore / 10) % 2 === 0) {
+        inner = '#a5f0ff';
+        outer = '#1fb6ff';
+      } else {
+        inner = '#ffe28a';
+        outer = '#ff8c32';
+      }
+    }
+
+    const gradient = context.createRadialGradient(
+      centerX,
+      centerY,
+      medalSize * 0.1,
+      centerX,
+      centerY,
+      medalSize * 0.5
+    );
+    gradient.addColorStop(0, inner);
+    gradient.addColorStop(1, outer);
+
+    context.save();
+    context.fillStyle = gradient;
+    context.strokeStyle = palette.scoreboardBorder;
+    context.lineWidth = Math.max(3, parentSize.width * 0.012);
+    context.beginPath();
+    context.arc(centerX, centerY, medalSize / 2, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.restore();
+
+    this.spark.move(
+      { x: centerX - medalSize / 2, y: centerY - medalSize / 2 },
+      { width: medalSize, height: medalSize }
+    );
+    this.spark.Display(context);
+  }
+
+  private roundedRect(
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ): void {
+    const r = Math.min(radius, Math.min(width, height) / 2);
+    context.beginPath();
+    context.moveTo(x + r, y);
+    context.lineTo(x + width - r, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + r);
+    context.lineTo(x + width, y + height - r);
+    context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    context.lineTo(x + r, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - r);
+    context.lineTo(x, y + r);
+    context.quadraticCurveTo(x, y, x + r, y);
+    context.closePath();
   }
 
   /**

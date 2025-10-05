@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
+import HighContrastManager from '../lib/high-contrast-manager';
 
 export type INumberString = Record<string, HTMLImageElement>;
 
@@ -58,6 +59,11 @@ export default class Count extends ParentClass {
   public Update(): void {}
 
   public Display(context: CanvasRenderingContext2D): void {
+    if (HighContrastManager.isEnabled()) {
+      this.displayHighContrast(context);
+      return;
+    }
+
     const numArr: string[] = String(this.currentValue).split('');
     const totalWidth = numArr.length * this.numberDimension.width;
     let lastWidth: number = this.coordinate.x - totalWidth / 2;
@@ -74,5 +80,21 @@ export default class Count extends ParentClass {
 
       lastWidth += this.numberDimension.width;
     });
+  }
+
+  private displayHighContrast(context: CanvasRenderingContext2D): void {
+    const palette = HighContrastManager.getPalette();
+    const fontSize = Math.max(24, this.canvasSize.height * 0.08);
+
+    context.save();
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.lineWidth = Math.max(2, this.canvasSize.width * 0.004);
+    context.strokeStyle = palette.scoreboardBorder;
+    context.fillStyle = palette.scoreboardText;
+    context.font = `700 ${fontSize}px 'Arial', 'Sans-Serif'`;
+    context.strokeText(String(this.currentValue), this.coordinate.x, this.coordinate.y);
+    context.fillText(String(this.currentValue), this.coordinate.x, this.coordinate.y);
+    context.restore();
   }
 }

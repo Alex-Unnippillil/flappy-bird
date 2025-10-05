@@ -16,6 +16,7 @@ import Pipe from './pipe';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import HighContrastManager from '../lib/high-contrast-manager';
 
 export type IBirdColor = string;
 export type IBirdRecords = Map<IBirdColor, HTMLImageElement>;
@@ -72,6 +73,8 @@ export default class Bird extends ParentClass {
   private lastCoord: number;
   private max_lift_velocity: number;
   private max_fall_velocity: number;
+  private highContrast: boolean;
+  private removeHighContrastListener?: () => void;
 
   constructor() {
     super();
@@ -90,6 +93,7 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.highContrast = HighContrastManager.isEnabled();
   }
 
   /**
@@ -111,7 +115,17 @@ export default class Bird extends ParentClass {
     this.images.set('red.2', SpriteDestructor.asset('bird-red-down'));
 
     Object.assign(SceneGenerator.birdColorList, ['yellow', 'red', 'blue']);
-    this.use(SceneGenerator.bird);
+    this.use(this.highContrast ? ('contrast' as IBirdColor) : SceneGenerator.bird);
+
+    this.removeHighContrastListener?.();
+    this.removeHighContrastListener = HighContrastManager.subscribe((enabled) => {
+      this.highContrast = enabled;
+      if (enabled) {
+        this.color = 'contrast';
+      } else {
+        this.use(SceneGenerator.bird);
+      }
+    });
   }
 
   private variableReset(): void {
@@ -126,7 +140,7 @@ export default class Bird extends ParentClass {
   public reset(): void {
     this.variableReset();
     this.resize(this.canvasSize);
-    this.use(SceneGenerator.bird);
+    this.use(this.highContrast ? ('contrast' as IBirdColor) : SceneGenerator.bird);
   }
 
   public get alive(): boolean {
@@ -291,6 +305,11 @@ export default class Bird extends ParentClass {
    * @param color string color of bird. (red | yellow | blue)
    */
   public use(color: IBirdColor): void {
+    if (HighContrastManager.isEnabled()) {
+      this.color = 'contrast';
+      return;
+    }
+
     this.color = color;
   }
 
@@ -348,6 +367,12 @@ export default class Bird extends ParentClass {
     // Rotate the context using the code above as mid point
     context.rotate((this.rotation * Math.PI) / 180);
 
+    if (HighContrastManager.isEnabled()) {
+      this.drawHighContrastBird(context);
+      context.restore();
+      return;
+    }
+
     // Start the image at top-left then bottom-right
     context.drawImage(
       this.images.get(birdKeyString)!,
@@ -358,6 +383,68 @@ export default class Bird extends ParentClass {
     );
 
     // Restore the previously created picture but keeping the bird
+    context.restore();
+  }
+
+  private drawHighContrastBird(context: CanvasRenderingContext2D): void {
+    const palette = HighContrastManager.getPalette();
+    const bodyRadiusX = this.scaled.width * 0.95;
+    const bodyRadiusY = this.scaled.height * 1.05;
+    const wingOffsetFactor = (this.wingState - 1) * 0.35;
+    const lineWidth = Math.max(3, this.canvasSize.width * 0.008);
+
+    context.save();
+    context.lineWidth = lineWidth;
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+
+    // Body
+    context.fillStyle = palette.birdFill;
+    context.strokeStyle = palette.birdStroke;
+    context.beginPath();
+    context.ellipse(0, 0, bodyRadiusX, bodyRadiusY, 0, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+
+    // Wing
+    context.fillStyle = palette.birdAccent;
+    context.beginPath();
+    context.ellipse(
+      -bodyRadiusX * 0.25,
+      wingOffsetFactor * bodyRadiusY * 0.35,
+      bodyRadiusX * 0.65,
+      bodyRadiusY * 0.45,
+      0,
+      0,
+      Math.PI * 2
+    );
+    context.fill();
+    context.strokeStyle = palette.birdStroke;
+    context.stroke();
+
+    // Eye
+    const eyeRadius = Math.max(2, this.canvasSize.height * 0.012);
+    context.fillStyle = palette.birdStroke;
+    context.beginPath();
+    context.arc(bodyRadiusX * 0.35, -bodyRadiusY * 0.25, eyeRadius, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = palette.birdFill;
+    context.beginPath();
+    context.arc(bodyRadiusX * 0.38, -bodyRadiusY * 0.25, eyeRadius * 0.4, 0, Math.PI * 2);
+    context.fill();
+
+    // Beak
+    context.fillStyle = palette.birdAccent;
+    context.beginPath();
+    context.moveTo(bodyRadiusX * 0.55, 0);
+    context.lineTo(bodyRadiusX * 1.05, -bodyRadiusY * 0.15);
+    context.lineTo(bodyRadiusX * 1.05, bodyRadiusY * 0.15);
+    context.closePath();
+    context.fill();
+    context.strokeStyle = palette.birdStroke;
+    context.stroke();
+
     context.restore();
   }
 }
