@@ -77,8 +77,9 @@ export default class Background extends ParentClass {
      * We cannot rely on fps since it is not a constant value.
      * Which means is the game will speed up or slow down based on fps
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
-    this.coordinate.y += this.velocity.y;
+    const delta = this.deltaRatio;
+    this.coordinate.x += this.canvasSize.width * this.velocity.x * delta;
+    this.coordinate.y += this.velocity.y * delta;
   }
 
   public Display(context: CanvasRenderingContext2D): void {

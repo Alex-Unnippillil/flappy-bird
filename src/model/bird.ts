@@ -298,7 +298,8 @@ export default class Bird extends ParentClass {
    * Handling Bird Rotation
    * */
   private handleRotation(): void {
-    this.rotation += this.coordinate.y < this.lastCoord ? -7.2 : 6.5;
+    const delta = this.deltaRatio;
+    this.rotation += (this.coordinate.y < this.lastCoord ? -7.2 : 6.5) * delta;
     this.rotation = clamp(BIRD_MIN_ROTATION, BIRD_MAX_ROTATION, this.rotation);
 
     if ((this.flags & Bird.FLAG_IS_ALIVE) === 0) {
@@ -324,14 +325,16 @@ export default class Bird extends ParentClass {
     }
 
     // Add the Y velocity into Y coordinate but make sure we did not overspeed
+    const delta = this.deltaRatio;
+
     this.coordinate.y += clamp(
       this.max_lift_velocity,
       this.max_fall_velocity,
       this.velocity.y
-    );
+    ) * delta;
 
     // Slowly reduce the Y velocity by given weights
-    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT;
+    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT * delta;
 
     this.handleRotation();
   }

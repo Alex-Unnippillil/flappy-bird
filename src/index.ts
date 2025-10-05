@@ -8,8 +8,14 @@ import { CANVAS_DIMENSION } from './constants';
 import EventHandler from './events';
 import GameObject from './game';
 import prepareAssets from './asset-preparation';
-import createRAF, { targetFPS } from '@solid-primitives/raf';
+import createRAF from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import {
+  getDefaultFpsCap,
+  getFpsCap,
+  loadFpsCap,
+  onFpsCapChange
+} from './lib/settings';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -38,15 +44,40 @@ fps.text({ x: 50, y: 50 }, '', ' Cycle');
 // prettier-ignore
 fps.container({ x: 10, y: 10}, { x: 230, y: 70});
 
-const GameUpdate = (): void => {
-  physicalContext.drawImage(virtualCanvas, 0, 0);
+const MAX_FRAME_DELTA = 1000 / 12; // Clamp to avoid massive jumps after tab switching.
 
-  Game.Update();
-  Game.Display();
+const initialCap = loadFpsCap();
+let targetFrameDuration = 1000 / initialCap;
+let renderAccumulator = targetFrameDuration;
+let lastTimestamp = performance.now();
 
-  if (process.env.NODE_ENV === 'development') fps.mark();
+const applyFpsCap = (fpsCap: number) => {
+  const safeCap = fpsCap > 0 ? fpsCap : getDefaultFpsCap();
+  targetFrameDuration = 1000 / safeCap;
+  renderAccumulator = targetFrameDuration;
+};
 
-  // raf(GameUpdate); Issue #16
+onFpsCapChange(applyFpsCap);
+
+const GameUpdate: FrameRequestCallback = (timestamp) => {
+  if (!isLoaded) return;
+
+  const rawDelta = timestamp - lastTimestamp;
+  lastTimestamp = timestamp;
+
+  const delta = Math.min(rawDelta, MAX_FRAME_DELTA);
+
+  Game.Update(delta);
+
+  renderAccumulator += delta;
+
+  if (renderAccumulator >= targetFrameDuration) {
+    renderAccumulator %= targetFrameDuration;
+    Game.Display();
+    physicalContext.drawImage(virtualCanvas, 0, 0);
+
+    if (process.env.NODE_ENV === 'development') fps.mark();
+  }
 };
 
 const ScreenResize = () => {
@@ -73,10 +104,7 @@ const removeLoadingScreen = () => {
   document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
 };
 
-//
-// Quick Fix. Locking to 60fps
-// Quick fix.Long term :)
-const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
+const [game_running, game_start] = createRAF(GameUpdate);
 
 window.addEventListener('DOMContentLoaded', () => {
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
@@ -88,8 +116,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     ScreenResize();
 
-    // raf(GameUpdate); Issue #16
-    if (!game_running()) game_start(); // Quick fix. Long term :)
+    Game.Update(0);
+    Game.Display();
+    physicalContext.drawImage(virtualCanvas, 0, 0);
+
+    lastTimestamp = performance.now();
+    applyFpsCap(getFpsCap());
+
+    if (!game_running()) game_start();
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();
     else window.setTimeout(removeLoadingScreen, 1000);

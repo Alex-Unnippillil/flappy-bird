@@ -47,8 +47,9 @@ export default class Platform extends ParentClass {
      * We use linear interpolation instead of by pixel to move the object.
      * It is to keep the speed same in different Screen Sizes & Screen DPI
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
-    this.coordinate.y += this.velocity.y;
+    const delta = this.deltaRatio;
+    this.coordinate.x += this.canvasSize.width * this.velocity.x * delta;
+    this.coordinate.y += this.velocity.y * delta;
   }
 
   public Display(context: CanvasRenderingContext2D) {

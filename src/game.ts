@@ -100,7 +100,8 @@ export default class Game extends ParentClass {
     this.canvas.height = height;
   }
 
-  public Update(): void {
+  public Update(delta = 0): void {
+    Game.updateDelta(delta);
     this.transition.Update();
     this.screenChanger.setState(this.state);
 

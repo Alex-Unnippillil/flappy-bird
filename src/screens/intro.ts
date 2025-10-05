@@ -18,11 +18,14 @@ import PlayButton from '../model/btn-play';
 import RankingButton from '../model/btn-ranking';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
+import FpsSelector from '../model/fps-selector';
+import { getFpsCap, onFpsCapChange, setFpsCap } from '../lib/settings';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
   public rankingButton: RankingButton;
   public toggleSpeakerButton: ToggleSpeaker;
+  private fpsSelector: FpsSelector;
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
@@ -33,6 +36,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
+    this.fpsSelector = new FpsSelector();
     this.flappyBirdBanner = void 0;
   }
 
@@ -41,7 +45,17 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.init();
     this.rankingButton.init();
     this.toggleSpeakerButton.init();
+    this.fpsSelector.init();
     this.flappyBirdBanner = SpriteDestructor.asset('banner-flappybird');
+
+    this.fpsSelector.onSelectionChange((fps) => {
+      setFpsCap(fps);
+    });
+
+    this.fpsSelector.setSelection(getFpsCap());
+    onFpsCapChange((fps) => {
+      this.fpsSelector.setSelection(fps);
+    });
   }
 
   public resize({ width, height }: IDimension): void {
@@ -50,6 +64,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.resize({ width, height });
     this.rankingButton.resize({ width, height });
     this.toggleSpeakerButton.resize({ width, height });
+    this.fpsSelector.resize({ width, height });
   }
 
   public Update(): void {
@@ -65,9 +80,11 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.Update();
     this.rankingButton.Update();
     this.toggleSpeakerButton.Update();
+    this.fpsSelector.Update();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    this.fpsSelector.Display(context);
     this.toggleSpeakerButton.Display(context);
     this.playButton.Display(context);
     this.rankingButton.Display(context);
@@ -94,12 +111,14 @@ export default class Introduction extends ParentClass implements IScreenChangerO
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
+    this.fpsSelector.mouseDown({ x, y });
     this.toggleSpeakerButton.mouseEvent('down', { x, y });
     this.playButton.mouseEvent('down', { x, y });
     this.rankingButton.mouseEvent('down', { x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
+    this.fpsSelector.mouseUp({ x, y });
     this.toggleSpeakerButton.mouseEvent('up', { x, y });
     this.playButton.mouseEvent('up', { x, y });
     this.rankingButton.mouseEvent('up', { x, y });
