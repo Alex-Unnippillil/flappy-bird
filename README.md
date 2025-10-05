@@ -168,6 +168,12 @@ Modifying these constants enables quick experimentation with difficulty curves a
 3. **Branching** – Use feature branches (`feature/<description>`) and descriptive commit messages.
 4. **Pull Requests** – Summarize gameplay-visible changes and outline manual test steps for reviewers.
 
+## Mobile Input & Gesture Handling
+
+- The main game canvas (`#main-canvas`) disables browser gesture handling via `touch-action: none` to prevent swipes from triggering navigation or scroll inside the play area.
+- Keep any interactive overlays outside of the canvas or provide their own gesture handling so that page-level scrolling remains available when the game is not focused.
+- Avoid removing the canvas `touch-action` rule when adding new UI; mobile browsers will otherwise re-enable history swipe or pull-to-refresh behaviors.
+
 ## Browser Support
 
 - Chrome / Chromium (desktop & mobile)
