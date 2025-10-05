@@ -43,15 +43,29 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     clicked = true;
   };
 
-  const mouseMove = ({ x, y }: ICoordinate, evt: IEventParam): void => {
-    evt.preventDefault();
+  const preventDefaultIfNeeded = (
+    evt: IEventParam,
+    shouldPreventDefault: boolean
+  ): void => {
+    if (shouldPreventDefault && evt.cancelable) {
+      evt.preventDefault();
+    }
+  };
+
+  const mouseMove = (
+    { x, y }: ICoordinate,
+    evt: IEventParam,
+    shouldPreventDefault = false
+  ): void => {
+    preventDefaultIfNeeded(evt, shouldPreventDefault);
     mouse.position = getBoundedPosition({ x, y });
   };
 
   const mouseUP = (
     { x, y }: ICoordinate,
     evt: IEventParam,
-    isRetreive: boolean
+    isRetreive: boolean,
+    shouldPreventDefault = false
   ): void => {
     if (hasMouseUp) return;
     hasMouseUp = true;
@@ -62,7 +76,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
      * */
     void WebSfx.init();
 
-    evt.preventDefault();
+    preventDefaultIfNeeded(evt, shouldPreventDefault);
     if (!isRetreive) mouse.position = getBoundedPosition({ x, y });
 
     Game.mouseUp(mouse.position);
@@ -70,7 +84,11 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     clicked = false;
   };
 
-  const mouseDown = ({ x, y }: ICoordinate, evt: IEventParam): void => {
+  const mouseDown = (
+    { x, y }: ICoordinate,
+    evt: IEventParam,
+    shouldPreventDefault = false
+  ): void => {
     if (hasMouseDown) return;
     hasMouseUp = false;
     hasMouseDown = true;
@@ -81,7 +99,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
      * */
     void WebSfx.init();
 
-    evt.preventDefault();
+    preventDefaultIfNeeded(evt, shouldPreventDefault);
     mouse.position = getBoundedPosition({ x, y });
     Game.mouseDown(mouse.position);
     mouse.down = true;
@@ -90,35 +108,84 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
   };
 
   // Mouse Event
-  canvas.addEventListener('mousedown', (evt: MouseEvent) => {
-    mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
-  });
+  canvas.addEventListener(
+    'mousedown',
+    (evt: MouseEvent) => {
+      mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
+    },
+    { passive: true }
+  );
 
-  canvas.addEventListener('mouseup', (evt: MouseEvent) => {
-    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
-  });
+  canvas.addEventListener(
+    'mouseup',
+    (evt: MouseEvent) => {
+      mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+    },
+    { passive: true }
+  );
 
-  canvas.addEventListener('mousemove', (evt: MouseEvent) => {
-    mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
-  });
+  canvas.addEventListener(
+    'mousemove',
+    (evt: MouseEvent) => {
+      mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
+    },
+    { passive: true }
+  );
 
   // Touch Event
-  canvas.addEventListener('touchstart', (evt: TouchEvent) => {
-    mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+  /**
+   * Touch handlers remain non-passive so we can prevent default on browsers
+   * that ignore touch-action for suppressing scroll/zoom gestures.
+   */
+  canvas.addEventListener(
+    'touchstart',
+    (evt: TouchEvent) => {
+      mouseDown(
+        { x: evt.touches[0].clientX, y: evt.touches[0].clientY },
+        evt,
+        true
+      );
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener('touchend', (evt: TouchEvent) => {
-    if (evt.touches.length < 1) {
-      mouseUP(mouse.position, evt, true);
-      return;
-    }
+  /**
+   * Touch handlers remain non-passive so we can prevent default on browsers
+   * that ignore touch-action for suppressing scroll/zoom gestures.
+   */
+  canvas.addEventListener(
+    'touchend',
+    (evt: TouchEvent) => {
+      if (evt.touches.length < 1) {
+        mouseUP(mouse.position, evt, true, true);
+        return;
+      }
 
-    mouseUP({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt, false);
-  });
+      mouseUP(
+        { x: evt.touches[0].clientX, y: evt.touches[0].clientY },
+        evt,
+        false,
+        true
+      );
+    },
+    { passive: false }
+  );
 
-  canvas.addEventListener('touchmove', (evt: TouchEvent) => {
-    mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
+  /**
+   * Touch handlers remain non-passive so we can prevent default on browsers
+   * that ignore touch-action for suppressing scroll/zoom gestures.
+   */
+  canvas.addEventListener(
+    'touchmove',
+    (evt: TouchEvent) => {
+      mouseMove(
+        { x: evt.touches[0].clientX, y: evt.touches[0].clientY },
+        evt,
+        true
+      );
+    },
+    { passive: false }
+  );
 
   // Keyboard event
   document.addEventListener('keydown', (evt: KeyboardEvent) => {
@@ -140,7 +207,8 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
           x: canvas.width / 2,
           y: canvas.height / 2
         },
-        evt
+        evt,
+        true
       );
     }
   });
@@ -162,7 +230,8 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
           y: canvas.height / 2
         },
         evt,
-        false
+        false,
+        true
       );
     }
   });
