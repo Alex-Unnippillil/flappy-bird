@@ -16,6 +16,8 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import SceneGenerator from '../model/scene-generator';
+import { ITheme } from '../model/background';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +33,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private currentTheme: ITheme;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +59,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.currentTheme = SceneGenerator.background;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -65,6 +69,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.count.init();
     this.bannerInstruction.init();
     this.scoreBoard.init();
+    this.applyTheme(SceneGenerator.background, true);
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
@@ -73,6 +78,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   public reset(): void {
     this.gameState = 'none';
     this.state = 'waiting';
+    SceneGenerator.resetCycle();
+    this.applyTheme(SceneGenerator.background, true);
     this.game.background.reset();
     this.game.platform.reset();
     this.pipeGenerator.reset();
@@ -99,6 +106,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.flashScreen.Update();
     this.transition.Update();
     this.scoreBoard.Update();
+    this.evaluateThemeCycle();
 
     if (!this.bird.alive) {
       this.game.bgPause = true;
@@ -173,6 +181,25 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // this.scoreBoard.onShowRanks(() => {
     //   console.log("ranking button")
     // })
+  }
+
+  private evaluateThemeCycle(): void {
+    const nextTheme = SceneGenerator.tick(this.bird.score);
+
+    if (!nextTheme || nextTheme === this.currentTheme) return;
+
+    this.applyTheme(nextTheme);
+  }
+
+  private applyTheme(theme: ITheme, immediate = false): void {
+    if (this.currentTheme === theme && !immediate) return;
+
+    this.currentTheme = theme;
+    this.game.background.use(theme, { immediate });
+    this.game.applyTheme(theme, immediate);
+    this.pipeGenerator.setTheme(theme);
+    this.count.setTheme(theme);
+    this.scoreBoard.setTheme(theme);
   }
 
   public click({ x, y }: ICoordinate): void {

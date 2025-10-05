@@ -4,6 +4,7 @@ import { randomClamp } from '../utils';
 import Pipe from './pipe';
 import SceneGenerator from './scene-generator';
 import { IPipeColor } from './pipe';
+import { ITheme } from './background';
 export interface IRange {
   min: number;
   max: number;
@@ -51,6 +52,7 @@ export default class PipeGenerator {
   private canvasSize: IDimension;
 
   private pipeColor: IPipeColor;
+  private theme: ITheme;
 
   constructor() {
     this.range = { max: 0, min: 0 };
@@ -63,6 +65,7 @@ export default class PipeGenerator {
       height: 0
     };
     this.pipeColor = 'green';
+    this.theme = 'day';
   }
 
   public reset(): void {
@@ -72,7 +75,7 @@ export default class PipeGenerator {
       width: this.canvasSize.width,
       height: this.canvasSize.height
     });
-    this.pipeColor = SceneGenerator.pipe;
+    this.setTheme(SceneGenerator.background);
   }
 
   public resize({ max, width, height }: IPipeGeneratorOption): void {
@@ -125,7 +128,7 @@ export default class PipeGenerator {
       const pipe = new Pipe();
 
       pipe.init();
-      pipe.use(this.pipeColor);
+      pipe.use(this.pipeColor, this.theme);
 
       pipe.resize(this.canvasSize);
 
@@ -139,6 +142,16 @@ export default class PipeGenerator {
         this.pipes.splice(index, 1);
         index--;
       }
+    }
+  }
+
+  public setTheme(theme: ITheme): void {
+    this.theme = theme;
+    this.pipeColor = SceneGenerator.pipe;
+
+    for (const pipe of this.pipes) {
+      pipe.use(this.pipeColor, this.theme);
+      pipe.resize(this.canvasSize);
     }
   }
 }

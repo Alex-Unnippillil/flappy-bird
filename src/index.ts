@@ -70,7 +70,6 @@ const ScreenResize = () => {
 const removeLoadingScreen = () => {
   EventHandler(Game, canvas);
   loadingScreen.style.display = 'none';
-  document.body.style.backgroundColor = 'rgba(28, 28, 30, 1)';
 };
 
 //

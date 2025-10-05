@@ -1,5 +1,5 @@
 // File Overview: This module belongs to src/game.ts.
-import BgModel from './model/background';
+import BgModel, { ITheme } from './model/background';
 import BirdModel from './model/bird';
 import GamePlay from './screens/gameplay';
 import Intro from './screens/intro';
@@ -11,6 +11,7 @@ import ScreenChanger from './lib/screen-changer';
 import Sfx from './model/sfx';
 import Storage from './lib/storage';
 import FlashScreen from './model/flash-screen';
+import SceneGenerator from './model/scene-generator';
 
 export type IGameState = 'intro' | 'game';
 
@@ -26,6 +27,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private activeTheme: ITheme;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -42,6 +44,7 @@ export default class Game extends ParentClass {
     this.gamePlay = new GamePlay(this);
     this.state = 'intro';
     this.bgPause = false;
+    this.activeTheme = 'day';
     this.transition = new FlashScreen({
       interval: 700,
       strong: 1,
@@ -56,6 +59,8 @@ export default class Game extends ParentClass {
 
   public init(): void {
     new Storage(); // Init first
+    SceneGenerator.resetCycle();
+    this.applyTheme(SceneGenerator.background, true);
     this.background.init();
     this.platform.init();
     this.transition.init();
@@ -167,5 +172,28 @@ export default class Game extends ParentClass {
 
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  public applyTheme(theme: ITheme, immediate = false): void {
+    if (this.activeTheme === theme && !immediate) return;
+
+    this.activeTheme = theme;
+
+    const body = document.body;
+    const target = theme === 'night' ? 'rgb(4 24 54)' : 'rgb(134 206 235)';
+
+    if (immediate) {
+      body.style.setProperty('transition', 'none');
+      body.style.backgroundColor = target;
+      body.dataset.theme = theme;
+      window.requestAnimationFrame(() => {
+        body.style.setProperty('transition', 'background-color 0.8s ease');
+      });
+      return;
+    }
+
+    body.style.setProperty('transition', 'background-color 0.8s ease');
+    body.style.backgroundColor = target;
+    body.dataset.theme = theme;
   }
 }

@@ -9,6 +9,7 @@ import ToggleSpeaker from './btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
+import { ITheme } from './background';
 
 export default class ScoreBoard extends ParentObject {
   private static readonly FLAG_SHOW_BANNER = 0b0001;
@@ -29,6 +30,13 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private theme: ITheme;
+  private palette: {
+    overlay: string;
+    numberShadowColor: string;
+    numberShadowBlur: number;
+    numberShadowOffsetY: number;
+  };
 
   constructor() {
     super();
@@ -41,6 +49,13 @@ export default class ScoreBoard extends ParentObject {
     this.currentHighScore = 0;
     this.currentGeneratedNumber = 0;
     this.currentScore = 0;
+    this.theme = 'day';
+    this.palette = {
+      overlay: 'rgba(255, 255, 255, 0.3)',
+      numberShadowColor: 'rgba(0, 0, 0, 0.65)',
+      numberShadowBlur: 10,
+      numberShadowOffsetY: 3
+    };
     this.FlyInAnim = new Fly({
       duration: 500,
       from: {
@@ -83,6 +98,7 @@ export default class ScoreBoard extends ParentObject {
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
     this.spark.init();
+    this.setTheme(this.theme);
 
     /**
      * We need to make sure about this
@@ -121,7 +137,11 @@ export default class ScoreBoard extends ParentObject {
       const anim = this.BounceInAnim.value;
       const yPos = this.canvasSize.height * 0.225 - bgoScaled.height / 2;
 
+      context.save();
       context.globalAlpha = anim.opacity;
+      context.shadowColor = this.palette.numberShadowColor;
+      context.shadowBlur = this.palette.numberShadowBlur * 0.35;
+      context.shadowOffsetY = this.palette.numberShadowOffsetY;
       context.drawImage(
         this.images.get('banner-gameover')!,
         this.canvasSize.width * 0.5 - bgoScaled.width / 2,
@@ -129,7 +149,7 @@ export default class ScoreBoard extends ParentObject {
         bgoScaled.width,
         bgoScaled.height
       );
-      context.globalAlpha = 1;
+      context.restore();
     }
 
     if ((this.flags & ScoreBoard.FLAG_SHOW_SCOREBOARD) !== 0) {
@@ -146,6 +166,10 @@ export default class ScoreBoard extends ParentObject {
       anim.x = this.canvasSize.width * anim.x - sbScaled.width / 2;
       anim.y = this.canvasSize.height * anim.y - sbScaled.height / 2;
 
+      context.save();
+      context.shadowColor = this.palette.numberShadowColor;
+      context.shadowBlur = this.palette.numberShadowBlur * 0.4;
+      context.shadowOffsetY = this.palette.numberShadowOffsetY;
       context.drawImage(
         this.images.get('score-board')!,
         anim.x,
@@ -153,6 +177,8 @@ export default class ScoreBoard extends ParentObject {
         sbScaled.width,
         sbScaled.height
       );
+      context.restore();
+      this.drawOverlay(context, anim, sbScaled);
 
       if (this.TimingEventAnim.value && this.currentScore > this.currentGeneratedNumber) {
         this.currentGeneratedNumber++;
@@ -280,6 +306,11 @@ export default class ScoreBoard extends ParentObject {
 
     const numArr: string[] = String(this.currentGeneratedNumber).split('');
 
+    context.save();
+    context.shadowColor = this.palette.numberShadowColor;
+    context.shadowBlur = this.palette.numberShadowBlur;
+    context.shadowOffsetY = this.palette.numberShadowOffsetY;
+
     numArr.reverse().forEach((c: string, index: number) => {
       context.drawImage(
         this.images.get(`number-${c}`)!,
@@ -289,6 +320,8 @@ export default class ScoreBoard extends ParentObject {
         numSize.height
       );
     });
+
+    context.restore();
   }
 
   private displayBestScore(
@@ -312,6 +345,11 @@ export default class ScoreBoard extends ParentObject {
 
     const numArr: string[] = String(this.currentHighScore).split('');
 
+    context.save();
+    context.shadowColor = this.palette.numberShadowColor;
+    context.shadowBlur = this.palette.numberShadowBlur;
+    context.shadowOffsetY = this.palette.numberShadowOffsetY;
+
     numArr.reverse().forEach((c: string, index: number) => {
       context.drawImage(
         this.images.get(`number-${c}`)!,
@@ -321,6 +359,8 @@ export default class ScoreBoard extends ParentObject {
         numSize.height
       );
     });
+
+    context.restore();
 
     if ((this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) === 0) return;
 
@@ -383,5 +423,34 @@ export default class ScoreBoard extends ParentObject {
 
   public triggerPlayATKeyboardEvent(): void {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) this.playButton.click();
+  }
+
+  public setTheme(theme: ITheme): void {
+    this.theme = theme;
+    this.palette =
+      theme === 'night'
+        ? {
+            overlay: 'rgba(3, 22, 53, 0.55)',
+            numberShadowColor: 'rgba(0, 0, 0, 0.85)',
+            numberShadowBlur: 18,
+            numberShadowOffsetY: 4
+          }
+        : {
+            overlay: 'rgba(255, 255, 255, 0.25)',
+            numberShadowColor: 'rgba(0, 0, 0, 0.6)',
+            numberShadowBlur: 12,
+            numberShadowOffsetY: 3
+          };
+  }
+
+  private drawOverlay(
+    context: CanvasRenderingContext2D,
+    coord: ICoordinate,
+    parentSize: IDimension
+  ): void {
+    context.save();
+    context.fillStyle = this.palette.overlay;
+    context.fillRect(coord.x, coord.y, parentSize.width, parentSize.height);
+    context.restore();
   }
 }

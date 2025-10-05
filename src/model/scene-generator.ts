@@ -5,18 +5,50 @@ import { IBirdColor } from './bird';
 import { IPipeColor } from './pipe';
 
 export default class SceneGenerator {
+  private static readonly SCORE_STEP = 10;
+  private static readonly CYCLE_DURATION = 25000; // ms
   public static birdColorList: IBirdColor[] = [];
   public static bgThemeList: ITheme[] = [];
   public static pipeColorList: IPipeColor[] = [];
-  private static isNight = false;
+  private static nightFlag = false;
+  private static currentTheme: ITheme = 'day';
+  private static lastToggleTime = 0;
+  private static nextScoreMilestone = SceneGenerator.SCORE_STEP;
 
   public static get background(): ITheme {
-    if (SceneGenerator.bgThemeList.length < 1) throw new Error('No theme available');
+    SceneGenerator.ensureTheme(SceneGenerator.currentTheme);
+    return SceneGenerator.currentTheme;
+  }
 
-    const t =
-      SceneGenerator.bgThemeList[randomClamp(0, SceneGenerator.bgThemeList.length)];
-    SceneGenerator.isNight = t === 'night';
-    return t;
+  public static get isNight(): boolean {
+    return SceneGenerator.nightFlag;
+  }
+
+  public static resetCycle(theme: ITheme = 'day'): void {
+    SceneGenerator.ensureTheme(theme);
+    SceneGenerator.setTheme(theme);
+    SceneGenerator.lastToggleTime = SceneGenerator.now();
+    SceneGenerator.nextScoreMilestone = SceneGenerator.SCORE_STEP;
+  }
+
+  public static tick(score: number): ITheme | null {
+    const now = SceneGenerator.now();
+    const reachedTime = now - SceneGenerator.lastToggleTime >= SceneGenerator.CYCLE_DURATION;
+    const reachedScore = score >= SceneGenerator.nextScoreMilestone && score > 0;
+
+    if (!reachedTime && !reachedScore) return null;
+
+    if (reachedScore) {
+      SceneGenerator.nextScoreMilestone = SceneGenerator.computeNextMilestone(score);
+    } else if (score >= SceneGenerator.nextScoreMilestone) {
+      SceneGenerator.nextScoreMilestone = SceneGenerator.computeNextMilestone(score);
+    }
+
+    SceneGenerator.lastToggleTime = now;
+    const nextTheme = SceneGenerator.currentTheme === 'night' ? 'day' : 'night';
+    SceneGenerator.ensureTheme(nextTheme);
+    SceneGenerator.setTheme(nextTheme);
+    return SceneGenerator.currentTheme;
   }
 
   public static get bird(): IBirdColor {
@@ -29,15 +61,38 @@ export default class SceneGenerator {
   }
 
   public static get pipe(): IPipeColor {
-    if (SceneGenerator.pipeColorList.length < 1)
-      throw new Error('No available pipe color');
+    const preferred = SceneGenerator.nightFlag ? 'red' : 'green';
 
-    if (SceneGenerator.isNight) {
-      return SceneGenerator.pipeColorList[
-        randomClamp(0, SceneGenerator.pipeColorList.length)
-      ];
+    if (SceneGenerator.pipeColorList.length < 1)
+      return preferred as IPipeColor;
+
+    if (SceneGenerator.pipeColorList.includes(preferred as IPipeColor))
+      return preferred as IPipeColor;
+
+    return SceneGenerator.pipeColorList[0];
+  }
+
+  private static setTheme(theme: ITheme): void {
+    SceneGenerator.currentTheme = theme;
+    SceneGenerator.nightFlag = theme === 'night';
+  }
+
+  private static ensureTheme(theme: ITheme): void {
+    if (!SceneGenerator.bgThemeList.includes(theme)) {
+      SceneGenerator.bgThemeList.push(theme);
+    }
+  }
+
+  private static computeNextMilestone(score: number): number {
+    const buckets = Math.floor(score / SceneGenerator.SCORE_STEP) + 1;
+    return buckets * SceneGenerator.SCORE_STEP;
+  }
+
+  private static now(): number {
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+      return performance.now();
     }
 
-    return 'green' as IPipeColor;
+    return Date.now();
   }
 }

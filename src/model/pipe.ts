@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import { ITheme } from './background';
 
 export interface IPipePairPosition {
   top: ICoordinate;
@@ -139,8 +140,9 @@ export default class Pipe extends ParentClass {
   /**
    * Pipe color selection
    * */
-  public use(select: IPipeColor): void {
-    this.color = select;
+  public use(select: IPipeColor, theme: ITheme = SceneGenerator.background): void {
+    const palette = theme === 'night' ? ['red'] : ['green'];
+    this.color = palette.includes(select) ? select : palette[0];
   }
 
   /**

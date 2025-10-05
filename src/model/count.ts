@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
+import { ITheme } from './background';
 
 export type INumberString = Record<string, HTMLImageElement>;
 
@@ -11,6 +12,12 @@ export default class Count extends ParentClass {
   private currentValue: number;
   private numberAsset: INumberString;
   private numberDimension: IDimension;
+  private theme: ITheme;
+  private palette: {
+    shadowColor: string;
+    shadowBlur: number;
+    shadowOffsetY: number;
+  };
 
   constructor() {
     super();
@@ -20,6 +27,12 @@ export default class Count extends ParentClass {
     this.numberDimension = {
       width: 0,
       height: 0
+    };
+    this.theme = 'day';
+    this.palette = {
+      shadowColor: 'rgba(0, 0, 0, 0.6)',
+      shadowBlur: 14,
+      shadowOffsetY: 4
     };
   }
 
@@ -63,6 +76,11 @@ export default class Count extends ParentClass {
     let lastWidth: number = this.coordinate.x - totalWidth / 2;
     const topPos = this.coordinate.y - this.numberDimension.height / 2;
 
+    context.save();
+    context.shadowColor = this.palette.shadowColor;
+    context.shadowBlur = this.palette.shadowBlur;
+    context.shadowOffsetY = this.palette.shadowOffsetY;
+
     numArr.forEach((numString: string) => {
       context.drawImage(
         this.numberAsset[numString],
@@ -74,5 +92,23 @@ export default class Count extends ParentClass {
 
       lastWidth += this.numberDimension.width;
     });
+
+    context.restore();
+  }
+
+  public setTheme(theme: ITheme): void {
+    this.theme = theme;
+    this.palette =
+      theme === 'night'
+        ? {
+            shadowColor: 'rgba(255, 255, 255, 0.5)',
+            shadowBlur: 18,
+            shadowOffsetY: 0
+          }
+        : {
+            shadowColor: 'rgba(0, 0, 0, 0.6)',
+            shadowBlur: 14,
+            shadowOffsetY: 4
+          };
   }
 }
