@@ -3,6 +3,9 @@ import Parent from '../abstracts/button-event-handler';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
 
+const PLAY_BUTTON_DEFAULT_X = 0.259;
+const PLAY_BUTTON_MIRROR_X = 0.741;
+
 export default class PlayButton extends Parent {
   protected callback?: IEmptyFunction;
 
@@ -10,7 +13,7 @@ export default class PlayButton extends Parent {
     super();
     this.initialWidth = 0.38;
     this.coordinate = {
-      x: 0.259,
+      x: PLAY_BUTTON_DEFAULT_X,
       y: 0.6998
     };
     this.active = true;
@@ -27,6 +30,10 @@ export default class PlayButton extends Parent {
 
   public init(): void {
     this.img = SpriteDestructor.asset('btn-play');
+  }
+
+  public setLeftHanded(isLeftHanded: boolean): void {
+    this.coordinate.x = isLeftHanded ? PLAY_BUTTON_MIRROR_X : PLAY_BUTTON_DEFAULT_X;
   }
 
   public Update(): void {

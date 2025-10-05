@@ -3,6 +3,9 @@ import Parent from '../abstracts/button-event-handler';
 import SpriteDestructor from '../lib/sprite-destructor';
 import Sfx from './sfx';
 
+const TOGGLE_SPEAKER_DEFAULT_X = 0.93;
+const TOGGLE_SPEAKER_MIRROR_X = 0.07;
+
 export default class ToggleSpeakerBtn extends Parent {
   private assets: Map<string, HTMLImageElement>;
   private is_mute: boolean;
@@ -12,7 +15,7 @@ export default class ToggleSpeakerBtn extends Parent {
     this.initialWidth = 0.1;
     this.assets = new Map();
     this.is_mute = false;
-    this.coordinate.x = 0.93;
+    this.coordinate.x = TOGGLE_SPEAKER_DEFAULT_X;
     this.coordinate.y = 0.04;
     this.active = true;
   }
@@ -34,6 +37,12 @@ export default class ToggleSpeakerBtn extends Parent {
     this.assets.set('unmute', SpriteDestructor.asset('btn-speaker'));
 
     this.setImg();
+  }
+
+  public setLeftHanded(isLeftHanded: boolean): void {
+    this.coordinate.x = isLeftHanded
+      ? TOGGLE_SPEAKER_MIRROR_X
+      : TOGGLE_SPEAKER_DEFAULT_X;
   }
 
   public Update(): void {

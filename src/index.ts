@@ -10,6 +10,8 @@ import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import Settings from './lib/settings';
+import SettingsPanel from './lib/settings/ui';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -21,6 +23,10 @@ if (process.env.NODE_ENV === 'production') {
  * we'll need double buffer to atleast reduce
  * the frame tearing
  * */
+Settings.init();
+
+const settingsPanel = new SettingsPanel();
+
 const virtualCanvas = document.createElement('canvas');
 const gameIcon = document.createElement('img');
 const canvas = document.querySelector<HTMLCanvasElement>('#main-canvas')!;
@@ -28,6 +34,16 @@ const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
+
+settingsPanel.onToggle((isLeftHanded: boolean) => {
+  Settings.setLeftHanded(isLeftHanded);
+});
+
+Settings.onChange(({ leftHanded }) => {
+  settingsPanel.setLeftHanded(leftHanded);
+});
+
+settingsPanel.setLeftHanded(Settings.value.leftHanded);
 
 let isLoaded = false;
 
@@ -79,6 +95,7 @@ const removeLoadingScreen = () => {
 const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
 
 window.addEventListener('DOMContentLoaded', () => {
+  settingsPanel.mount();
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
 
   prepareAssets(() => {

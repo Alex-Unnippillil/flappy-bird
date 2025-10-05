@@ -18,6 +18,7 @@ import PlayButton from '../model/btn-play';
 import RankingButton from '../model/btn-ranking';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
+import Settings, { ISettingsState } from '../lib/settings';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
@@ -26,6 +27,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
+  private readonly handleSettingsChange: (settings: ISettingsState) => void;
 
   constructor() {
     super();
@@ -34,6 +36,13 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
     this.flappyBirdBanner = void 0;
+    this.handleSettingsChange = ({ leftHanded }: ISettingsState) => {
+      this.playButton.setLeftHanded(leftHanded);
+      this.rankingButton.setLeftHanded(leftHanded);
+      this.toggleSpeakerButton.setLeftHanded(leftHanded);
+    };
+
+    Settings.onChange(this.handleSettingsChange);
   }
 
   public init(): void {
@@ -42,6 +51,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rankingButton.init();
     this.toggleSpeakerButton.init();
     this.flappyBirdBanner = SpriteDestructor.asset('banner-flappybird');
+    this.handleSettingsChange(Settings.value);
   }
 
   public resize({ width, height }: IDimension): void {

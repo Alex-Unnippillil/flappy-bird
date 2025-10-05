@@ -9,6 +9,7 @@ import ToggleSpeaker from './btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
+import Settings, { ISettingsState } from '../lib/settings';
 
 export default class ScoreBoard extends ParentObject {
   private static readonly FLAG_SHOW_BANNER = 0b0001;
@@ -29,6 +30,7 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private readonly handleSettingsChange: (settings: ISettingsState) => void;
 
   constructor() {
     super();
@@ -60,6 +62,13 @@ export default class ScoreBoard extends ParentObject {
         fading: 100
       }
     });
+    this.handleSettingsChange = ({ leftHanded }: ISettingsState) => {
+      this.playButton.setLeftHanded(leftHanded);
+      this.rankingButton.setLeftHanded(leftHanded);
+      this.toggleSpeakerButton.setLeftHanded(leftHanded);
+    };
+
+    Settings.onChange(this.handleSettingsChange);
   }
 
   public init(): void {
@@ -91,6 +100,7 @@ export default class ScoreBoard extends ParentObject {
      * */
     const prevScore = Storage.get('highscore') as number;
     this.currentHighScore = typeof prevScore === 'number' ? prevScore : 0;
+    this.handleSettingsChange(Settings.value);
   }
 
   public resize({ width, height }: IDimension): void {
