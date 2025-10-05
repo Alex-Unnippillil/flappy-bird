@@ -90,10 +90,14 @@ export default class FlashScreen extends ParentClass {
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    const previousAlpha = context.globalAlpha;
+    const previousFillStyle = context.fillStyle;
+
     context.globalAlpha = this.strong * this.value;
     context.fillStyle = this.style;
     context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
     context.fill();
-    context.globalAlpha = 1;
+    context.globalAlpha = previousAlpha;
+    context.fillStyle = previousFillStyle;
   }
 }

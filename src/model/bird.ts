@@ -338,19 +338,19 @@ export default class Bird extends ParentClass {
 
   public Display(context: CanvasRenderingContext2D): void {
     const birdKeyString = `${this.color}.${this.wingState}`;
-
-    // Save our previous created picture
-    context.save();
+    const image = this.images.get(birdKeyString)!;
+    const { x, y } = this.coordinate;
+    const previousTransform = context.getTransform();
 
     // Move the imaginary cursor into the bird position
-    context.translate(this.coordinate.x, this.coordinate.y);
+    context.translate(x, y);
 
     // Rotate the context using the code above as mid point
     context.rotate((this.rotation * Math.PI) / 180);
 
     // Start the image at top-left then bottom-right
     context.drawImage(
-      this.images.get(birdKeyString)!,
+      image,
       -this.scaled.width,
       -this.scaled.height,
       this.scaled.width * 2,
@@ -358,6 +358,6 @@ export default class Bird extends ParentClass {
     );
 
     // Restore the previously created picture but keeping the bird
-    context.restore();
+    context.setTransform(previousTransform);
   }
 }

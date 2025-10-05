@@ -110,33 +110,38 @@ export default class ScoreBoard extends ParentObject {
   }
 
   public Display(context: CanvasRenderingContext2D): void {
+    const images = this.images;
+
     if ((this.flags & ScoreBoard.FLAG_SHOW_BANNER) !== 0) {
+      const bannerImage = images.get('banner-gameover')!;
       const bgoScaled = rescaleDim(
         {
-          width: this.images.get('banner-gameover')!.width,
-          height: this.images.get('banner-gameover')!.height
+          width: bannerImage.width,
+          height: bannerImage.height
         },
         { width: this.canvasSize.width * 0.7 }
       );
       const anim = this.BounceInAnim.value;
       const yPos = this.canvasSize.height * 0.225 - bgoScaled.height / 2;
 
+      const previousAlpha = context.globalAlpha;
       context.globalAlpha = anim.opacity;
       context.drawImage(
-        this.images.get('banner-gameover')!,
+        bannerImage,
         this.canvasSize.width * 0.5 - bgoScaled.width / 2,
         yPos + anim.value * (this.canvasSize.height * 0.015),
         bgoScaled.width,
         bgoScaled.height
       );
-      context.globalAlpha = 1;
+      context.globalAlpha = previousAlpha;
     }
 
     if ((this.flags & ScoreBoard.FLAG_SHOW_SCOREBOARD) !== 0) {
+      const scoreboardImage = images.get('score-board')!;
       const sbScaled = rescaleDim(
         {
-          width: this.images.get('score-board')!.width,
-          height: this.images.get('score-board')!.height
+          width: scoreboardImage.width,
+          height: scoreboardImage.height
         },
         { width: this.canvasSize.width * 0.85 }
       );
@@ -146,13 +151,7 @@ export default class ScoreBoard extends ParentObject {
       anim.x = this.canvasSize.width * anim.x - sbScaled.width / 2;
       anim.y = this.canvasSize.height * anim.y - sbScaled.height / 2;
 
-      context.drawImage(
-        this.images.get('score-board')!,
-        anim.x,
-        anim.y,
-        sbScaled.width,
-        sbScaled.height
-      );
+      context.drawImage(scoreboardImage, anim.x, anim.y, sbScaled.width, sbScaled.height);
 
       if (this.TimingEventAnim.value && this.currentScore > this.currentGeneratedNumber) {
         this.currentGeneratedNumber++;
@@ -266,10 +265,11 @@ export default class ScoreBoard extends ParentObject {
     coord: ICoordinate,
     parentSize: IDimension
   ): void {
+    const images = this.images;
     const numSize = rescaleDim(
       {
-        width: this.images.get('number-1')!.width,
-        height: this.images.get('number-1')!.height
+        width: images.get('number-1')!.width,
+        height: images.get('number-1')!.height
       },
       { width: parentSize.width * 0.05 }
     );
@@ -280,10 +280,12 @@ export default class ScoreBoard extends ParentObject {
 
     const numArr: string[] = String(this.currentGeneratedNumber).split('');
 
+    const spacing = numSize.width + 5;
     numArr.reverse().forEach((c: string, index: number) => {
+      const digitImage = images.get(`number-${c}`)!;
       context.drawImage(
-        this.images.get(`number-${c}`)!,
-        coord.x - index * (numSize.width + 5),
+        digitImage,
+        coord.x - index * spacing,
         coord.y,
         numSize.width,
         numSize.height
@@ -297,10 +299,11 @@ export default class ScoreBoard extends ParentObject {
     parentSize: IDimension,
     _p0: boolean
   ): void {
+    const images = this.images;
     const numSize = rescaleDim(
       {
-        width: this.images.get('number-1')!.width,
-        height: this.images.get('number-1')!.height
+        width: images.get('number-1')!.width,
+        height: images.get('number-1')!.height
       },
       { width: parentSize.width * 0.05 }
     );
@@ -312,10 +315,12 @@ export default class ScoreBoard extends ParentObject {
 
     const numArr: string[] = String(this.currentHighScore).split('');
 
+    const spacing = numSize.width + 5;
     numArr.reverse().forEach((c: string, index: number) => {
+      const digitImage = images.get(`number-${c}`)!;
       context.drawImage(
-        this.images.get(`number-${c}`)!,
-        coord.x - index * (numSize.width + 5),
+        digitImage,
+        coord.x - index * spacing,
         coord.y,
         numSize.width,
         numSize.height
@@ -326,14 +331,14 @@ export default class ScoreBoard extends ParentObject {
 
     const toastSize = rescaleDim(
       {
-        width: this.images.get('new-icon')!.width,
-        height: this.images.get('new-icon')!.height
+        width: images.get('new-icon')!.width,
+        height: images.get('new-icon')!.height
       },
       { width: parentSize.width * 0.14 }
     );
 
     context.drawImage(
-      this.images.get('new-icon')!,
+      images.get('new-icon')!,
       coord.x * 0.73,
       coord.y * 0.922,
       toastSize.width,

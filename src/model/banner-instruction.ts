@@ -143,6 +143,7 @@ export default class BannerInstruction extends ParentClass {
   public Display(context: CanvasRenderingContext2D): void {
     if (this.opacity <= 0) return;
 
+    const previousAlpha = context.globalAlpha;
     context.globalAlpha = this.opacity;
 
     context.drawImage(
@@ -161,6 +162,6 @@ export default class BannerInstruction extends ParentClass {
       this.instructImage.scaled.height
     );
 
-    context.globalAlpha = 1;
+    context.globalAlpha = previousAlpha;
   }
 }

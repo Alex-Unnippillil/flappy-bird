@@ -70,6 +70,8 @@ export default class Stats {
   private drawContainer(): void {
     const ctx = this.context;
     const { startingPoint, endPoint } = this.containerProps;
+    const previousAlpha = ctx.globalAlpha;
+    const previousFillStyle = ctx.fillStyle;
 
     ctx.beginPath();
     ctx.globalAlpha = this.containerOpacity;
@@ -77,12 +79,19 @@ export default class Stats {
     ctx.fillRect(startingPoint.x, startingPoint.y, endPoint.x, endPoint.y);
     ctx.fill();
     ctx.closePath();
+
+    ctx.globalAlpha = previousAlpha;
+    ctx.fillStyle = previousFillStyle;
   }
 
   private drawText(text: string) {
     const ctx = this.context;
     const { preText, postText, position } = this.textProps;
     const out = `${preText}${text}${postText}`;
+    const previousAlpha = ctx.globalAlpha;
+    const previousFont = ctx.font;
+    const previousFillStyle = ctx.fillStyle;
+    const previousTextAlign = ctx.textAlign;
 
     ctx.beginPath();
     ctx.globalAlpha = 1; // Required
@@ -91,5 +100,10 @@ export default class Stats {
     ctx.textAlign = 'left';
     ctx.fillText(out, position.x, position.y);
     ctx.closePath();
+
+    ctx.globalAlpha = previousAlpha;
+    ctx.font = previousFont;
+    ctx.fillStyle = previousFillStyle;
+    ctx.textAlign = previousTextAlign;
   }
 }

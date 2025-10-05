@@ -84,6 +84,7 @@ export default class Background extends ParentClass {
   public Display(context: CanvasRenderingContext2D): void {
     const { width, height } = this.backgroundSize;
     const { x, y } = this.coordinate;
+    const themeImage = this.images.get(this.theme)!;
 
     // Get how many sequence we need to fill the screen
     const sequence = Math.ceil(this.canvasSize.width / width) + 1;
@@ -95,13 +96,7 @@ export default class Background extends ParentClass {
 
     // Draw the background next to each other in given sequence
     for (let i = 0; i < sequence; i++) {
-      context.drawImage(
-        this.images.get(this.theme)!,
-        i * (width - i) - offset,
-        y,
-        width,
-        height
-      );
+      context.drawImage(themeImage, i * (width - i) - offset, y, width, height);
     }
   }
 }

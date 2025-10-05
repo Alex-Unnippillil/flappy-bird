@@ -156,6 +156,8 @@ export default class Pipe extends ParentClass {
     const posX = this.coordinate.x;
     const posY = this.coordinate.y;
     const radius = this.hollSize / 2;
+    const topImage = this.images.get(`${this.color}.top`)!;
+    const bottomImage = this.images.get(`${this.color}.bottom`)!;
 
     /**
      * To draw off canvas, subtract the height of pipe to holl position.
@@ -166,7 +168,7 @@ export default class Pipe extends ParentClass {
      * */
 
     context.drawImage(
-      this.images.get(`${this.color}.top`)!,
+      topImage,
       posX - width,
       -(this.scaled.top.height - Math.abs(posY - radius)),
       this.scaled.top.width,
@@ -174,7 +176,7 @@ export default class Pipe extends ParentClass {
     );
 
     context.drawImage(
-      this.images.get(`${this.color}.bottom`)!,
+      bottomImage,
       posX - width,
       posY + radius,
       this.scaled.bottom.width,
