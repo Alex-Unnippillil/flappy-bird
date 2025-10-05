@@ -19,6 +19,7 @@ import Sfx from '../model/sfx';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
+  private static readonly SCORE_ANNOUNCEMENT_DELAY = 800;
   private bird: BirdModel;
   private pipeGenerator: PipeGenerator;
   private state: string;
@@ -31,6 +32,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private scoreAnnouncer: HTMLElement | null;
+  private lastScore: number;
+  private lastAnnouncedScore: number;
+  private pendingAnnouncementScore: number | null;
+  private announceTimeout: number | null;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +62,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.scoreAnnouncer = null;
+    this.lastScore = 0;
+    this.lastAnnouncedScore = 0;
+    this.pendingAnnouncementScore = null;
+    this.announceTimeout = null;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -68,6 +79,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+    this.scoreAnnouncer = document.querySelector<HTMLElement>('#game-announcer');
+    this.resetScoreAnnouncements();
   }
 
   public reset(): void {
@@ -82,6 +95,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.resetScoreAnnouncements();
   }
 
   public resize({ width, height }: IDimension): void {
@@ -143,6 +157,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
         this.bird.playDead();
       });
     }
+
+    this.trackScoreForAnnouncement();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -197,5 +213,53 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  private resetScoreAnnouncements(): void {
+    if (this.announceTimeout !== null) {
+      window.clearTimeout(this.announceTimeout);
+      this.announceTimeout = null;
+    }
+    this.pendingAnnouncementScore = null;
+    this.lastScore = 0;
+    this.lastAnnouncedScore = 0;
+    this.updateLiveRegion('');
+  }
+
+  private updateLiveRegion(message: string): void {
+    if (!this.scoreAnnouncer) return;
+    this.scoreAnnouncer.textContent = message;
+  }
+
+  private trackScoreForAnnouncement(): void {
+    if (this.state !== 'playing' || this.gameState === 'died') return;
+
+    const currentScore = this.bird.score;
+    if (currentScore === this.lastScore) return;
+
+    this.lastScore = currentScore;
+    this.queueScoreAnnouncement(currentScore);
+  }
+
+  private queueScoreAnnouncement(score: number): void {
+    if (!this.scoreAnnouncer || score <= 0) return;
+
+    this.pendingAnnouncementScore = score;
+
+    if (this.announceTimeout !== null) return;
+
+    this.announceTimeout = window.setTimeout(() => {
+      this.announceTimeout = null;
+
+      if (this.pendingAnnouncementScore === null) return;
+      if (this.pendingAnnouncementScore === this.lastAnnouncedScore) {
+        this.pendingAnnouncementScore = null;
+        return;
+      }
+
+      this.updateLiveRegion(`Score ${this.pendingAnnouncementScore}`);
+      this.lastAnnouncedScore = this.pendingAnnouncementScore;
+      this.pendingAnnouncementScore = null;
+    }, GetReady.SCORE_ANNOUNCEMENT_DELAY);
   }
 }
