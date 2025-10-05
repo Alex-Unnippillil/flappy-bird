@@ -1,4 +1,10 @@
-// File Overview: This configuration file informs TypeScript compilation for tsconfig.json.
+/**
+ * TypeScript build profile shared by `ts-loader` (see webpack.config.js) and IDE tooling.
+ * Target ES5 output while keeping ES module syntax for Webpack tree-shaking, scope compilation to src/,
+ * load project-specific ambient types from ./types, and enforce strict mode with additional safety checks
+ * (isolated modules, noImplicitAny/This, noImplicitReturns, etc.).
+ * Skip checking external .d.ts files for faster builds and strip comments in the emitted JS used by the bundler.
+ */
 {
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
