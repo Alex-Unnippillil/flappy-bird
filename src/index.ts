@@ -10,6 +10,7 @@ import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import WebSfx from './lib/web-sfx';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -76,7 +77,34 @@ const removeLoadingScreen = () => {
 //
 // Quick Fix. Locking to 60fps
 // Quick fix.Long term :)
-const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
+const [game_running, game_start, game_stop] = createRAF(targetFPS(GameUpdate, 60));
+const VISIBILITY_PAUSE_REASON = 'visibility';
+
+const resumeGameLoopIfAppropriate = () => {
+  if (!isLoaded) return;
+  if (Game.isPaused) return;
+  if (!game_running()) game_start();
+};
+
+const handleVisibilityChange = () => {
+  const isHidden = document.visibilityState === 'hidden';
+
+  Game.togglePause(isHidden, VISIBILITY_PAUSE_REASON);
+  void WebSfx.toggleSuspend(isHidden, VISIBILITY_PAUSE_REASON);
+
+  if (isHidden) {
+    if (game_running()) game_stop();
+  } else {
+    resumeGameLoopIfAppropriate();
+  }
+};
+
+if (document.visibilityState === 'hidden') {
+  Game.togglePause(true, VISIBILITY_PAUSE_REASON);
+  void WebSfx.toggleSuspend(true, VISIBILITY_PAUSE_REASON);
+}
+
+document.addEventListener('visibilitychange', handleVisibilityChange);
 
 window.addEventListener('DOMContentLoaded', () => {
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
@@ -89,7 +117,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ScreenResize();
 
     // raf(GameUpdate); Issue #16
-    if (!game_running()) game_start(); // Quick fix. Long term :)
+    resumeGameLoopIfAppropriate();
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();
     else window.setTimeout(removeLoadingScreen, 1000);
