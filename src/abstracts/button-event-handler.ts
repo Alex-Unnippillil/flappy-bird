@@ -1,4 +1,18 @@
-// File Overview: This module belongs to src/abstracts/button-event-handler.ts.
+/**
+ * Abstract interaction layer for canvas-backed buttons that normalizes hit
+ * testing and click recognition across mouse and touch inputs.
+ *
+ * The handler stores button coordinates as canvas-relative ratios, derives the
+ * rendered position through {@link Update}, and resizes its hit box via
+ * {@link resize}. Pointer flow is funneled through {@link mouseEvent}, which
+ * delegates to guarded `mousedown`/`mouseup` checks to ensure clicks only fire
+ * when both phases occur inside the button's bounds.
+ *
+ * Subclasses must provide imagery, sizing, and activation state during
+ * {@link init}, implement {@link click} and {@link Display}, and keep the
+ * normalized coordinate/dimension data consistent so that `Update` and
+ * `isInRange` operate predictably.
+ */
 /**
  * Lets visualize the event
  *

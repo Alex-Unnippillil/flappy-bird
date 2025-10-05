@@ -1,4 +1,15 @@
-// File Overview: This module belongs to src/abstracts/parent-class.ts.
+/**
+ * Base model for drawable game objects that share canvas-relative state.
+ *
+ * The class maintains normalized coordinates, velocity, and the current canvas
+ * dimensions so subclasses can scale their rendering without duplicating
+ * bookkeeping. {@link resize} must be called whenever the canvas changes size
+ * to keep derived positions accurate.
+ *
+ * Extenders are responsible for initializing sprite-specific state inside
+ * {@link init}, updating coordinates/velocity coherently in {@link Update}, and
+ * rendering within {@link Display} while honoring the shared coordinate system.
+ */
 export default abstract class ParentObject {
   protected canvasSize: IDimension;
   public velocity: IVelocity;
