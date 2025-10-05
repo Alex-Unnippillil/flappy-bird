@@ -26,6 +26,9 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
+  private gamepadHintText: string | null;
+  private showGamepadHint: boolean;
+  private gamepadHintAlpha: number;
 
   constructor() {
     super();
@@ -34,6 +37,9 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
     this.flappyBirdBanner = void 0;
+    this.gamepadHintText = null;
+    this.showGamepadHint = false;
+    this.gamepadHintAlpha = 0;
   }
 
   public init(): void {
@@ -65,6 +71,13 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.Update();
     this.rankingButton.Update();
     this.toggleSpeakerButton.Update();
+
+    const targetAlpha = this.showGamepadHint ? 1 : 0;
+    this.gamepadHintAlpha += (targetAlpha - this.gamepadHintAlpha) * 0.18;
+
+    if (Math.abs(targetAlpha - this.gamepadHintAlpha) < 0.01) {
+      this.gamepadHintAlpha = targetAlpha;
+    }
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -91,6 +104,32 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     );
     // ----------------------------------
 
+    if (this.gamepadHintAlpha > 0.01) {
+      const bannerWidth = this.canvasSize.width * 0.86;
+      const baseFontSize = Math.max(14, this.canvasSize.width * 0.035);
+      const secondaryFontSize = Math.max(12, baseFontSize * 0.75);
+      const bannerHeight = baseFontSize * 2.6;
+      const bannerX = (this.canvasSize.width - bannerWidth) / 2;
+      const bannerY = this.canvasSize.height * 0.82;
+      const title = this.gamepadHintText ?? 'Controller connected';
+
+      context.save();
+      context.globalAlpha = this.gamepadHintAlpha;
+      context.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      context.fillRect(bannerX, bannerY, bannerWidth, bannerHeight);
+
+      context.fillStyle = '#ffffff';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+
+      context.font = `${baseFontSize}px 'Press Start 2P', sans-serif`;
+      context.fillText(title, this.canvasSize.width / 2, bannerY + bannerHeight * 0.38);
+
+      context.font = `${secondaryFontSize}px 'Press Start 2P', sans-serif`;
+      context.fillText('Press A / Start to play', this.canvasSize.width / 2, bannerY + bannerHeight * 0.72);
+      context.restore();
+    }
+
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
@@ -107,5 +146,24 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   public startAtKeyBoardEvent(): void {
     this.playButton.click();
+  }
+
+  public setGamepadHint(label?: string): void {
+    if (label !== undefined) {
+      const sanitized = label.trim();
+      this.showGamepadHint = true;
+      this.gamepadHintText =
+        sanitized.length > 0 ? Introduction.formatGamepadLabel(sanitized) : null;
+      return;
+    }
+
+    this.showGamepadHint = false;
+    this.gamepadHintText = null;
+  }
+
+  private static formatGamepadLabel(label: string): string {
+    const normalized = label.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= 36) return normalized;
+    return normalized.slice(0, 35) + '…';
   }
 }
