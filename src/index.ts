@@ -1,4 +1,23 @@
-// File Overview: This module belongs to src/index.ts.
+/**
+ * App bootstrap roadmap
+ * ---------------------
+ * 1. Styles, resets, and assets are wired up first so DOM rendering and sprite
+ *    loading behave consistently across browsers.
+ * 2. In production we immediately invoke `SwOffline` (lib/workbox-work-offline)
+ *    to register the Workbox-powered service worker, while development skips
+ *    registration to preserve hot reloads.
+ * 3. A virtual `<canvas>` is created as the authoritative render target for the
+ *    `GameObject` instance; the physical canvas simply mirrors it each frame so
+ *    we can swap buffers cheaply and run the FPS overlay via `Framer` from
+ *    `utils` when `NODE_ENV === 'development'`.
+ * 4. `ScreenResize` computes DPR-aware sizing with `rescaleDim`, keeping the
+ *    virtual and physical canvases in sync across resize, orientation, and
+ *    visual viewport events before handing the new dimensions to the game.
+ * 5. `prepareAssets` gates initialization—once assets are ready we init the
+ *    game, start a throttled RAF loop from `@solid-primitives/raf` targeting
+ *    60 FPS, and remove the loading screen. Development removes it instantly
+ *    while production keeps a short delay for polish.
+ */
 import './styles/main.scss';
 import gameSpriteIcon from './assets/icon.png';
 import '@total-typescript/ts-reset';
