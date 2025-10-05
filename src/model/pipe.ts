@@ -33,6 +33,8 @@ export default class Pipe extends ParentClass {
 
   private images: IPipeRecords;
   private color: IPipeColor;
+  private speedMultiplier: number;
+  private gapScale: number;
 
   constructor() {
     super();
@@ -45,6 +47,8 @@ export default class Pipe extends ParentClass {
     };
     this.isPassed = false;
     this.velocity.x = GAME_SPEED;
+    this.speedMultiplier = 1;
+    this.gapScale = 1;
     this.scaled = {
       top: { width: 0, height: 0 },
       bottom: { width: 0, height: 0 }
@@ -63,9 +67,10 @@ export default class Pipe extends ParentClass {
   /**
    * Set holl position
    * */
-  public setHollPosition(coordinate: ICoordinate): void {
+  public setHollPosition(coordinate: ICoordinate, gapScale = 1): void {
     // Positioning holl
-    this.hollSize = this.canvasSize.height * PIPE_HOLL_SIZE;
+    this.gapScale = gapScale;
+    this.hollSize = this.canvasSize.height * PIPE_HOLL_SIZE * this.gapScale;
 
     /**
      * The Logic is
@@ -101,14 +106,14 @@ export default class Pipe extends ParentClass {
     Pipe.pipeSize = rescaleDim(PIPE_INITIAL_DIMENSION, { width: min });
 
     // Resize holl size
-    this.hollSize = this.canvasSize.height * PIPE_HOLL_SIZE;
+    this.hollSize = this.canvasSize.height * PIPE_HOLL_SIZE * this.gapScale;
 
     // Relocate the pipe holl
     this.coordinate.x = width * (oldX / 100);
     this.coordinate.y = height * (oldY / 100);
 
     // Update velocity. Converting percentages to pixels
-    this.velocity.x = width * GAME_SPEED;
+    this.velocity.x = width * GAME_SPEED * this.speedMultiplier;
 
     this.scaled.top = rescaleDim(
       {
@@ -148,6 +153,11 @@ export default class Pipe extends ParentClass {
    * */
   public Update(): void {
     this.coordinate.x -= this.velocity.x;
+  }
+
+  public setSpeedMultiplier(multiplier: number): void {
+    this.speedMultiplier = multiplier;
+    this.velocity.x = this.canvasSize.width * GAME_SPEED * this.speedMultiplier;
   }
 
   public Display(context: CanvasRenderingContext2D): void {

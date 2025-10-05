@@ -122,7 +122,17 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.pipeGenerator.Update();
     this.bird.Update();
 
-    if (this.bird.isDead(this.pipeGenerator.pipes)) {
+    const isDead = this.bird.isDead(this.pipeGenerator.pipes);
+    const difficultyChanged = this.pipeGenerator.setDifficulty(this.bird.score);
+
+    if (difficultyChanged) {
+      const { speedMultiplier } = this.pipeGenerator.getCurrentDifficulty();
+      for (const pipe of this.pipeGenerator.pipes) {
+        pipe.setSpeedMultiplier(speedMultiplier);
+      }
+    }
+
+    if (isDead) {
       this.flashScreen.reset();
       this.flashScreen.start();
 

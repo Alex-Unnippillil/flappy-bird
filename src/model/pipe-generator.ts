@@ -1,5 +1,11 @@
 // File Overview: This module belongs to src/model/pipe-generator.ts.
-import { PIPE_DISTANCE, PIPE_MIN_GAP } from '../constants';
+import {
+  DIFFICULTY_BANDS,
+  PIPE_DISTANCE,
+  PIPE_HOLL_SIZE,
+  PIPE_MIN_GAP
+} from '../constants';
+import type { IDifficultyBand } from '../constants';
 import { randomClamp } from '../utils';
 import Pipe from './pipe';
 import SceneGenerator from './scene-generator';
@@ -51,6 +57,9 @@ export default class PipeGenerator {
   private canvasSize: IDimension;
 
   private pipeColor: IPipeColor;
+  private maxHeight: number;
+  private difficultyIndex: number;
+  private currentDifficulty: IDifficultyBand;
 
   constructor() {
     this.range = { max: 0, min: 0 };
@@ -63,12 +72,17 @@ export default class PipeGenerator {
       height: 0
     };
     this.pipeColor = 'green';
+    this.maxHeight = 0;
+    this.difficultyIndex = 0;
+    this.currentDifficulty = DIFFICULTY_BANDS[0];
   }
 
   public reset(): void {
     this.pipes.splice(0, this.pipes.length);
+    this.difficultyIndex = 0;
+    this.currentDifficulty = DIFFICULTY_BANDS[0];
     this.resize({
-      max: this.range.max,
+      max: this.maxHeight,
       width: this.canvasSize.width,
       height: this.canvasSize.height
     });
@@ -76,13 +90,14 @@ export default class PipeGenerator {
   }
 
   public resize({ max, width, height }: IPipeGeneratorOption): void {
-    this.range = { max, min: height * PIPE_MIN_GAP };
-    this.distance = width * PIPE_DISTANCE;
+    this.maxHeight = max;
     this.width = width;
     this.canvasSize = { width, height };
+    this.applyDifficultySettings();
 
     for (const pipe of this.pipes) {
       pipe.resize(this.canvasSize);
+      pipe.setSpeedMultiplier(this.currentDifficulty.speedMultiplier);
     }
   }
 
@@ -115,7 +130,7 @@ export default class PipeGenerator {
     return {
       position: {
         x: this.initialXPos,
-        y: randomClamp(this.range.min, this.range.max - this.range.min)
+        y: randomClamp(this.range.min, this.range.max)
       }
     };
   }
@@ -128,8 +143,9 @@ export default class PipeGenerator {
       pipe.use(this.pipeColor);
 
       pipe.resize(this.canvasSize);
+      pipe.setSpeedMultiplier(this.currentDifficulty.speedMultiplier);
 
-      pipe.setHollPosition(this.generate().position);
+      pipe.setHollPosition(this.generate().position, this.currentDifficulty.gapScale);
       this.pipes.push(pipe);
     }
 
@@ -140,5 +156,50 @@ export default class PipeGenerator {
         index--;
       }
     }
+  }
+
+  public setDifficulty(score: number): boolean {
+    const index = this.resolveDifficultyIndex(score);
+
+    if (index === this.difficultyIndex) {
+      return false;
+    }
+
+    this.difficultyIndex = index;
+    this.currentDifficulty = DIFFICULTY_BANDS[index];
+    this.applyDifficultySettings();
+
+    return true;
+  }
+
+  public getCurrentDifficulty(): IDifficultyBand {
+    return this.currentDifficulty;
+  }
+
+  private resolveDifficultyIndex(score: number): number {
+    let currentIndex = 0;
+
+    for (let index = 0; index < DIFFICULTY_BANDS.length; index++) {
+      if (score >= DIFFICULTY_BANDS[index].threshold) {
+        currentIndex = index;
+      } else {
+        break;
+      }
+    }
+
+    return currentIndex;
+  }
+
+  private applyDifficultySettings(): void {
+    if (this.canvasSize.width === 0 || this.canvasSize.height === 0) return;
+
+    const scaledGap = this.canvasSize.height * PIPE_HOLL_SIZE * this.currentDifficulty.gapScale;
+    const halfGap = scaledGap / 2;
+
+    const min = this.canvasSize.height * PIPE_MIN_GAP + halfGap;
+    const maxBound = Math.max(min + 1, this.maxHeight - halfGap);
+
+    this.range = { min, max: maxBound };
+    this.distance = this.width * PIPE_DISTANCE * this.currentDifficulty.speedMultiplier;
   }
 }

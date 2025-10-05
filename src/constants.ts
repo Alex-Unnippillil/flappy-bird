@@ -82,6 +82,23 @@ export const PIPE_INITIAL_DIMENSION: IDimension = {
   height: 300
 };
 
+export interface IDifficultyBand {
+  /** Minimum score required before this band becomes active. */
+  threshold: number;
+  /** Multiplier applied to the default pipe gap size. */
+  gapScale: number;
+  /** Multiplier applied to the base horizontal speed. */
+  speedMultiplier: number;
+}
+
+export const DIFFICULTY_BANDS: IDifficultyBand[] = [
+  { threshold: 0, gapScale: 1, speedMultiplier: 1 },
+  { threshold: 10, gapScale: 0.95, speedMultiplier: 1.05 },
+  { threshold: 20, gapScale: 0.9, speedMultiplier: 1.1 },
+  { threshold: 35, gapScale: 0.86, speedMultiplier: 1.15 },
+  { threshold: 50, gapScale: 0.82, speedMultiplier: 1.2 }
+];
+
 /**
  * Background
  * */
