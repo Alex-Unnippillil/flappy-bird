@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160">
+  <defs>
+    <linearGradient id="bronze-medal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f2a772" />
+      <stop offset="100%" stop-color="#b66a2e" />
+    </linearGradient>
+    <linearGradient id="bronze-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#823d1a" />
+      <stop offset="100%" stop-color="#a44f22" />
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <path d="M32 128h16l16 32 16-32h16l-32 32z" fill="url(#bronze-ribbon)" />
+    <circle cx="64" cy="64" r="56" fill="url(#bronze-medal)" stroke="#8a4f23" stroke-width="8" />
+    <polygon points="64 26 72.9 49.2 98 49.2 77.5 64.8 86.4 88 64 72.8 41.6 88 50.5 64.8 30 49.2 55.1 49.2" fill="#fff1d6" stroke="#d78e4b" stroke-width="4" stroke-linejoin="round" />
+  </g>
+</svg>
