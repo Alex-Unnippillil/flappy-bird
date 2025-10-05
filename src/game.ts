@@ -1,4 +1,13 @@
-// File Overview: This module belongs to src/game.ts.
+/**
+ * Central coordinator for the Flappy Bird experience. The `Game` class owns the
+ * intro/game state machine, wires both screens through `ScreenChanger`, and
+ * drives the per-frame `Update`/`Display` cadence that feeds the render loop.
+ * It bootstraps persistent storage and audio (`Storage`, `Sfx`) alongside the
+ * visual layers, registers screens, and listens for the transition flash to
+ * promote the intro state into gameplay. During transitions the `bgPause` flag
+ * allows background layers to be frozen so focus can shift to screen logic and
+ * effects without unnecessary updates.
+ */
 import BgModel from './model/background';
 import BirdModel from './model/bird';
 import GamePlay from './screens/gameplay';
