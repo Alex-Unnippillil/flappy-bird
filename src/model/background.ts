@@ -4,6 +4,7 @@ import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import SpriteDestructor from '../lib/sprite-destructor';
 import SceneGenerator from './scene-generator';
+import { settings } from '../lib/settings';
 
 export type ITheme = string;
 export type IRecords = Map<ITheme, HTMLImageElement>;
@@ -77,7 +78,8 @@ export default class Background extends ParentClass {
      * We cannot rely on fps since it is not a constant value.
      * Which means is the game will speed up or slow down based on fps
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
+    this.coordinate.x +=
+      this.canvasSize.width * this.velocity.x * settings.motionScale;
     this.coordinate.y += this.velocity.y;
   }
 
