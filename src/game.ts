@@ -11,6 +11,7 @@ import ScreenChanger from './lib/screen-changer';
 import Sfx from './model/sfx';
 import Storage from './lib/storage';
 import FlashScreen from './model/flash-screen';
+import IntroTooltip from './model/intro-tooltip';
 
 export type IGameState = 'intro' | 'game';
 
@@ -26,6 +27,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private introTooltip: IntroTooltip;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -48,6 +50,7 @@ export default class Game extends ParentClass {
       style: 'black',
       easing: 'sineWaveHS'
     });
+    this.introTooltip = new IntroTooltip();
 
     this.transition.setEvent([0.98, 1], () => {
       this.state = 'game';
@@ -73,6 +76,8 @@ export default class Game extends ParentClass {
     // Register screens
     this.screenChanger.register('intro', this.screenIntro);
     this.screenChanger.register('game', this.gamePlay);
+
+    this.introTooltip.showIfNeeded();
   }
 
   public reset(): void {
@@ -134,6 +139,8 @@ export default class Game extends ParentClass {
     this.screenIntro.playButton.onClick(() => {
       if (this.state !== 'intro') return;
 
+      this.introTooltip.dismiss();
+
       // Deactivate buttons
       this.screenIntro.playButton.active = false;
       this.screenIntro.rankingButton.active = false;
@@ -151,6 +158,9 @@ export default class Game extends ParentClass {
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
+    if (this.state === 'intro') {
+      this.introTooltip.dismiss();
+    }
     this.screenIntro.mouseDown({ x, y });
     this.gamePlay.mouseDown({ x, y });
   }
@@ -161,8 +171,10 @@ export default class Game extends ParentClass {
   }
 
   public startAtKeyBoardEvent(): void {
-    if (this.state === 'intro') this.screenIntro.startAtKeyBoardEvent();
-    else this.gamePlay.startAtKeyBoardEvent();
+    if (this.state === 'intro') {
+      this.introTooltip.dismiss();
+      this.screenIntro.startAtKeyBoardEvent();
+    } else this.gamePlay.startAtKeyBoardEvent();
   }
 
   public get currentState(): IGameState {
