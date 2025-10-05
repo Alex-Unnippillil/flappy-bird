@@ -29,6 +29,7 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private buttonsVisibilityListener?: (visible: boolean) => void;
 
   constructor() {
     super();
@@ -208,10 +209,13 @@ export default class ScoreBoard extends ParentObject {
   }
 
   public showButtons(): void {
+    if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) return;
+
     this.flags |= ScoreBoard.FLAG_SHOW_BUTTONS;
     this.playButton.active = true;
     this.rankingButton.active = true;
     this.toggleSpeakerButton.active = true;
+    this.buttonsVisibilityListener?.(true);
   }
 
   private setHighScore(num: number): void {
@@ -355,6 +359,7 @@ export default class ScoreBoard extends ParentObject {
     this.BounceInAnim.reset();
     this.TimingEventAnim.reset();
     this.spark.stop();
+    this.buttonsVisibilityListener?.(false);
   }
 
   public onRestart(cb: IEmptyFunction): void {
@@ -382,6 +387,13 @@ export default class ScoreBoard extends ParentObject {
   }
 
   public triggerPlayATKeyboardEvent(): void {
-    if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) this.playButton.click();
+    if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) === 0 || !this.playButton.active) return;
+
+    this.playButton.active = false;
+    this.playButton.click();
+  }
+
+  public onButtonsVisibilityChange(callback: (visible: boolean) => void): void {
+    this.buttonsVisibilityListener = callback;
   }
 }

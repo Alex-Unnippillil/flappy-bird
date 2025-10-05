@@ -123,6 +123,11 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
   // Keyboard event
   document.addEventListener('keydown', (evt: KeyboardEvent) => {
     const { key, keyCode, code } = evt;
+    const target = evt.target as HTMLElement | null;
+
+    if (target?.closest('#ui-controls')) {
+      return;
+    }
 
     if (
       key === ' ' ||
@@ -147,6 +152,11 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
   document.addEventListener('keyup', (evt: KeyboardEvent) => {
     const { key, keyCode, code } = evt;
+    const target = evt.target as HTMLElement | null;
+
+    if (target?.closest('#ui-controls')) {
+      return;
+    }
     if (
       key === ' ' ||
       keyCode === 32 ||

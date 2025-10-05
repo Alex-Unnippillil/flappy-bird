@@ -8,7 +8,19 @@
     <ga4.analytics />
   </head>
   <body>
-    <canvas id="main-canvas"></canvas>
+    <canvas id="main-canvas" tabindex="0">
+      Flappy Bird game canvas. Use the Play button below or press the Space or
+      Enter key to start flying. While playing, keep the canvas focused and tap,
+      click, or press Space/Enter to flap.
+    </canvas>
+    <div id="ui-controls" aria-live="polite" aria-atomic="true">
+      <div class="ui-screen ui-screen--intro" data-screen="intro" hidden>
+        <button type="button" id="intro-play-button">Play</button>
+      </div>
+      <div class="ui-screen ui-screen--scoreboard" data-screen="scoreboard" hidden>
+        <button type="button" id="scoreboard-retry-button">Play again</button>
+      </div>
+    </div>
     <div id="loading-modal">
       <div>Loading</div>
       <div class="lds-ellipsis">

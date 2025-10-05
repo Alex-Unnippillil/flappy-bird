@@ -94,6 +94,68 @@ body {
       }
     }
   }
+
+  > #ui-controls {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    pointer-events: none;
+
+    .ui-screen {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      pointer-events: none;
+      justify-self: center;
+      align-self: center;
+
+      &.ui-screen--intro {
+        align-self: end;
+        margin-bottom: 8vh;
+      }
+
+      &.ui-screen--scoreboard {
+        align-self: end;
+        margin-bottom: 10vh;
+      }
+
+      &[hidden] {
+        display: none;
+      }
+
+      > button {
+        pointer-events: auto;
+        padding: 0.65rem 1.5rem;
+        font-size: 1.05rem;
+        font-family: 'Arial', 'Sans-Serif';
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background: rgba(255, 255, 255, 0.85);
+        color: rgba(28, 28, 30, 1);
+        box-shadow: 0 0.35rem 0.75rem rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 0.6rem 1.2rem rgba(0, 0, 0, 0.25);
+        }
+
+        &:focus-visible {
+          outline: none;
+          border-color: #ffbf00;
+          box-shadow: 0 0 0 4px rgba(255, 191, 0, 0.35);
+        }
+
+        &:active {
+          transform: translateY(1px);
+          box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.25);
+        }
+      }
+    }
+  }
 }
 
 @keyframes lds-ellipsis1 {

@@ -14,6 +14,13 @@ import FlashScreen from './model/flash-screen';
 
 export type IGameState = 'intro' | 'game';
 
+export interface IAccessibilityCallbacks {
+  onIntroReady?: () => void;
+  onGameStart?: () => void;
+  onScoreboardReady?: () => void;
+  onScoreboardHidden?: () => void;
+}
+
 export default class Game extends ParentClass {
   public background: BgModel;
   public platform: PlatformModel;
@@ -26,6 +33,9 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private accessibilityCallbacks?: IAccessibilityCallbacks;
+
+  private readonly handleIntroPlay: () => void;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -48,6 +58,18 @@ export default class Game extends ParentClass {
       style: 'black',
       easing: 'sineWaveHS'
     });
+
+    this.handleIntroPlay = () => {
+      if (this.state !== 'intro' || !this.screenIntro.playButton.active) return;
+
+      this.screenIntro.playButton.active = false;
+      this.screenIntro.rankingButton.active = false;
+      this.screenIntro.toggleSpeakerButton.active = false;
+
+      this.transition.reset();
+      this.transition.start();
+      this.accessibilityCallbacks?.onGameStart?.();
+    };
 
     this.transition.setEvent([0.98, 1], () => {
       this.state = 'game';
@@ -73,6 +95,8 @@ export default class Game extends ParentClass {
     // Register screens
     this.screenChanger.register('intro', this.screenIntro);
     this.screenChanger.register('game', this.gamePlay);
+
+    this.accessibilityCallbacks?.onIntroReady?.();
   }
 
   public reset(): void {
@@ -131,17 +155,7 @@ export default class Game extends ParentClass {
   }
 
   public setEvent(): void {
-    this.screenIntro.playButton.onClick(() => {
-      if (this.state !== 'intro') return;
-
-      // Deactivate buttons
-      this.screenIntro.playButton.active = false;
-      this.screenIntro.rankingButton.active = false;
-      this.screenIntro.toggleSpeakerButton.active = false;
-
-      this.transition.reset();
-      this.transition.start();
-    });
+    this.screenIntro.playButton.onClick(this.handleIntroPlay);
   }
 
   public onClick({ x, y }: ICoordinate): void {
@@ -167,5 +181,25 @@ export default class Game extends ParentClass {
 
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  public registerAccessibilityCallbacks(callbacks: IAccessibilityCallbacks): void {
+    this.accessibilityCallbacks = callbacks;
+  }
+
+  public requestIntroPlayFromAccessibility(): void {
+    this.handleIntroPlay();
+  }
+
+  public requestScoreboardRestartFromAccessibility(): void {
+    this.gamePlay.requestRestartFromAccessibility();
+  }
+
+  public notifyScoreboardVisible(): void {
+    this.accessibilityCallbacks?.onScoreboardReady?.();
+  }
+
+  public notifyScoreboardHidden(): void {
+    this.accessibilityCallbacks?.onScoreboardHidden?.();
   }
 }

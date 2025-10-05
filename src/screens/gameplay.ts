@@ -58,6 +58,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
+
+    this.scoreBoard.onButtonsVisibilityChange((visible: boolean) => {
+      if (visible) this.game.notifyScoreboardVisible();
+      else this.game.notifyScoreboardHidden();
+    });
   }
 
   public init(): void {
@@ -196,6 +201,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.scoreBoard.mouseUp({ x, y });
   }
   public startAtKeyBoardEvent(): void {
+    if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  public requestRestartFromAccessibility(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
   }
 }

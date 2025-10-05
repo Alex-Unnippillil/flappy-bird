@@ -10,6 +10,7 @@ import GameObject from './game';
 import prepareAssets from './asset-preparation';
 import createRAF, { targetFPS } from '@solid-primitives/raf';
 import SwOffline from './lib/workbox-work-offline';
+import AccessibilityManager from './lib/accessibility-manager';
 
 if (process.env.NODE_ENV === 'production') {
   SwOffline();
@@ -28,6 +29,7 @@ const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
+const accessibility = new AccessibilityManager(Game, canvas);
 
 let isLoaded = false;
 
@@ -80,6 +82,8 @@ const [game_running, game_start] = createRAF(targetFPS(GameUpdate, 60));
 
 window.addEventListener('DOMContentLoaded', () => {
   loadingScreen.insertBefore(gameIcon, loadingScreen.childNodes[0]);
+
+  accessibility.init();
 
   prepareAssets(() => {
     isLoaded = true;

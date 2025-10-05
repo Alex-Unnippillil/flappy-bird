@@ -17,6 +17,7 @@ export default class PlayButton extends Parent {
   }
 
   public click(): void {
+    this.active = false;
     Sfx.swoosh();
     this.callback?.();
   }
