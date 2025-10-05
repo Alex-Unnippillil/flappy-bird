@@ -17,6 +17,11 @@ export default class Stats {
   private containerOpacity: number;
   private textProps: ITextProperties;
   private containerProps: IContainerProperties;
+  private lastTimestamp: number | null;
+  private redrawAccumulator: number;
+  private readonly redrawInterval: number;
+  private fpsSamples: number[];
+  private readonly maxSamples: number;
 
   constructor(context: CanvasRenderingContext2D) {
     this.fps = 0;
@@ -38,6 +43,11 @@ export default class Stats {
         y: 0
       }
     };
+    this.lastTimestamp = null;
+    this.redrawAccumulator = 0;
+    this.redrawInterval = 500;
+    this.fpsSamples = [];
+    this.maxSamples = 8;
   }
 
   public text(pos: ICoordinate, preText: string, postText: string): void {
@@ -61,10 +71,61 @@ export default class Stats {
     }
 
     this.timeArray.push(now);
-    this.fps = this.timeArray.length;
+    if (this.lastTimestamp !== null) {
+      this.redrawAccumulator += now - this.lastTimestamp;
+    }
+    this.lastTimestamp = now;
 
+    this.updateFps();
+
+    if (this.redrawAccumulator < this.redrawInterval) {
+      return;
+    }
+
+    this.redrawAccumulator %= this.redrawInterval;
+    this.drawStats();
+  }
+
+  public forceImmediateUpdate(): void {
+    if (this.lastTimestamp === null) {
+      this.lastTimestamp = performance.now();
+    }
+
+    this.redrawAccumulator = 0;
+    this.drawStats();
+  }
+
+  private updateFps(): void {
+    const sampleCount = this.timeArray.length;
+    if (sampleCount === 0) {
+      this.fps = 0;
+      return;
+    }
+
+    let instantFps = sampleCount;
+
+    if (sampleCount >= 2) {
+      const elapsed = this.timeArray[sampleCount - 1] - this.timeArray[0];
+
+      if (elapsed > 0) {
+        instantFps = ((sampleCount - 1) / elapsed) * 1000;
+      }
+    }
+
+    this.fpsSamples.push(instantFps);
+
+    if (this.fpsSamples.length > this.maxSamples) {
+      this.fpsSamples.shift();
+    }
+
+    const total = this.fpsSamples.reduce((acc, value) => acc + value, 0);
+    this.fps = total / this.fpsSamples.length;
+  }
+
+  private drawStats(): void {
     this.drawContainer();
-    this.drawText(String(this.fps));
+    const displayValue = Number.isFinite(this.fps) ? Math.round(this.fps) : 0;
+    this.drawText(String(displayValue));
   }
 
   private drawContainer(): void {
