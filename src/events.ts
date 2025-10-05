@@ -1,6 +1,17 @@
-// File Overview: This module belongs to src/events.ts.
 /**
- * Interactive
+ * Centralizes user input for the game canvas by mapping mouse, touch, and
+ * keyboard events onto a shared "mouse" state that Game consumes. Pointer
+ * coordinates are translated from viewport space to canvas space via
+ * `getBoundingClientRect` so Game always receives device-independent values.
+ * Repeated taps/clicks are debounced through `likeClickedEvent`, which only
+ * forwards the first press in a down/up cycle to `Game.onClick` so score
+ * screens behave consistently. Each first interaction for a press also calls
+ * `WebSfx.init()` to unlock audio playback (required by some browsers) before
+ * delegating to `Game.mouseDown`/`Game.mouseUp`. The shared `hasMouseDown` /
+ * `hasMouseUp` toggles ensure each physical press only fires once per phase.
+ * Keyboard Space/Enter presses call `Game.startAtKeyBoardEvent()` and then
+ * simulate centered pointer events so the Game and WebSfx pipelines stay
+ * synchronized regardless of input type.
  */
 
 import Game from './game';
