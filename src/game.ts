@@ -26,6 +26,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private pauseReasons: Set<string>;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -42,6 +43,7 @@ export default class Game extends ParentClass {
     this.gamePlay = new GamePlay(this);
     this.state = 'intro';
     this.bgPause = false;
+    this.pauseReasons = new Set();
     this.transition = new FlashScreen({
       interval: 700,
       strong: 1,
@@ -167,5 +169,21 @@ export default class Game extends ParentClass {
 
   public get currentState(): IGameState {
     return this.state;
+  }
+
+  public togglePause(paused: boolean, reason = 'system'): void {
+    if (paused) {
+      this.pauseReasons.add(reason);
+    } else {
+      this.pauseReasons.delete(reason);
+    }
+  }
+
+  public isPausedFor(reason: string): boolean {
+    return this.pauseReasons.has(reason);
+  }
+
+  public get isPaused(): boolean {
+    return this.pauseReasons.size > 0;
   }
 }

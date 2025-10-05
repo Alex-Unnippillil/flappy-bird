@@ -25,6 +25,7 @@ export default class WebSfx {
   private static concurrentDownload = 5;
   private static gainContext: undefined | GainNode;
   private static isReady = false;
+  private static suspendReasons: Set<string> = new Set();
 
   /**
    * The constructor function takes two arguments, files and callback. The files argument is an object
@@ -40,6 +41,10 @@ export default class WebSfx {
     WebSfx.audioContext.addEventListener('statechange', () => {
       WebSfx.isReady = WebSfx.audioContext.state === 'running';
     });
+
+    if (WebSfx.suspendReasons.size > 0 && WebSfx.audioContext.state === 'running') {
+      void WebSfx.audioContext.suspend();
+    }
 
     WebSfx.load(files, callback);
   }
@@ -114,6 +119,33 @@ export default class WebSfx {
     // Output channel
     gain.connect(WebSfx.audioContext.destination);
     WebSfx.gainContext = gain;
+  }
+
+  public static async toggleSuspend(suspend: boolean, reason = 'system'): Promise<void> {
+    if (suspend) {
+      WebSfx.suspendReasons.add(reason);
+    } else {
+      WebSfx.suspendReasons.delete(reason);
+    }
+
+    if (!WebSfx.audioContext) return;
+
+    try {
+      if (suspend) {
+        if (WebSfx.audioContext.state === 'running') {
+          await WebSfx.audioContext.suspend();
+        }
+        WebSfx.isReady = false;
+        return;
+      }
+
+      if (WebSfx.suspendReasons.size === 0 && WebSfx.audioContext.state === 'suspended') {
+        await WebSfx.audioContext.resume();
+        WebSfx.isReady = WebSfx.audioContext.state === 'running';
+      }
+    } catch (err) {
+      console.warn('WebSfx.toggleSuspend failed', err);
+    }
   }
 
   /**
