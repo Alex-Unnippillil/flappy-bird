@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160">
+  <defs>
+    <linearGradient id="platinum-medal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5faff" />
+      <stop offset="100%" stop-color="#c7d1da" />
+    </linearGradient>
+    <linearGradient id="platinum-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6e6ef5" />
+      <stop offset="100%" stop-color="#4a4ab8" />
+    </linearGradient>
+    <radialGradient id="platinum-highlight" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#d3dbe4" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <path d="M32 128h16l16 32 16-32h16l-32 32z" fill="url(#platinum-ribbon)" />
+    <circle cx="64" cy="64" r="56" fill="url(#platinum-medal)" stroke="#98a4b1" stroke-width="8" />
+    <circle cx="64" cy="54" r="40" fill="url(#platinum-highlight)" />
+    <polygon points="64 22 74.5 47.3 102 47.3 79.8 63.7 89.2 90 64 74.7 38.8 90 48.2 63.7 26 47.3 53.5 47.3" fill="#ffffff" stroke="#a6b2bf" stroke-width="4" stroke-linejoin="round" />
+  </g>
+</svg>
