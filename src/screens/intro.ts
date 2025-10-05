@@ -1,13 +1,23 @@
 // File Overview: This module belongs to src/screens/intro.ts.
 /**
- * Display "FlappyBird"
- * Display the bird close to the middle and at the center
+ * Intro screen responsible for bootstrapping the main menu experience that
+ * precedes gameplay. ScreenChanger mounts this class to present the brand
+ * banner, looping bird animation, and the primary interaction controls that
+ * trigger a transition into the gameplay screen.
  *
- * Display "Play" button and include the
- * "Ranking" button but with no function. Just to mimic the
- * original game since ranking only works if the game is
- * connected to Google Play Games or Apple Game Center
- * */
+ * UI initialization wires up BirdModel plus the Play, Ranking, and Speaker
+ * toggle buttons so ParentClass lifecycle callbacks (init/resize/Update/
+ * Display) keep them synchronized with the current canvas dimensions. All
+ * models are created eagerly and cached to ensure ScreenChanger can swap back
+ * without reallocating assets.
+ *
+ * Event hooks funnel mouse/touch activity to each button model and surface the
+ * "start" affordance through both mouseUp and keyboard entry (startAtKeyboard
+ * simply clicks the Play button). UX nuances include always activating the
+ * audio toggle regardless of play state, updating the bird idle animation via
+ * doWave to keep the scene lively, and drawing the scaled title banner after
+ * controls so it never overlaps touch targets.
+ */
 
 import { rescaleDim } from '../utils';
 
