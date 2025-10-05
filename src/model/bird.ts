@@ -72,6 +72,10 @@ export default class Bird extends ParentClass {
   private lastCoord: number;
   private max_lift_velocity: number;
   private max_fall_velocity: number;
+  private spawnTime: number;
+  private graceEndTime: number;
+
+  private static readonly INVULNERABLE_DURATION = 750;
 
   constructor() {
     super();
@@ -90,6 +94,8 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.spawnTime = 0;
+    this.graceEndTime = 0;
   }
 
   /**
@@ -121,6 +127,9 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    const now = this.getNow();
+    this.spawnTime = now;
+    this.graceEndTime = now + Bird.INVULNERABLE_DURATION;
   }
 
   public reset(): void {
@@ -195,6 +204,8 @@ export default class Bird extends ParentClass {
     Sfx.wing();
     this.velocity.y = this.force;
     this.lastCoord = this.coordinate.y;
+    // End the grace period as soon as the player takes control
+    this.graceEndTime = this.getNow();
   }
 
   /**
@@ -211,7 +222,10 @@ export default class Bird extends ParentClass {
    * Check if the bird collided with the pipes
    * */
   public isDead(pipes: Pipe[]): boolean {
-    if (this.doesHitTheFloor()) {
+    const now = this.getNow();
+    const isInvulnerable = this.isInvulnerable(now);
+
+    if (!isInvulnerable && this.doesHitTheFloor()) {
       this.flags &= ~Bird.FLAG_IS_ALIVE;
       this.causeOfDeath = 1;
       return (this.flags & Bird.FLAG_IS_ALIVE) === 0;
@@ -243,14 +257,16 @@ export default class Bird extends ParentClass {
             pipe.isPassed = true;
           }
 
-          // Top Pipe ---------- Bottom Pipe
-          if (
-            Math.abs(hcy - radius) >= this.coordinate.y - newDim.height ||
-            hcy + radius <= this.coordinate.y + newDim.height
-          ) {
-            this.flags &= ~Bird.FLAG_IS_ALIVE;
-            this.causeOfDeath = 2;
-            break;
+          if (!isInvulnerable) {
+            // Top Pipe ---------- Bottom Pipe
+            if (
+              Math.abs(hcy - radius) >= this.coordinate.y - newDim.height ||
+              hcy + radius <= this.coordinate.y + newDim.height
+            ) {
+              this.flags &= ~Bird.FLAG_IS_ALIVE;
+              this.causeOfDeath = 2;
+              break;
+            }
           }
         }
 
@@ -260,6 +276,18 @@ export default class Bird extends ParentClass {
     }
 
     return (this.flags & Bird.FLAG_IS_ALIVE) === 0;
+  }
+
+  private getNow(): number {
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
+      return performance.now();
+    }
+
+    return Date.now();
+  }
+
+  private isInvulnerable(now: number = this.getNow()): boolean {
+    return now < this.graceEndTime;
   }
 
   private rotatedDimension(): IDimension {
@@ -338,9 +366,15 @@ export default class Bird extends ParentClass {
 
   public Display(context: CanvasRenderingContext2D): void {
     const birdKeyString = `${this.color}.${this.wingState}`;
+    const now = this.getNow();
 
     // Save our previous created picture
     context.save();
+
+    if (this.isInvulnerable(now)) {
+      const blinkPhase = ((now - this.spawnTime) / 120) % 1;
+      context.globalAlpha = blinkPhase < 0.5 ? 0.5 : 1;
+    }
 
     // Move the imaginary cursor into the bird position
     context.translate(this.coordinate.x, this.coordinate.y);
