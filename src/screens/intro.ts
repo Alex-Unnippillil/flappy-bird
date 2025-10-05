@@ -52,7 +52,8 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.toggleSpeakerButton.resize({ width, height });
   }
 
-  public Update(): void {
+  public update(_deltaMs: number): void {
+    void _deltaMs;
     this.bird.doWave(
       {
         x: this.canvasSize.width * 0.5,
@@ -67,7 +68,11 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.toggleSpeakerButton.Update();
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Update(): void {
+    this.update(0);
+  }
+
+  public render(context: CanvasRenderingContext2D): void {
     this.toggleSpeakerButton.Display(context);
     this.playButton.Display(context);
     this.rankingButton.Display(context);
@@ -91,6 +96,10 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     );
     // ----------------------------------
 
+  }
+
+  public Display(context: CanvasRenderingContext2D): void {
+    this.render(context);
   }
 
   public mouseDown({ x, y }: ICoordinate): void {

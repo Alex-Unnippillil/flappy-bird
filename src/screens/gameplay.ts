@@ -95,7 +95,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.transition.resize(this.canvasSize);
   }
 
-  public Update(): void {
+  public update(_deltaMs: number): void {
+    void _deltaMs;
     this.flashScreen.Update();
     this.transition.Update();
     this.scoreBoard.Update();
@@ -145,7 +146,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
   }
 
-  public Display(context: CanvasRenderingContext2D): void {
+  public Update(): void {
+    this.update(0);
+  }
+
+  public render(context: CanvasRenderingContext2D): void {
     if (this.state === 'playing' || this.state === 'waiting') {
       this.bannerInstruction.Display(context);
 
@@ -161,6 +166,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
     this.flashScreen.Display(context);
     this.transition.Display(context);
+  }
+
+  public Display(context: CanvasRenderingContext2D): void {
+    this.render(context);
   }
 
   private setButtonEvent(): void {

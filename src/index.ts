@@ -28,6 +28,10 @@ const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
+// Clamp extremely long frames (e.g. when the tab resumes) to avoid large simulation jumps.
+const MAX_FRAME_DELTA = 100;
+
+let lastFrameTime: number | null = null;
 
 let isLoaded = false;
 
@@ -38,11 +42,14 @@ fps.text({ x: 50, y: 50 }, '', ' Cycle');
 // prettier-ignore
 fps.container({ x: 10, y: 10}, { x: 230, y: 70});
 
-const GameUpdate = (): void => {
-  physicalContext.drawImage(virtualCanvas, 0, 0);
+const GameUpdate = (timeStamp: number): void => {
+  if (lastFrameTime === null) lastFrameTime = timeStamp;
 
-  Game.Update();
-  Game.Display();
+  const delta = Math.min(timeStamp - lastFrameTime, MAX_FRAME_DELTA);
+  lastFrameTime = timeStamp;
+
+  Game.update(delta);
+  Game.render(physicalContext);
 
   if (process.env.NODE_ENV === 'development') fps.mark();
 
@@ -65,6 +72,7 @@ const ScreenResize = () => {
   console.log(`Canvas Size: ${sizeResult.width}x${sizeResult.height}`);
 
   Game.Resize(sizeResult);
+  Game.render(physicalContext);
 };
 
 const removeLoadingScreen = () => {
@@ -89,6 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ScreenResize();
 
     // raf(GameUpdate); Issue #16
+    lastFrameTime = null;
     if (!game_running()) game_start(); // Quick fix. Long term :)
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();

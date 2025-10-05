@@ -100,7 +100,7 @@ export default class Game extends ParentClass {
     this.canvas.height = height;
   }
 
-  public Update(): void {
+  public update(deltaMs: number): void {
     this.transition.Update();
     this.screenChanger.setState(this.state);
 
@@ -109,10 +109,14 @@ export default class Game extends ParentClass {
       this.platform.Update();
     }
 
-    this.screenChanger.Update();
+    this.screenChanger.update(deltaMs);
   }
 
-  public Display(): void {
+  public Update(): void {
+    this.update(0);
+  }
+
+  public render(context: CanvasRenderingContext2D = this.context): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     // Remove smoothing effect of an image
     this.context.imageSmoothingEnabled = false;
@@ -126,8 +130,18 @@ export default class Game extends ParentClass {
     }
 
     this.platform.Display(this.context);
-    this.screenChanger.Display(this.context);
+    this.screenChanger.render(this.context);
     this.transition.Display(this.context);
+
+    if (context !== this.context) {
+      context.imageSmoothingEnabled = false;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(this.canvas, 0, 0);
+    }
+  }
+
+  public Display(context: CanvasRenderingContext2D): void {
+    this.render(context);
   }
 
   public setEvent(): void {
