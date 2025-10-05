@@ -11,6 +11,7 @@ import ScreenChanger from './lib/screen-changer';
 import Sfx from './model/sfx';
 import Storage from './lib/storage';
 import FlashScreen from './model/flash-screen';
+import Haptics from './lib/haptics';
 
 export type IGameState = 'intro' | 'game';
 
@@ -56,6 +57,7 @@ export default class Game extends ParentClass {
 
   public init(): void {
     new Storage(); // Init first
+    Haptics.init();
     this.background.init();
     this.platform.init();
     this.transition.init();

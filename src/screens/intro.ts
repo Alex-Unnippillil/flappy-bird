@@ -17,12 +17,14 @@ import ParentClass from '../abstracts/parent-class';
 import PlayButton from '../model/btn-play';
 import RankingButton from '../model/btn-ranking';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
+import ToggleHaptics from '../model/btn-toggle-haptics';
 import SpriteDestructor from '../lib/sprite-destructor';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
   public rankingButton: RankingButton;
   public toggleSpeakerButton: ToggleSpeaker;
+  public toggleHapticsButton: ToggleHaptics;
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
@@ -33,6 +35,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
+    this.toggleHapticsButton = new ToggleHaptics();
     this.flappyBirdBanner = void 0;
   }
 
@@ -41,6 +44,8 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.init();
     this.rankingButton.init();
     this.toggleSpeakerButton.init();
+    this.toggleHapticsButton.init();
+    this.toggleHapticsButton.active = true;
     this.flappyBirdBanner = SpriteDestructor.asset('banner-flappybird');
   }
 
@@ -50,6 +55,7 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.resize({ width, height });
     this.rankingButton.resize({ width, height });
     this.toggleSpeakerButton.resize({ width, height });
+    this.toggleHapticsButton.resize({ width, height });
   }
 
   public Update(): void {
@@ -65,10 +71,12 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.playButton.Update();
     this.rankingButton.Update();
     this.toggleSpeakerButton.Update();
+    this.toggleHapticsButton.Update();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
     this.toggleSpeakerButton.Display(context);
+    this.toggleHapticsButton.Display(context);
     this.playButton.Display(context);
     this.rankingButton.Display(context);
     this.bird.Display(context);
@@ -95,12 +103,14 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   public mouseDown({ x, y }: ICoordinate): void {
     this.toggleSpeakerButton.mouseEvent('down', { x, y });
+    this.toggleHapticsButton.mouseEvent('down', { x, y });
     this.playButton.mouseEvent('down', { x, y });
     this.rankingButton.mouseEvent('down', { x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
     this.toggleSpeakerButton.mouseEvent('up', { x, y });
+    this.toggleHapticsButton.mouseEvent('up', { x, y });
     this.playButton.mouseEvent('up', { x, y });
     this.rankingButton.mouseEvent('up', { x, y });
   }

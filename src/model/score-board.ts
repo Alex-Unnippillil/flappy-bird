@@ -6,6 +6,7 @@ import SparkModel from './spark';
 import PlayButton from './btn-play';
 import RankingButton from './btn-ranking';
 import ToggleSpeaker from './btn-toggle-speaker';
+import ToggleHaptics from './btn-toggle-haptics';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
@@ -22,6 +23,7 @@ export default class ScoreBoard extends ParentObject {
   private playButton: PlayButton;
   private rankingButton: RankingButton;
   private toggleSpeakerButton: ToggleSpeaker;
+  private toggleHapticsButton: ToggleHaptics;
   private FlyInAnim: Fly;
   private BounceInAnim: BounceIn;
   private currentScore: number;
@@ -37,6 +39,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
+    this.toggleHapticsButton = new ToggleHaptics();
     this.spark = new SparkModel();
     this.currentHighScore = 0;
     this.currentGeneratedNumber = 0;
@@ -78,10 +81,12 @@ export default class ScoreBoard extends ParentObject {
     this.rankingButton.init();
     this.playButton.init();
     this.toggleSpeakerButton.init();
+    this.toggleHapticsButton.init();
 
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.toggleHapticsButton.active = false;
     this.spark.init();
 
     /**
@@ -100,6 +105,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.resize(this.canvasSize);
     this.spark.resize(this.canvasSize);
     this.toggleSpeakerButton.resize(this.canvasSize);
+    this.toggleHapticsButton.resize(this.canvasSize);
   }
 
   public Update(): void {
@@ -107,6 +113,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.Update();
     this.spark.Update();
     this.toggleSpeakerButton.Update();
+    this.toggleHapticsButton.Update();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -193,6 +200,7 @@ export default class ScoreBoard extends ParentObject {
       this.rankingButton.Display(context);
       this.playButton.Display(context);
       this.toggleSpeakerButton.Display(context);
+      this.toggleHapticsButton.Display(context);
     }
   }
 
@@ -212,6 +220,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = true;
     this.rankingButton.active = true;
     this.toggleSpeakerButton.active = true;
+    this.toggleHapticsButton.active = true;
   }
 
   private setHighScore(num: number): void {
@@ -295,7 +304,7 @@ export default class ScoreBoard extends ParentObject {
     context: CanvasRenderingContext2D,
     coord: ICoordinate,
     parentSize: IDimension,
-    _p0: boolean
+    isNewHighScore: boolean
   ): void {
     const numSize = rescaleDim(
       {
@@ -322,7 +331,7 @@ export default class ScoreBoard extends ParentObject {
       );
     });
 
-    if ((this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) === 0) return;
+    if (!isNewHighScore) return;
 
     const toastSize = rescaleDim(
       {
@@ -350,6 +359,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.toggleHapticsButton.active = false;
     this.currentGeneratedNumber = 0;
     this.FlyInAnim.reset();
     this.BounceInAnim.reset();
@@ -362,6 +372,7 @@ export default class ScoreBoard extends ParentObject {
   }
 
   public onShowRanks(_cb: IEmptyFunction): void {
+    void _cb;
     /**
      * I don't know what to do on ranking?
      *
@@ -373,12 +384,14 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.mouseEvent('down', { x, y });
     this.rankingButton.mouseEvent('down', { x, y });
     this.toggleSpeakerButton.mouseEvent('down', { x, y });
+    this.toggleHapticsButton.mouseEvent('down', { x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
     this.playButton.mouseEvent('up', { x, y });
     this.rankingButton.mouseEvent('up', { x, y });
     this.toggleSpeakerButton.mouseEvent('up', { x, y });
+    this.toggleHapticsButton.mouseEvent('up', { x, y });
   }
 
   public triggerPlayATKeyboardEvent(): void {

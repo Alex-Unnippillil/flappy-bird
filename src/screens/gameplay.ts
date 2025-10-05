@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import Haptics from '../lib/haptics';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +32,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private previousScore: number;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +58,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.previousScore = 0;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -68,6 +71,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+    this.previousScore = 0;
   }
 
   public reset(): void {
@@ -77,11 +81,12 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.game.platform.reset();
     this.pipeGenerator.reset();
     this.bannerInstruction.reset();
-    this.game.bgPause = false;
+    this.setPauseState(false);
     this.hideBird = false;
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.previousScore = 0;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -101,7 +106,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.scoreBoard.Update();
 
     if (!this.bird.alive) {
-      this.game.bgPause = true;
+      this.setPauseState(true);
       this.bird.Update();
       return;
     }
@@ -122,11 +127,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.pipeGenerator.Update();
     this.bird.Update();
 
-    if (this.bird.isDead(this.pipeGenerator.pipes)) {
+    const didDie = this.bird.isDead(this.pipeGenerator.pipes);
+    if (didDie && this.gameState !== 'died') {
+      this.setPauseState(true);
       this.flashScreen.reset();
       this.flashScreen.start();
 
       this.gameState = 'died';
+      Haptics.vibratePattern('collision', { force: true });
 
       window.setTimeout(() => {
         this.scoreBoard.setScore(this.bird.score);
@@ -143,6 +151,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
         this.bird.playDead();
       });
     }
+
+    this.handleScoreHaptics();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -175,7 +185,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  public click(_coord: ICoordinate): void {
+    void _coord;
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
@@ -197,5 +208,22 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  private setPauseState(paused: boolean): void {
+    if (this.game.bgPause === paused) {
+      return;
+    }
+
+    this.game.bgPause = paused;
+    Haptics.vibratePattern('pause', { force: true });
+  }
+
+  private handleScoreHaptics(): void {
+    if (this.bird.score > this.previousScore) {
+      Haptics.vibratePattern('pipe');
+    }
+
+    this.previousScore = this.bird.score;
   }
 }
