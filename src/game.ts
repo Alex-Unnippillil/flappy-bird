@@ -11,6 +11,7 @@ import ScreenChanger from './lib/screen-changer';
 import Sfx from './model/sfx';
 import Storage from './lib/storage';
 import FlashScreen from './model/flash-screen';
+import { beginRun } from './lib/challenge';
 
 export type IGameState = 'intro' | 'game';
 
@@ -55,6 +56,7 @@ export default class Game extends ParentClass {
   }
 
   public init(): void {
+    beginRun();
     new Storage(); // Init first
     this.background.init();
     this.platform.init();

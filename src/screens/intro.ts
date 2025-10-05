@@ -18,6 +18,7 @@ import PlayButton from '../model/btn-play';
 import RankingButton from '../model/btn-ranking';
 import ToggleSpeaker from '../model/btn-toggle-speaker';
 import SpriteDestructor from '../lib/sprite-destructor';
+import { detectChallengeFromUrl, getChallengeTargetScore } from '../lib/challenge';
 
 export default class Introduction extends ParentClass implements IScreenChangerObject {
   public playButton: PlayButton;
@@ -26,6 +27,8 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   private bird: BirdModel;
   private flappyBirdBanner: HTMLImageElement | undefined;
+  private challengeActive: boolean;
+  private challengeTargetScore: number | undefined;
 
   constructor() {
     super();
@@ -34,6 +37,14 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
     this.flappyBirdBanner = void 0;
+    this.challengeActive = false;
+    this.challengeTargetScore = void 0;
+
+    const challenge = detectChallengeFromUrl();
+    if (challenge) {
+      this.challengeActive = true;
+      this.challengeTargetScore = challenge.targetScore ?? getChallengeTargetScore();
+    }
   }
 
   public init(): void {
@@ -91,6 +102,10 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     );
     // ----------------------------------
 
+    if (this.challengeActive) {
+      this.displayChallengeBanner(context);
+    }
+
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
@@ -107,5 +122,39 @@ export default class Introduction extends ParentClass implements IScreenChangerO
 
   public startAtKeyBoardEvent(): void {
     this.playButton.click();
+  }
+
+  private displayChallengeBanner(context: CanvasRenderingContext2D): void {
+    const prevAlign = context.textAlign;
+    const prevFont = context.font;
+    const prevFillStyle = context.fillStyle;
+
+    const containerWidth = this.canvasSize.width * 0.82;
+    const containerHeight = this.canvasSize.height * 0.12;
+    const containerX = (this.canvasSize.width - containerWidth) / 2;
+    const containerY = this.canvasSize.height * 0.8;
+
+    context.fillStyle = 'rgba(0, 0, 0, 0.65)';
+    context.fillRect(containerX, containerY, containerWidth, containerHeight);
+
+    context.textAlign = 'center';
+    const titleFontSize = Math.max(16, Math.floor(this.canvasSize.height * 0.045));
+    context.font = `bold ${titleFontSize}px 'Press Start 2P', sans-serif`;
+    context.fillStyle = '#ffffff';
+    context.fillText('Challenge Ready!', this.canvasSize.width * 0.5, containerY + containerHeight * 0.45);
+
+    const targetFontSize = Math.max(12, Math.floor(this.canvasSize.height * 0.032));
+    context.font = `${targetFontSize}px 'Press Start 2P', sans-serif`;
+
+    const message =
+      this.challengeTargetScore !== undefined
+        ? `Target Score: ${this.challengeTargetScore}`
+        : 'Seed locked for this run';
+
+    context.fillText(message, this.canvasSize.width * 0.5, containerY + containerHeight * 0.82);
+
+    context.textAlign = prevAlign;
+    context.font = prevFont;
+    context.fillStyle = prevFillStyle;
   }
 }

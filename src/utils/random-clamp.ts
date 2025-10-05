@@ -1,4 +1,6 @@
 // File Overview: This module belongs to src/utils/random-clamp.ts.
+import { random } from '../lib/challenge';
+
 /**
  * A clamping function that accepts two parameters (min, max) and
  * returns a random number in between.
@@ -9,5 +11,5 @@
  */
 
 export const randomClamp = (min: number, max: number): number => {
-  return Math.floor(Math.random() * (max - min)) + min;
+  return Math.floor(random() * (max - min)) + min;
 };

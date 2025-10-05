@@ -6,6 +6,7 @@ import SparkModel from './spark';
 import PlayButton from './btn-play';
 import RankingButton from './btn-ranking';
 import ToggleSpeaker from './btn-toggle-speaker';
+import ShareButton from './btn-share';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
@@ -22,6 +23,7 @@ export default class ScoreBoard extends ParentObject {
   private playButton: PlayButton;
   private rankingButton: RankingButton;
   private toggleSpeakerButton: ToggleSpeaker;
+  private shareButton: ShareButton;
   private FlyInAnim: Fly;
   private BounceInAnim: BounceIn;
   private currentScore: number;
@@ -37,6 +39,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
+    this.shareButton = new ShareButton();
     this.spark = new SparkModel();
     this.currentHighScore = 0;
     this.currentGeneratedNumber = 0;
@@ -78,10 +81,12 @@ export default class ScoreBoard extends ParentObject {
     this.rankingButton.init();
     this.playButton.init();
     this.toggleSpeakerButton.init();
+    this.shareButton.init();
 
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.shareButton.active = false;
     this.spark.init();
 
     /**
@@ -100,6 +105,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.resize(this.canvasSize);
     this.spark.resize(this.canvasSize);
     this.toggleSpeakerButton.resize(this.canvasSize);
+    this.shareButton.resize(this.canvasSize);
   }
 
   public Update(): void {
@@ -107,6 +113,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.Update();
     this.spark.Update();
     this.toggleSpeakerButton.Update();
+    this.shareButton.Update();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -192,6 +199,7 @@ export default class ScoreBoard extends ParentObject {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) {
       this.rankingButton.Display(context);
       this.playButton.Display(context);
+      this.shareButton.Display(context);
       this.toggleSpeakerButton.Display(context);
     }
   }
@@ -212,6 +220,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = true;
     this.rankingButton.active = true;
     this.toggleSpeakerButton.active = true;
+    this.shareButton.active = true;
   }
 
   private setHighScore(num: number): void {
@@ -350,6 +359,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.shareButton.active = false;
     this.currentGeneratedNumber = 0;
     this.FlyInAnim.reset();
     this.BounceInAnim.reset();
@@ -359,6 +369,10 @@ export default class ScoreBoard extends ParentObject {
 
   public onRestart(cb: IEmptyFunction): void {
     this.playButton.onClick(cb);
+  }
+
+  public onShare(cb: IEmptyFunction): void {
+    this.shareButton.onClick(cb);
   }
 
   public onShowRanks(_cb: IEmptyFunction): void {
@@ -373,12 +387,14 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.mouseEvent('down', { x, y });
     this.rankingButton.mouseEvent('down', { x, y });
     this.toggleSpeakerButton.mouseEvent('down', { x, y });
+    this.shareButton.mouseEvent('down', { x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
     this.playButton.mouseEvent('up', { x, y });
     this.rankingButton.mouseEvent('up', { x, y });
     this.toggleSpeakerButton.mouseEvent('up', { x, y });
+    this.shareButton.mouseEvent('up', { x, y });
   }
 
   public triggerPlayATKeyboardEvent(): void {

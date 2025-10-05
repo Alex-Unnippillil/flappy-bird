@@ -16,6 +16,7 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import { beginRun, buildShareUrl } from '../lib/challenge';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +32,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private shareUrl: string | null;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +58,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.shareUrl = null;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -71,6 +74,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public reset(): void {
+    beginRun();
     this.gameState = 'none';
     this.state = 'waiting';
     this.game.background.reset();
@@ -82,6 +86,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.shareUrl = null;
   }
 
   public resize({ width, height }: IDimension): void {
@@ -130,6 +135,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
       window.setTimeout(() => {
         this.scoreBoard.setScore(this.bird.score);
+        this.shareUrl = buildShareUrl(this.bird.score);
         this.showScoreBoard = true;
         window.setTimeout(() => {
           this.scoreBoard.showBoard();
@@ -170,6 +176,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
       this.transition.start();
     });
 
+    this.scoreBoard.onShare(() => {
+      if (!this.shareUrl) {
+        this.shareUrl = buildShareUrl(this.bird.score);
+      }
+
+      void this.shareResult();
+    });
+
     // this.scoreBoard.onShowRanks(() => {
     //   console.log("ranking button")
     // })
@@ -197,5 +211,72 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();
+  }
+
+  private async shareResult(): Promise<void> {
+    if (!this.shareUrl) return;
+
+    const url = this.shareUrl;
+
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({
+          title: 'Flappy Bird Challenge',
+          text: `I scored ${this.bird.score}. Can you beat it?`,
+          url
+        });
+        return;
+      } catch (error: unknown) {
+        const domError = error as DOMException | undefined;
+        if (domError?.name === 'AbortError') {
+          return;
+        }
+      }
+    }
+
+    try {
+      const copied = await this.copyToClipboard(url);
+      if (copied) {
+        window.alert('Link copied to clipboard!');
+      } else {
+        throw new Error('Copy failed');
+      }
+    } catch {
+      window.alert(`Unable to copy link automatically. Here it is:\n${url}`);
+    }
+  }
+
+  private async copyToClipboard(text: string): Promise<boolean> {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback to manual method below
+      }
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-1000px';
+    textarea.style.opacity = '0';
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let success = false;
+
+    try {
+      success = document.execCommand('copy');
+    } catch {
+      success = false;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+
+    return success;
   }
 }
