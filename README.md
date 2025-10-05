@@ -1,3 +1,5 @@
+<!-- File Overview: This markdown file documents README.md. -->
+
 # Flappy Bird Web App
 
 A modern web-based recreation of the classic Flappy Bird game, built with TypeScript and HTML5 Canvas. This project mimics the retro gameplay while incorporating modern web technologies for a smooth, responsive experience.

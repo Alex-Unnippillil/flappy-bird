@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/game.ts.
 import BgModel from './model/background';
 import BirdModel from './model/bird';
 import GamePlay from './screens/gameplay';

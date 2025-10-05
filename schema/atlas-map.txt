@@ -1,3 +1,4 @@
+# File Overview: This text file stores schema/atlas-map.txt.
 /**
 * Spacing 4px
 * Dimension 1024x1024

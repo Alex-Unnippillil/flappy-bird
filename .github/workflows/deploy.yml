@@ -1,3 +1,4 @@
+# File Overview: This workflow configures deployment automation for .github/workflows/deploy.yml.
 name: Deploy Flappy Bird to GitHub Pages
 
 on:

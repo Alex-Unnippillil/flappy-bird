@@ -1,3 +1,4 @@
+// File Overview: This module belongs to types/declaration.d.ts.
 declare module '*.svg' {
   const content: string;
   export default content;

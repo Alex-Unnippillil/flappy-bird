@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/anims/fade-out.ts.
 import AbsFading from '../abstracts/fading';
 import { flipRange } from '../../../utils';
 

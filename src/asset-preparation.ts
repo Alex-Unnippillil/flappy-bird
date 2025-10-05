@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/asset-preparation.ts.
 import AssetLoader from './lib/asset-loader';
 
 import SpriteDestructor from './lib/sprite-destructor';

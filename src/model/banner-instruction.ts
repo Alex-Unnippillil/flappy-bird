@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/banner-instruction.ts.
 import { rescaleDim } from '../utils';
 
 import { FadeOut } from '../lib/animation';

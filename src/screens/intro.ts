@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/screens/intro.ts.
 /**
  * Display "FlappyBird"
  * Display the bird close to the middle and at the center

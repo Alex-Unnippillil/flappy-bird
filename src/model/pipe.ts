@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/pipe.ts.
 import { GAME_SPEED, PIPE_HOLL_SIZE, PIPE_INITIAL_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';

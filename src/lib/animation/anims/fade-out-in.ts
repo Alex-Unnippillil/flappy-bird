@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/anims/fade-out-in.ts.
 import Fading from '../abstracts/fading';
 
 export class FadeOutIn extends Fading {

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/random-clamp.ts.
 /**
  * A clamping function that accepts two parameters (min, max) and
  * returns a random number in between.

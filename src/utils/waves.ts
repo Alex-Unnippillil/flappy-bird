@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/waves.ts.
 /**
  * f(x) = A • sin(((t / 1000) • 2 • PI) / (1 / B))
  *

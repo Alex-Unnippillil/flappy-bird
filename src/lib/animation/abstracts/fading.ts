@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/abstracts/fading.ts.
 import DefaultProps from './default-properties';
 import { IEasingKey } from '../easing';
 import * as easing from '../easing';

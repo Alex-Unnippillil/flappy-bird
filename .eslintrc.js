@@ -1,3 +1,4 @@
+// File Overview: This script belongs to .eslintrc.js.
 module.exports = {
   env: {
     browser: true,

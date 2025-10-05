@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/web-sfx/index.ts.
 /**
  * A library for handling sound Effects
  * Handling Sound Effects

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/sfx.ts.
 import WebSfx from '../lib/web-sfx';
 import sfDie from '../assets/audio/die.ogg';
 import sfHit from '../assets/audio/hit.ogg';

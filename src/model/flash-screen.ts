@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/flash-screen.ts.
 import ParentClass from '../abstracts/parent-class';
 import { FadeOut } from '../lib/animation';
 import { IEasingKey } from '../lib/animation/easing';

@@ -1,4 +1,5 @@
 {
+  "_comment": "This file (package.json) defines configuration or metadata for the project.",
   "name": "flappybird",
   "description": "Mimicking the old retro game FlappyBird but as a web app",
   "version": "0.5.5",

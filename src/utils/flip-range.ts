@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/flip-range.ts.
 /**
  * Flip the range. Min becomes max and max becomes min
  * */

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/anims/timing-event.ts.
 /**
  * I did include this Timing event into animation
  * since it will animate the numbers

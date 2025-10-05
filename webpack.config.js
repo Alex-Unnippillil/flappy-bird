@@ -1,3 +1,4 @@
+// File Overview: This script belongs to webpack.config.js.
 const path = require('path');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/abstracts/flying.ts.
 import IDefaultProperties from './default-properties';
 import { IEasingKey } from '../easing';
 import * as easing from '../easing';

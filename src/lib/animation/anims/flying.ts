@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/anims/flying.ts.
 import IFlying from '../abstracts/flying';
 import { lerp } from '../../../utils';
 

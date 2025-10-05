@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/count.ts.
 import { COUNT_COORDINATE, COUNT_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 

@@ -1,3 +1,5 @@
+<!-- File Overview: This markdown file documents AGENTS.md. -->
+
 # AGENTS.md
 
 ## Overview

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/platform.ts.
 import { rescaleDim } from '../utils';
 
 import { GAME_SPEED } from '../constants';

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/clamp.ts.
 /**
  * A clamping functions that checks the last parameter if is equal
  * or in between of min and max number from first and second parameter

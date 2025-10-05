@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/rescale-dim.ts.
 /**
  * A function that automatically rescale the given dimension and
  * returns new scaled dimension.

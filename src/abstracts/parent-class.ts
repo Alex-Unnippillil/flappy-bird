@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/abstracts/parent-class.ts.
 export default abstract class ParentObject {
   protected canvasSize: IDimension;
   public velocity: IVelocity;

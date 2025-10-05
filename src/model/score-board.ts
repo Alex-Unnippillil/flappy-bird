@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/score-board.ts.
 import { rescaleDim } from '../utils';
 
 import ParentObject from '../abstracts/parent-class';
