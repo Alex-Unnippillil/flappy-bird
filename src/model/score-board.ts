@@ -19,6 +19,11 @@ export default class ScoreBoard extends ParentObject {
   private flags: number;
 
   private images: Map<string, HTMLImageElement>;
+  private bannerSize: IDimension;
+  private scoreBoardSize: IDimension;
+  private toastSize: IDimension;
+  private digitSizes: Map<string, IDimension>;
+  private medalSizes: Map<string, IDimension>;
   private playButton: PlayButton;
   private rankingButton: RankingButton;
   private toggleSpeakerButton: ToggleSpeaker;
@@ -34,6 +39,11 @@ export default class ScoreBoard extends ParentObject {
     super();
     this.flags = 0;
     this.images = new Map<string, HTMLImageElement>();
+    this.bannerSize = { width: 0, height: 0 };
+    this.scoreBoardSize = { width: 0, height: 0 };
+    this.toastSize = { width: 0, height: 0 };
+    this.digitSizes = new Map<string, IDimension>();
+    this.medalSizes = new Map<string, IDimension>();
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
@@ -100,6 +110,8 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.resize(this.canvasSize);
     this.spark.resize(this.canvasSize);
     this.toggleSpeakerButton.resize(this.canvasSize);
+
+    this.rebuildScaledAssets();
   }
 
   public Update(): void {
@@ -111,35 +123,26 @@ export default class ScoreBoard extends ParentObject {
 
   public Display(context: CanvasRenderingContext2D): void {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BANNER) !== 0) {
-      const bgoScaled = rescaleDim(
-        {
-          width: this.images.get('banner-gameover')!.width,
-          height: this.images.get('banner-gameover')!.height
-        },
-        { width: this.canvasSize.width * 0.7 }
-      );
-      const anim = this.BounceInAnim.value;
-      const yPos = this.canvasSize.height * 0.225 - bgoScaled.height / 2;
+      const bgoScaled = this.bannerSize;
+      if (bgoScaled.width > 0 && bgoScaled.height > 0) {
+        const anim = this.BounceInAnim.value;
+        const yPos = this.canvasSize.height * 0.225 - bgoScaled.height / 2;
 
-      context.globalAlpha = anim.opacity;
-      context.drawImage(
-        this.images.get('banner-gameover')!,
-        this.canvasSize.width * 0.5 - bgoScaled.width / 2,
-        yPos + anim.value * (this.canvasSize.height * 0.015),
-        bgoScaled.width,
-        bgoScaled.height
-      );
-      context.globalAlpha = 1;
+        context.globalAlpha = anim.opacity;
+        context.drawImage(
+          this.images.get('banner-gameover')!,
+          this.canvasSize.width * 0.5 - bgoScaled.width / 2,
+          yPos + anim.value * (this.canvasSize.height * 0.015),
+          bgoScaled.width,
+          bgoScaled.height
+        );
+        context.globalAlpha = 1;
+      }
     }
 
     if ((this.flags & ScoreBoard.FLAG_SHOW_SCOREBOARD) !== 0) {
-      const sbScaled = rescaleDim(
-        {
-          width: this.images.get('score-board')!.width,
-          height: this.images.get('score-board')!.height
-        },
-        { width: this.canvasSize.width * 0.85 }
-      );
+      const sbScaled = this.scoreBoardSize;
+      if (sbScaled.width <= 0 || sbScaled.height <= 0) return;
 
       // Need to clone
       const anim = Object.assign({}, this.FlyInAnim.value);
@@ -229,33 +232,30 @@ export default class ScoreBoard extends ParentObject {
     parentSize: IDimension
   ): void {
     if (this.currentScore < 10) return; // So sad having a no medal :)
-    let medal: HTMLImageElement | undefined;
+    let medalKey: string | undefined;
 
     if (this.currentScore >= 10 && this.currentScore < 20) {
-      medal = this.images.get('coin-10');
+      medalKey = 'coin-10';
     } else if (this.currentScore >= 20 && this.currentScore < 30) {
-      medal = this.images.get('coin-20');
+      medalKey = 'coin-20';
     } else {
       if (Math.floor(this.currentScore / 10) % 2 === 0) {
-        medal = this.images.get('coin-40');
+        medalKey = 'coin-40';
       } else {
-        medal = this.images.get('coin-30');
+        medalKey = 'coin-30';
       }
     }
 
-    const scaled = rescaleDim(
-      {
-        width: medal!.width,
-        height: medal!.height
-      },
-      { width: parentSize.width * 0.1878 }
-    );
+    const medal = medalKey ? this.images.get(medalKey) : undefined;
+    const scaled = medalKey ? this.medalSizes.get(medalKey) : undefined;
+
+    if (!medal || !scaled) return;
     const pos = {
       x: (coord.x + parentSize.width / 2) * 0.36,
       y: (coord.y + parentSize.height / 2) * 0.9196
     };
 
-    context.drawImage(medal!, pos.x, pos.y, scaled.width, scaled.height);
+    context.drawImage(medal, pos.x, pos.y, scaled.width, scaled.height);
 
     this.spark.move(pos, scaled);
     this.spark.Display(context);
@@ -266,13 +266,8 @@ export default class ScoreBoard extends ParentObject {
     coord: ICoordinate,
     parentSize: IDimension
   ): void {
-    const numSize = rescaleDim(
-      {
-        width: this.images.get('number-1')!.width,
-        height: this.images.get('number-1')!.height
-      },
-      { width: parentSize.width * 0.05 }
-    );
+    const defaultDigit = this.digitSizes.get('0');
+    if (!defaultDigit) return;
 
     coord = Object.assign({}, coord);
     coord.x = (coord.x + parentSize.width / 2) * 1.565;
@@ -281,12 +276,13 @@ export default class ScoreBoard extends ParentObject {
     const numArr: string[] = String(this.currentGeneratedNumber).split('');
 
     numArr.reverse().forEach((c: string, index: number) => {
+      const digitSize = this.digitSizes.get(c) ?? defaultDigit;
       context.drawImage(
         this.images.get(`number-${c}`)!,
-        coord.x - index * (numSize.width + 5),
+        coord.x - index * (digitSize.width + 5),
         coord.y,
-        numSize.width,
-        numSize.height
+        digitSize.width,
+        digitSize.height
       );
     });
   }
@@ -297,13 +293,8 @@ export default class ScoreBoard extends ParentObject {
     parentSize: IDimension,
     _p0: boolean
   ): void {
-    const numSize = rescaleDim(
-      {
-        width: this.images.get('number-1')!.width,
-        height: this.images.get('number-1')!.height
-      },
-      { width: parentSize.width * 0.05 }
-    );
+    const defaultDigit = this.digitSizes.get('0');
+    if (!defaultDigit) return;
 
     coord = Object.assign({}, coord);
 
@@ -313,24 +304,20 @@ export default class ScoreBoard extends ParentObject {
     const numArr: string[] = String(this.currentHighScore).split('');
 
     numArr.reverse().forEach((c: string, index: number) => {
+      const digitSize = this.digitSizes.get(c) ?? defaultDigit;
       context.drawImage(
         this.images.get(`number-${c}`)!,
-        coord.x - index * (numSize.width + 5),
+        coord.x - index * (digitSize.width + 5),
         coord.y,
-        numSize.width,
-        numSize.height
+        digitSize.width,
+        digitSize.height
       );
     });
 
     if ((this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) === 0) return;
 
-    const toastSize = rescaleDim(
-      {
-        width: this.images.get('new-icon')!.width,
-        height: this.images.get('new-icon')!.height
-      },
-      { width: parentSize.width * 0.14 }
-    );
+    const toastSize = this.toastSize;
+    if (toastSize.width <= 0 || toastSize.height <= 0) return;
 
     context.drawImage(
       this.images.get('new-icon')!,
@@ -383,5 +370,73 @@ export default class ScoreBoard extends ParentObject {
 
   public triggerPlayATKeyboardEvent(): void {
     if ((this.flags & ScoreBoard.FLAG_SHOW_BUTTONS) !== 0) this.playButton.click();
+  }
+
+  private rebuildScaledAssets(): void {
+    if (!this.images.size) {
+      this.bannerSize = { width: 0, height: 0 };
+      this.scoreBoardSize = { width: 0, height: 0 };
+      this.toastSize = { width: 0, height: 0 };
+      this.digitSizes.clear();
+      this.medalSizes.clear();
+      return;
+    }
+
+    const canvasWidth = this.canvasSize.width;
+
+    const bannerImage = this.images.get('banner-gameover');
+    this.bannerSize = bannerImage
+      ? rescaleDim(
+          { width: bannerImage.width, height: bannerImage.height },
+          { width: canvasWidth * 0.7 }
+        )
+      : { width: 0, height: 0 };
+
+    const boardImage = this.images.get('score-board');
+    this.scoreBoardSize = boardImage
+      ? rescaleDim(
+          { width: boardImage.width, height: boardImage.height },
+          { width: canvasWidth * 0.85 }
+        )
+      : { width: 0, height: 0 };
+
+    const digitTargetWidth = this.scoreBoardSize.width * 0.05;
+    this.digitSizes.clear();
+    for (let i = 0; i < 10; ++i) {
+      const key = `number-${i}`;
+      const digitImage = this.images.get(key);
+      if (!digitImage) continue;
+
+      this.digitSizes.set(
+        String(i),
+        rescaleDim(
+          { width: digitImage.width, height: digitImage.height },
+          { width: digitTargetWidth }
+        )
+      );
+    }
+
+    const medalTargetWidth = this.scoreBoardSize.width * 0.1878;
+    this.medalSizes.clear();
+    ['coin-10', 'coin-20', 'coin-30', 'coin-40'].forEach((key) => {
+      const medalImage = this.images.get(key);
+      if (!medalImage) return;
+
+      this.medalSizes.set(
+        key,
+        rescaleDim(
+          { width: medalImage.width, height: medalImage.height },
+          { width: medalTargetWidth }
+        )
+      );
+    });
+
+    const toastImage = this.images.get('new-icon');
+    this.toastSize = toastImage
+      ? rescaleDim(
+          { width: toastImage.width, height: toastImage.height },
+          { width: this.scoreBoardSize.width * 0.14 }
+        )
+      : { width: 0, height: 0 };
   }
 }
