@@ -1,4 +1,19 @@
-// File Overview: This module belongs to src/lib/asset-loader/loaders/image.ts.
+/**
+ * Loader implementation for image assets.
+ *
+ * Role
+ * - Complements `loaders/audio.ts` by handling `<img>` creation and load/error events.
+ * - Shares the abstract loader contract so `AssetsLoader` can manage heterogeneous asset types
+ *   uniformly.
+ *
+ * Inputs & Outputs
+ * - `test()`: verifies the source filename matches supported image extensions.
+ * - `load()`: resolves with `{ source, object: HTMLImageElement }` once the image is ready to use.
+ *
+ * Implementation Notes
+ * - Only waits for the `load` event (images do not expose additional readiness events) and relies
+ *   on the base `eventTracking` helper to notify the orchestrator when complete.
+ */
 import { IPromiseResolve } from '../interfaces';
 import { AbstractLoader } from '../abstraction';
 

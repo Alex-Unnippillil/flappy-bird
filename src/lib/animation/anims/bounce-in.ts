@@ -1,10 +1,21 @@
-// File Overview: This module belongs to src/lib/animation/anims/bounce-in.ts.
 /**
- * From given coordinate, it will bounce up once while fading in
- * Fade-in duration will be 0.5 sec
- * Bounce duration will be 1 sec
+ * Produces a "bounce in" entrance animation that combines a vertical hop with a fade.
  *
- * */
+ * Role
+ * - Extends `DefaultProps` to reuse lifecycle tracking shared across animation siblings.
+ * - Couples easing curves from `easing.ts` so both the opacity and bounce height follow the
+ *   configured durations.
+ *
+ * Inputs & Outputs
+ * - Constructor accepts optional duration overrides for the fade and bounce phases via
+ *   `IBounceInConstructor`.
+ * - `value` exposes the current opacity and positional offset, allowing screens to drive CSS
+ *   styles or canvas transforms.
+ *
+ * Implementation Notes
+ * - Uses the sine-wave easing helper so the bounce peaks halfway through the duration while the
+ *   fade relies on the swing curve, mirroring other fade animations in this folder.
+ */
 import DefaultProps from '../abstracts/default-properties';
 import * as easing from '../easing';
 
