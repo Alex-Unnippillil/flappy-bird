@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/stats/index.ts.
 interface ITextProperties {
   position: ICoordinate;
   preText: string;

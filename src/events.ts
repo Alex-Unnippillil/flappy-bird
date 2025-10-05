@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/events.ts.
 /**
  * Interactive
  */

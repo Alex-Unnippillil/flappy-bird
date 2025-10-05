@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/pipe-generator.ts.
 import { PIPE_DISTANCE, PIPE_MIN_GAP } from '../constants';
 import { randomClamp } from '../utils';
 import Pipe from './pipe';

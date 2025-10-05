@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/workbox-work-offline/index.ts.
 /**
  * https://webpack.js.org/guides/progressive-web-application/
  * */

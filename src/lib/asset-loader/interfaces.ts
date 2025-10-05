@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/asset-loader/interfaces.ts.
 import { AbstractLoader } from './abstraction';
 
 export interface IPromiseResolve {

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/asset-loader/abstraction.ts.
 import { IPromiseResolve } from './interfaces';
 
 class ParentLoader {

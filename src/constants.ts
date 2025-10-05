@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/constants.ts.
 /**
  * Environment Contants
  */

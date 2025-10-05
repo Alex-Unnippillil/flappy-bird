@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/storage/index.ts.
 export type IStoreValue = string | number | boolean;
 export interface IData {
   type: IStoreValue;

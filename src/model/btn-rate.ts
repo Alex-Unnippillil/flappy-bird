@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/btn-rate.ts.
 import PlayButton from './btn-play'; // Instead of duplicating
 import SpriteDestructor from '../lib/sprite-destructor';
 import { openInNewTab } from '../utils';

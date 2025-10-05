@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/scene-generator.ts.
 import { randomClamp } from '../utils';
 import { ITheme } from './background';
 import { IBirdColor } from './bird';

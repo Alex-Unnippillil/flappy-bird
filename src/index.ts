@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/index.ts.
 import './styles/main.scss';
 import gameSpriteIcon from './assets/icon.png';
 import '@total-typescript/ts-reset';

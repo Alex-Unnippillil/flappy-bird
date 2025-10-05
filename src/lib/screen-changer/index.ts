@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/screen-changer/index.ts.
 export interface IScreenChangerObject {
   Update(): void;
   Display(context: CanvasRenderingContext2D): void;

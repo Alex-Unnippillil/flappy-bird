@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/abstracts/default-properties.ts.
 export default abstract class DefaultProperties {
   protected isRunning: boolean;
   protected isComplete: boolean;

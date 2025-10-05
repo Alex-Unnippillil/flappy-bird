@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/btn-toggle-speaker.ts.
 import Parent from '../abstracts/button-event-handler';
 import SpriteDestructor from '../lib/sprite-destructor';
 import Sfx from './sfx';

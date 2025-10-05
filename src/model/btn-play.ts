@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/btn-play.ts.
 import Parent from '../abstracts/button-event-handler';
 import Sfx from './sfx';
 import SpriteDestructor from '../lib/sprite-destructor';

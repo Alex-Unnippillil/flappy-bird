@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/utils/index.ts.
 export * from './rescale-dim';
 export * from './framer';
 export * from './linear-interpolation';

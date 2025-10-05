@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/spark.ts.
 import ParentClass from '../abstracts/parent-class';
 import { rescaleDim, randomClamp } from '../utils';
 import SpriteDestructor from '../lib/sprite-destructor';

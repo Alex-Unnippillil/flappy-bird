@@ -1,3 +1,4 @@
+// File Overview: This module belongs to types/custom.d.ts.
 interface IDimension {
   width: number;
   height: number;

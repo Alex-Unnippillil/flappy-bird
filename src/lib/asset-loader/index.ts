@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/asset-loader/index.ts.
 import AudioLoader from './loaders/audio';
 import ImageLoader from './loaders/image';
 import { IPromiseResolve, ILoaders } from './interfaces';

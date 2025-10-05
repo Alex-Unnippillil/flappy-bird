@@ -1,4 +1,5 @@
 {
+  "_comment": "This file (.prettierrc) defines formatting preferences for the project.",
   "semi": true,
   "trailingComma": "none",
   "singleQuote": true,

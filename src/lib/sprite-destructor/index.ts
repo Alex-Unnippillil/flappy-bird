@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/sprite-destructor/index.ts.
 /**
  * A sprite destructor
  * */

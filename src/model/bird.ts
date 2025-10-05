@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/bird.ts.
 import {
   BIRD_HEIGHT,
   BIRD_INITIAL_DIMENSION,

@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/anims/bounce-in.ts.
 /**
  * From given coordinate, it will bounce up once while fading in
  * Fade-in duration will be 0.5 sec

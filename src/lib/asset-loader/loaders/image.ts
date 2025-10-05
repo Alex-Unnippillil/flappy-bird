@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/asset-loader/loaders/image.ts.
 import { IPromiseResolve } from '../interfaces';
 import { AbstractLoader } from '../abstraction';
 

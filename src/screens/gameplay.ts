@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/screens/gameplay.ts.
 /**
  * Display "Get Ready" & "Instruction"
  * Let the bird swing while waiting...

@@ -1,6 +1,7 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "noEmit": true
-    }
+  "_comment": "This file (tsconfig.eslint.json) defines configuration or metadata for the project.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  }
 }

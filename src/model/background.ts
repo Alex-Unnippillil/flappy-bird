@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/model/background.ts.
 import { BG_SPEED } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';

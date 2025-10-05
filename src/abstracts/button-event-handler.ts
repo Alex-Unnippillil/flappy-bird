@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/abstracts/button-event-handler.ts.
 /**
  * Lets visualize the event
  *

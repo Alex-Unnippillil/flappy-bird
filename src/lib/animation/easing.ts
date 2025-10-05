@@ -1,3 +1,4 @@
+// File Overview: This module belongs to src/lib/animation/easing.ts.
 export type IProgressFunction = (t: number) => number;
 
 export interface IEasingUtils {
