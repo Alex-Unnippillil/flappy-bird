@@ -52,10 +52,10 @@ export default class ScoreBoard extends ParentObject {
     this.currentGeneratedNumber = 0;
     this.currentScore = 0;
     this.medalTiers = [
-      { threshold: 40, label: 'Platinum', imageKey: 'medal-platinum' },
-      { threshold: 30, label: 'Gold', imageKey: 'medal-gold' },
-      { threshold: 20, label: 'Silver', imageKey: 'medal-silver' },
-      { threshold: 10, label: 'Bronze', imageKey: 'medal-bronze' }
+      { threshold: 10, label: 'Platinum', imageKey: 'medal-platinum' },
+      { threshold: 5, label: 'Gold', imageKey: 'medal-gold' },
+      { threshold: 1, label: 'Silver', imageKey: 'medal-silver' },
+      { threshold: 0, label: 'Bronze', imageKey: 'medal-bronze' }
     ];
     this.FlyInAnim = new Fly({
       duration: 500,
