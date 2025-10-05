@@ -16,6 +16,13 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import { BIRD_JUMP_HEIGHT } from '../constants';
+import {
+  ControlMode,
+  DEFAULT_CONTROL_MODE,
+  getControlMode,
+  subscribeControlMode
+} from '../lib/settings/control-mode';
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
@@ -31,6 +38,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private hideBird: boolean;
   private flashScreen: FlashScreen;
   private showScoreBoard: boolean;
+  private controlMode: ControlMode;
+  private controlModeSubscription: (() => void) | null;
+  private holdActive: boolean;
+  private holdFrames: number;
+  private holdImpulseStrength: number;
+  private holdContinuousBase: number;
+  private holdContinuousBonus: number;
+  private holdRampFrames: number;
 
   constructor(game: MainGameController) {
     super();
@@ -56,6 +71,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     });
     this.hideBird = false;
     this.showScoreBoard = false;
+    this.controlMode = DEFAULT_CONTROL_MODE;
+    this.controlModeSubscription = null;
+    this.holdActive = false;
+    this.holdFrames = 0;
+    this.holdImpulseStrength = 0;
+    this.holdContinuousBase = 0;
+    this.holdContinuousBonus = 0;
+    this.holdRampFrames = 18;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -68,6 +91,14 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+
+    this.applyControlMode(getControlMode());
+
+    if (!this.controlModeSubscription) {
+      this.controlModeSubscription = subscribeControlMode((mode) => {
+        this.applyControlMode(mode);
+      });
+    }
   }
 
   public reset(): void {
@@ -82,6 +113,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.showScoreBoard = false;
     this.scoreBoard.hide();
     this.bird.reset();
+    this.clearHoldState();
   }
 
   public resize({ width, height }: IDimension): void {
@@ -93,6 +125,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.scoreBoard.resize(this.canvasSize);
     this.flashScreen.resize(this.canvasSize);
     this.transition.resize(this.canvasSize);
+
+    this.computeHoldForces();
   }
 
   public Update(): void {
@@ -102,6 +136,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
     if (!this.bird.alive) {
       this.game.bgPause = true;
+      this.clearHoldState();
       this.bird.Update();
       return;
     }
@@ -120,6 +155,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
     this.bannerInstruction.Update();
     this.pipeGenerator.Update();
+    this.updateHoldLift();
     this.bird.Update();
 
     if (this.bird.isDead(this.pipeGenerator.pipes)) {
@@ -175,25 +211,102 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     // })
   }
 
-  public click({ x, y }: ICoordinate): void {
+  private applyControlMode(mode: ControlMode): void {
+    this.controlMode = mode;
+
+    if (mode !== 'hold') {
+      this.clearHoldState();
+    }
+  }
+
+  private clearHoldState(): void {
+    this.holdActive = false;
+    this.holdFrames = 0;
+  }
+
+  private triggerHoldImpulse(): void {
+    if (this.controlMode !== 'hold') return;
+
+    if (this.holdImpulseStrength === 0) {
+      this.computeHoldForces();
+    }
+
+    this.holdActive = true;
+    this.holdFrames = 0;
+    this.bird.applyLift(this.holdImpulseStrength);
+    Sfx.wing();
+  }
+
+  private updateHoldLift(): void {
+    if (
+      this.controlMode !== 'hold' ||
+      !this.holdActive ||
+      this.state !== 'playing' ||
+      this.gameState !== 'playing' ||
+      !this.bird.alive
+    ) {
+      return;
+    }
+
+    const progress = Math.min(1, this.holdFrames / this.holdRampFrames);
+    const eased = 1 - Math.pow(1 - progress, 2);
+    const lift = this.holdContinuousBase + this.holdContinuousBonus * eased;
+
+    if (lift > 0) {
+      this.bird.applyLift(lift);
+    }
+
+    if (this.holdFrames < this.holdRampFrames) {
+      this.holdFrames++;
+    }
+  }
+
+  private computeHoldForces(): void {
+    if (this.canvasSize.height === 0) return;
+
+    const baseImpulse = this.canvasSize.height * Math.abs(BIRD_JUMP_HEIGHT);
+    this.holdImpulseStrength = baseImpulse;
+    this.holdContinuousBase = baseImpulse * 0.1;
+    this.holdContinuousBonus = baseImpulse * 0.32;
+  }
+
+  public click(_coord: ICoordinate): void {
+    void _coord;
     if (this.gameState === 'died') return;
 
     this.state = 'playing';
     this.gameState = 'playing';
     this.bannerInstruction.tap();
+
+    if (this.controlMode === 'hold') {
+      this.triggerHoldImpulse();
+      return;
+    }
+
     this.bird.flap();
   }
 
-  public mouseDown({ x, y }: ICoordinate): void {
-    if (this.gameState !== 'died') return;
+  public mouseDown(coord: ICoordinate): void {
+    if (this.gameState === 'died') {
+      this.scoreBoard.mouseDown(coord);
+      return;
+    }
 
-    this.scoreBoard.mouseDown({ x, y });
+    if (this.controlMode === 'hold') {
+      this.holdActive = true;
+      this.holdFrames = 0;
+    }
   }
 
-  public mouseUp({ x, y }: ICoordinate): void {
-    if (this.gameState !== 'died') return;
+  public mouseUp(coord: ICoordinate): void {
+    if (this.gameState === 'died') {
+      this.scoreBoard.mouseUp(coord);
+      return;
+    }
 
-    this.scoreBoard.mouseUp({ x, y });
+    if (this.controlMode === 'hold') {
+      this.clearHoldState();
+    }
   }
   public startAtKeyBoardEvent(): void {
     if (this.gameState === 'died') this.scoreBoard.triggerPlayATKeyboardEvent();

@@ -197,6 +197,17 @@ export default class Bird extends ParentClass {
     this.lastCoord = this.coordinate.y;
   }
 
+  public applyLift(amount: number): void {
+    if (this.coordinate.y < 0 || (this.flags & Bird.FLAG_IS_ALIVE) === 0) {
+      return;
+    }
+
+    const lift = Math.abs(amount);
+    const nextVelocity = this.velocity.y - lift;
+    this.velocity.y = Math.max(nextVelocity, this.max_lift_velocity);
+    this.lastCoord = this.coordinate.y;
+  }
+
   /**
    * Check if the bird touches the platform
    * */

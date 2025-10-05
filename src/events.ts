@@ -62,7 +62,10 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
      * */
     void WebSfx.init();
 
-    evt.preventDefault();
+    const eventObj = evt as Event;
+    if (eventObj.cancelable) {
+      eventObj.preventDefault();
+    }
     if (!isRetreive) mouse.position = getBoundedPosition({ x, y });
 
     Game.mouseUp(mouse.position);
@@ -102,6 +105,12 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
   });
 
+  canvas.addEventListener('mouseleave', (evt: MouseEvent) => {
+    if (!mouse.down) return;
+
+    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+  });
+
   // Touch Event
   canvas.addEventListener('touchstart', (evt: TouchEvent) => {
     mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
@@ -118,6 +127,24 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
   canvas.addEventListener('touchmove', (evt: TouchEvent) => {
     mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
+  });
+
+  window.addEventListener('mouseup', (evt: MouseEvent) => {
+    if (!hasMouseDown) return;
+
+    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+  });
+
+  window.addEventListener('touchend', (evt: TouchEvent) => {
+    if (evt.touches.length === 0 && mouse.down) {
+      mouseUP(mouse.position, evt, true);
+    }
+  });
+
+  window.addEventListener('touchcancel', (evt: TouchEvent) => {
+    if (!mouse.down) return;
+
+    mouseUP(mouse.position, evt, true);
   });
 
   // Keyboard event
