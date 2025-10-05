@@ -8,18 +8,46 @@
  *
  * */
 
-/**
- * Return wave value based on time using sine
- * */
-export const sine = (frequency: number, amplitude: number): number => {
-  const time = new Date().getTime();
-  return Math.sin(((time / 1000) * 2 * Math.PI) / (1 / frequency)) * amplitude;
+export interface IWaveState {
+  phase: number;
+}
+
+export const createWaveState = (): IWaveState => ({ phase: 0 });
+
+const FULL_ROTATION = Math.PI * 2;
+
+const advancePhase = (state: IWaveState, delta: number, frequency: number): void => {
+  const deltaSeconds = delta / 60;
+  state.phase = (state.phase + FULL_ROTATION * frequency * deltaSeconds) % FULL_ROTATION;
+  if (state.phase < 0) {
+    state.phase += FULL_ROTATION;
+  }
 };
 
 /**
- * Return wave value based on time using cosine. Its your choice
- * */
-export const cosine = (frequency: number, amplitude: number): number => {
-  const time = new Date().getTime();
-  return Math.sin(((time / 1000) * 2 * Math.PI) / (1 / frequency)) * amplitude;
+ * Return wave value based on accumulated phase using sine. The delta parameter
+ * is normalized against 60 FPS (delta === 1 === 16.66ms).
+ */
+export const sine = (
+  state: IWaveState,
+  delta: number,
+  frequency: number,
+  amplitude: number
+): number => {
+  advancePhase(state, delta, frequency);
+  return Math.sin(state.phase) * amplitude;
+};
+
+/**
+ * Return wave value based on accumulated phase using cosine. The delta parameter
+ * is normalized against 60 FPS (delta === 1 === 16.66ms).
+ */
+export const cosine = (
+  state: IWaveState,
+  delta: number,
+  frequency: number,
+  amplitude: number
+): number => {
+  advancePhase(state, delta, frequency);
+  return Math.cos(state.phase) * amplitude;
 };

@@ -26,6 +26,7 @@ export default class Game extends ParentClass {
   private screenIntro: Intro;
   private gamePlay: GamePlay;
   private state: IGameState;
+  private static readonly MAX_DELTA = 2.5;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -100,16 +101,19 @@ export default class Game extends ParentClass {
     this.canvas.height = height;
   }
 
-  public Update(): void {
-    this.transition.Update();
+  public Update(delta: number): void {
+    const safeDelta = Number.isFinite(delta) ? delta : 0;
+    const clampedDelta = Math.min(Math.max(safeDelta, 0), Game.MAX_DELTA);
+
+    this.transition.Update(clampedDelta);
     this.screenChanger.setState(this.state);
 
     if (!this.bgPause) {
-      this.background.Update();
-      this.platform.Update();
+      this.background.Update(clampedDelta);
+      this.platform.Update(clampedDelta);
     }
 
-    this.screenChanger.Update();
+    this.screenChanger.Update(clampedDelta);
   }
 
   public Display(): void {
@@ -128,6 +132,14 @@ export default class Game extends ParentClass {
     this.platform.Display(this.context);
     this.screenChanger.Display(this.context);
     this.transition.Display(this.context);
+  }
+
+  public update(delta: number): void {
+    this.Update(delta);
+  }
+
+  public render(): void {
+    this.Display();
   }
 
   public setEvent(): void {

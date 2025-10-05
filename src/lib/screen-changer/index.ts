@@ -1,6 +1,6 @@
 // File Overview: This module belongs to src/lib/screen-changer/index.ts.
 export interface IScreenChangerObject {
-  Update(): void;
+  Update(delta: number): void;
   Display(context: CanvasRenderingContext2D): void;
 }
 
@@ -21,14 +21,14 @@ export default class ScreenChanger implements IScreenChangerObject {
     this.objects.set(name, classObject);
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
     const classObject = this.objects.get(this.currentState);
 
     if (classObject === void 0) {
       throw new TypeError(`State ${this.currentState} does not exists`);
     }
 
-    classObject.Update();
+    classObject.Update(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {

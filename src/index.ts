@@ -30,6 +30,7 @@ const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
 let isLoaded = false;
+let lastFrameTime = performance.now();
 
 gameIcon.src = gameSpriteIcon;
 
@@ -39,10 +40,14 @@ fps.text({ x: 50, y: 50 }, '', ' Cycle');
 fps.container({ x: 10, y: 10}, { x: 230, y: 70});
 
 const GameUpdate = (): void => {
-  physicalContext.drawImage(virtualCanvas, 0, 0);
+  const now = performance.now();
+  const delta = (now - lastFrameTime) / (1000 / 60);
+  lastFrameTime = now;
 
-  Game.Update();
-  Game.Display();
+  Game.update(delta);
+  Game.render();
+
+  physicalContext.drawImage(virtualCanvas, 0, 0);
 
   if (process.env.NODE_ENV === 'development') fps.mark();
 
@@ -89,6 +94,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ScreenResize();
 
     // raf(GameUpdate); Issue #16
+    lastFrameTime = performance.now();
     if (!game_running()) game_start(); // Quick fix. Long term :)
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();

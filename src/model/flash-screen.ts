@@ -72,7 +72,8 @@ export default class FlashScreen extends ParentClass {
     return { ...this.fadeEvent.status, value: this.value };
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
+    void delta;
     if (!this.status.complete || this.status.running) {
       this.value = this.fadeEvent.value;
 

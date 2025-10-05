@@ -10,7 +10,8 @@ import {
   BIRD_WEIGHT,
   BIRD_X_POSITION
 } from '../constants';
-import { clamp, flipRange, rescaleDim, sine as sineWave } from '../utils';
+import { clamp, flipRange, rescaleDim, sine as sineWave, createWaveState } from '../utils';
+import type { IWaveState } from '../utils';
 import ParentClass from '../abstracts/parent-class';
 import Pipe from './pipe';
 import Sfx from './sfx';
@@ -72,6 +73,8 @@ export default class Bird extends ParentClass {
   private lastCoord: number;
   private max_lift_velocity: number;
   private max_fall_velocity: number;
+  private idleWaveState: IWaveState;
+  private wingWaveState: IWaveState;
 
   constructor() {
     super();
@@ -90,6 +93,8 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.idleWaveState = createWaveState();
+    this.wingWaveState = createWaveState();
   }
 
   /**
@@ -121,6 +126,8 @@ export default class Bird extends ParentClass {
     this.flags = 0b0001;
     this.lastCoord = 0;
     this.wingState = 1;
+    this.idleWaveState.phase = 0;
+    this.wingWaveState.phase = 0;
   }
 
   public reset(): void {
@@ -162,9 +169,14 @@ export default class Bird extends ParentClass {
    * @param waveSpeed - frequency hz
    * @param amplitude - amplitude
    * */
-  public doWave({ x, y }: ICoordinate, frequency: number, amplitude: number): void {
-    this.flapWing(3);
-    y += sineWave(frequency, amplitude);
+  public doWave(
+    { x, y }: ICoordinate,
+    frequency: number,
+    amplitude: number,
+    delta: number
+  ): void {
+    this.flapWing(3, delta);
+    y += sineWave(this.idleWaveState, delta, frequency, amplitude);
     this.coordinate = { x, y };
   }
 
@@ -173,8 +185,8 @@ export default class Bird extends ParentClass {
    *
    * @param speed - flap speed
    * */
-  private flapWing(speed: number): void {
-    this.wingState = (1 + sineWave(speed, 2)) | 0;
+  private flapWing(speed: number, delta: number): void {
+    this.wingState = (1 + sineWave(this.wingWaveState, delta, speed, 2)) | 0;
 
     // Make sure the wing is set to mid flap when the bird is falling
     if (this.rotation > 70) {
@@ -297,8 +309,8 @@ export default class Bird extends ParentClass {
   /**
    * Handling Bird Rotation
    * */
-  private handleRotation(): void {
-    this.rotation += this.coordinate.y < this.lastCoord ? -7.2 : 6.5;
+  private handleRotation(delta: number): void {
+    this.rotation += (this.coordinate.y < this.lastCoord ? -7.2 : 6.5) * delta;
     this.rotation = clamp(BIRD_MIN_ROTATION, BIRD_MAX_ROTATION, this.rotation);
 
     if ((this.flags & Bird.FLAG_IS_ALIVE) === 0) {
@@ -309,17 +321,17 @@ export default class Bird extends ParentClass {
     // Handle Flap Speed
     const birdMinRot = Math.abs(BIRD_MIN_ROTATION);
     const f = 4 + ((this.rotation + birdMinRot) / (birdMinRot + BIRD_MAX_ROTATION)) * 3.2;
-    this.flapWing(flipRange(4, 8.2, f));
+    this.flapWing(flipRange(4, 8.2, f), delta);
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
     // Always above the floor
     if (this.doesHitTheFloor() || (this.flags & Bird.FLAG_DOES_LANDED) !== 0) {
       this.flags |= Bird.FLAG_DOES_LANDED;
 
       this.coordinate.y =
         this.canvasSize.height - Bird.platformHeight - this.rotatedDimension().height;
-      this.handleRotation();
+      this.handleRotation(delta);
       return;
     }
 
@@ -328,12 +340,12 @@ export default class Bird extends ParentClass {
       this.max_lift_velocity,
       this.max_fall_velocity,
       this.velocity.y
-    );
+    ) * delta;
 
     // Slowly reduce the Y velocity by given weights
-    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT;
+    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT * delta;
 
-    this.handleRotation();
+    this.handleRotation(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {

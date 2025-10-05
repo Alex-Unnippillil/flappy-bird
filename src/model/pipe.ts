@@ -146,8 +146,8 @@ export default class Pipe extends ParentClass {
   /**
    * Pipe Update
    * */
-  public Update(): void {
-    this.coordinate.x -= this.velocity.x;
+  public Update(delta: number): void {
+    this.coordinate.x -= this.velocity.x * delta;
   }
 
   public Display(context: CanvasRenderingContext2D): void {

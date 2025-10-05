@@ -52,19 +52,20 @@ export default class Introduction extends ParentClass implements IScreenChangerO
     this.toggleSpeakerButton.resize({ width, height });
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
     this.bird.doWave(
       {
         x: this.canvasSize.width * 0.5,
         y: this.canvasSize.height * 0.46
       },
       1.4,
-      9
+      9,
+      delta
     );
 
-    this.playButton.Update();
-    this.rankingButton.Update();
-    this.toggleSpeakerButton.Update();
+    this.playButton.Update(delta);
+    this.rankingButton.Update(delta);
+    this.toggleSpeakerButton.Update(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {

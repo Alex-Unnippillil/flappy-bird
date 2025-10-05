@@ -36,7 +36,7 @@ export default class ToggleSpeakerBtn extends Parent {
     this.setImg();
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
     this.reset();
 
     if (this.isHovered) {
@@ -48,7 +48,7 @@ export default class ToggleSpeakerBtn extends Parent {
 
     this.setImg();
 
-    super.Update();
+    super.Update(delta);
   }
 
   public Display(ctx: CanvasRenderingContext2D): void {

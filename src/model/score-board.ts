@@ -102,11 +102,11 @@ export default class ScoreBoard extends ParentObject {
     this.toggleSpeakerButton.resize(this.canvasSize);
   }
 
-  public Update(): void {
-    this.rankingButton.Update();
-    this.playButton.Update();
-    this.spark.Update();
-    this.toggleSpeakerButton.Update();
+  public Update(delta: number): void {
+    this.rankingButton.Update(delta);
+    this.playButton.Update(delta);
+    this.spark.Update(delta);
+    this.toggleSpeakerButton.Update(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -173,12 +173,7 @@ export default class ScoreBoard extends ParentObject {
       }
 
       this.displayScore(context, anim, sbScaled);
-      this.displayBestScore(
-        context,
-        anim,
-        sbScaled,
-        (this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) !== 0
-      );
+      this.displayBestScore(context, anim, sbScaled);
 
       if (this.FlyInAnim.status.complete && !this.FlyInAnim.status.running) {
         this.TimingEventAnim.start();
@@ -294,8 +289,7 @@ export default class ScoreBoard extends ParentObject {
   private displayBestScore(
     context: CanvasRenderingContext2D,
     coord: ICoordinate,
-    parentSize: IDimension,
-    _p0: boolean
+    parentSize: IDimension
   ): void {
     const numSize = rescaleDim(
       {
@@ -361,7 +355,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.onClick(cb);
   }
 
-  public onShowRanks(_cb: IEmptyFunction): void {
+  public onShowRanks(): void {
     /**
      * I don't know what to do on ranking?
      *

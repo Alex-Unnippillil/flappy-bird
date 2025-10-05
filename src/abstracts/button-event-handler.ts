@@ -84,7 +84,8 @@ export default abstract class ButtonEventHandler {
     this.canvasSize = { width, height };
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
+    void delta;
     this.calcCoord.x =
       this.canvasSize.width * this.coordinate.x + this.additionalTranslate.x;
     this.calcCoord.y =
@@ -94,7 +95,7 @@ export default abstract class ButtonEventHandler {
   public mouseEvent(state: IMouseState, { x, y }: ICoordinate): void {
     if (state === 'down') {
       this.onMouseDown({ x, y });
-    } else if (state === 'up') {
+    } else {
       this.onMouseup({ x, y });
     }
   }

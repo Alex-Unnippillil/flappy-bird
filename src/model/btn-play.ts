@@ -29,7 +29,7 @@ export default class PlayButton extends Parent {
     this.img = SpriteDestructor.asset('btn-play');
   }
 
-  public Update(): void {
+  public Update(delta: number): void {
     this.reset();
 
     if (this.isHovered) {
@@ -39,7 +39,7 @@ export default class PlayButton extends Parent {
       });
     }
 
-    super.Update();
+    super.Update(delta);
   }
 
   public Display(context: CanvasRenderingContext2D): void {
