@@ -1,4 +1,4 @@
-// File Overview: This module belongs to types/declaration.d.ts.
+// Supplies module shims for importing compiled assets and a legacy WebKit MutationObserver global for browser compatibility.
 declare module '*.svg' {
   const content: string;
   export default content;
@@ -19,3 +19,5 @@ declare module '*.sass';
 declare module '*.css';
 
 declare let WebKitMutationObserver: MutationObserver;
+
+// Keep additional ambient modules grouped by asset type and default export shape to align with existing consumption patterns.
