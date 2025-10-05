@@ -4,6 +4,26 @@
 
 This document provides essential information for AI coding agents (such as GitHub Copilot, OpenAI Codex, and similar tools) to understand, extend, and interact with the Flappy Bird web app project. It is intended to facilitate automated code generation, refactoring, and intelligent assistance.
 
+Use this guide alongside the repository README for a complete picture of project capabilities and expectations.
+
+---
+
+## Executive Summary
+
+### What's Solid
+- **Clear modular architecture**: `model/`, `screens/`, `lib/`, and `utils/` offer strong separation of concerns, supported by helpers such as `ScreenChanger`, `ParentClass`, `animation/`, `asset-loader/`, and `web-sfx/`.
+- **Modern build pipeline**: Webpack + TypeScript + SCSS with HtmlWebpackPlugin meta injection, Workbox `GenerateSW`, and a PWA manifest. Service worker registration (`lib/workbox-work-offline/index.ts`) is production-gated with sensible defaults (`clientsClaim`, `skipWaiting`).
+- **Input/state management**: `events.ts` unifies mouse, touch, and keyboard paths while `ScreenChanger` mediates intro/game transitions. `lib/storage` namespaces `localStorage` keys by site path, enabling parallel GitHub Pages deployments.
+- **Visual/audio polish**: Sprite atlas support, `SpriteDestructor`, intro/gameplay screens, score banner, and a Web Audio wrapper (`lib/web-sfx`).
+
+### Biggest Opportunities
+- **Game loop & performance**: Adopt delta-driven updates separated from rendering, consider high-DPI scaling, optional FPS caps, `document.visibilityState` pauses, reduced per-frame allocations, and progressive `OffscreenCanvas` for heavier rendering.
+- **Input**: Prefer Pointer Events to remove duplicate mouse/touch paths, add `touch-action` CSS, and use passive listeners where beneficial.
+- **Accessibility & UX**: Respect `prefers-reduced-motion`, provide keyboard focus/roles for canvas UI, high-contrast themes, vibration toggles, orientation hints, and a persistable Settings screen.
+- **Record-keeping**: Expand beyond a single high score—track per-run history, periodic personal bests, import/export JSON, Web Share links, and guard against large time deltas for anti-cheat.
+- **PWA polish**: Ensure manifest completeness (icons, screenshots, categories, shortcuts), tailor runtime caching per asset type, and surface an “update available” prompt when a new service worker activates.
+- **Repository hygiene**: Add a BSD-3-Clause LICENSE, reconcile `package.json` metadata (repository URL, homepage), establish CI for lint/test/build, maintain changelog/releases, add issue/PR templates, and triage existing pull requests.
+
 ---
 
 ## Project Purpose
