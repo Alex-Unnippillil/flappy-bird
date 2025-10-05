@@ -1,4 +1,18 @@
-// File Overview: This module belongs to src/lib/animation/anims/flying.ts.
+/**
+ * Drives sprite movement between two coordinates with easing.
+ *
+ * Role
+ * - Extends the shared `Flying` abstract so movement animations respect the same timing settings
+ *   as other modules within `animation/`.
+ *
+ * Inputs & Outputs
+ * - Consumes the `from`/`to` coordinates defined on the base class and returns the interpolated
+ *   position via the `value` getter.
+ *
+ * Implementation Notes
+ * - Uses the `lerp` utility with the easing curve selected by `Flying` to avoid manual math for
+ *   each axis and ensures the final frame snaps exactly to the destination.
+ */
 import IFlying from '../abstracts/flying';
 import { lerp } from '../../../utils';
 

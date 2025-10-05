@@ -1,4 +1,21 @@
-// File Overview: This module belongs to src/lib/stats/index.ts.
+/**
+ * Lightweight FPS and debug text overlay renderer.
+ *
+ * Role
+ * - Tracks frame timestamps to compute frames-per-second metrics for diagnostics.
+ * - Draws both background containers and formatted text onto a provided canvas context so game
+ *   screens can visualize performance information.
+ *
+ * Inputs & Outputs
+ * - Constructor accepts the target `CanvasRenderingContext2D`.
+ * - `text(position, preText, postText)`: configures the label drawn alongside the FPS value.
+ * - `container(startingPoint, endPoint)`: sets the dimensions for the overlay background.
+ * - `mark()`: records the current frame, updates rolling FPS, and renders the overlay.
+ *
+ * Implementation Notes
+ * - Maintains a sliding window of timestamps rather than averaging to ensure FPS reflects the last
+ *   second of frames.
+ */
 interface ITextProperties {
   position: ICoordinate;
   preText: string;

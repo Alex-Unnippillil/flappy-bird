@@ -1,4 +1,24 @@
-// File Overview: This module belongs to src/lib/storage/index.ts.
+/**
+ * Namespaced wrapper around `window.localStorage` used to persist scores and settings per
+ * deployment.
+ *
+ * Role
+ * - Derives a namespace from the current GitHub Pages URL so multiple builds can safely
+ *   share the same origin without colliding keys.
+ * - Provides helpers for Base64-safe stringification (`utoa`/`atou`) and value type tagging.
+ *
+ * Inputs & Outputs
+ * - `save(key, value)`: accepts a string key and a primitive value (`string | number | boolean`).
+ *   The method encodes the value and stores it in `localStorage` if available.
+ * - `get(key)`: returns the original primitive value or `undefined` when not found or when
+ *   storage is unavailable.
+ *
+ * Implementation Notes
+ * - Availability is checked once in the constructor to avoid quota errors in restricted
+ *   environments.
+ * - Values are JSON encoded together with their primitive type before Base64 encoding so
+ *   retrieval can restore the correct type rather than always returning strings.
+ */
 export type IStoreValue = string | number | boolean;
 export interface IData {
   type: IStoreValue;

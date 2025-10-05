@@ -1,8 +1,26 @@
-// File Overview: This module belongs to src/lib/web-sfx/index.ts.
 /**
- * A library for handling sound Effects
- * Handling Sound Effects
- * */
+ * Web Audio-powered sound effect manager.
+ *
+ * Role
+ * - Instantiates a shared `AudioContext`, downloads and decodes effect files, and exposes helpers
+ *   for playing them with consistent gain control.
+ * - Complements the asset loader by handling audio formats that require Web Audio decoding rather
+ *   than DOM `<audio>` playback.
+ *
+ * Inputs & Outputs
+ * - Constructor receives an object mapping logical names to asset URLs and a callback invoked once
+ *   decoding completes.
+ * - `play(key, endedcb?)`: plays a cached `AudioBuffer` by name and optionally notifies when the
+ *   buffer ends.
+ * - `volume(num)`: adjusts the shared gain node volume.
+ * - `init()`: resumes the audio context on a user gesture and creates the gain node if necessary.
+ *
+ * Implementation Notes
+ * - Maintains a static cache of decoded `AudioBuffer`s keyed by both logical names and original
+ *   paths for flexible lookup.
+ * - Batches concurrent network requests to avoid overwhelming the browser, and tracks
+ *   `AudioContext` readiness so playback calls can fail fast when the context has not yet resumed.
+ */
 
 export type IWebSfxObject = Record<string, string>;
 export type IWebSfxCache = Record<string, AudioBuffer>;

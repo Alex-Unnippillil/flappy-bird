@@ -1,4 +1,19 @@
-// File Overview: This module belongs to src/lib/animation/easing.ts.
+/**
+ * Collection of easing curves consumed by animation classes for smooth motion and opacity
+ * transitions.
+ *
+ * Role
+ * - Supplies deterministic easing functions to the abstract bases in `abstracts/` so concrete
+ *   animations can interpolate between values without duplicating math.
+ *
+ * Inputs & Outputs
+ * - Each exported function accepts a normalized progress value (`0`-`1`) and returns a remapped
+ *   value suitable for lerping positions, opacity, or other scalar properties.
+ *
+ * Implementation Notes
+ * - Functions mirror common easing curves (swing, quadratic, cubic bezier, sine wave, etc.) and
+ *   expose a shared `IEasingUtils` interface for type-safe selection.
+ */
 export type IProgressFunction = (t: number) => number;
 
 export interface IEasingUtils {

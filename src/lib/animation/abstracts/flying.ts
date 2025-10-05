@@ -1,4 +1,19 @@
-// File Overview: This module belongs to src/lib/animation/abstracts/flying.ts.
+/**
+ * Base class for position interpolation animations.
+ *
+ * Role
+ * - Provides vector-based lerp helpers for moving sprites between coordinates.
+ * - Shared by the concrete `Fly` animation so movement uses the same timing/easing configuration
+ *   as other animation modules.
+ *
+ * Inputs & Outputs
+ * - Constructor accepts starting/ending coordinates plus optional duration/easing overrides.
+ * - Subclasses read `inUseTransition()` and the stored coordinate options to compute frames.
+ *
+ * Implementation Notes
+ * - Extends `DefaultProperties` for lifecycle management and uses easing functions from
+ *   `animation/easing.ts` to translate elapsed time into normalized interpolation weights.
+ */
 import IDefaultProperties from './default-properties';
 import { IEasingKey } from '../easing';
 import * as easing from '../easing';

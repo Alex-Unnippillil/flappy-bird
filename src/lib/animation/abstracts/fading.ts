@@ -1,4 +1,19 @@
-// File Overview: This module belongs to src/lib/animation/abstracts/fading.ts.
+/**
+ * Base class for opacity-based transitions.
+ *
+ * Role
+ * - Extends `DefaultProperties` with easing-aware fade helpers used by `FadeOut` and
+ *   `FadeOutIn`.
+ * - Stores configurable duration and easing curve so sibling animations can share timing rules.
+ *
+ * Inputs & Outputs
+ * - Constructor optionally accepts a partial `IFadingOptions` to tweak duration or easing.
+ * - Subclasses access `inUseTransition()` to convert raw progress values into eased opacity.
+ *
+ * Implementation Notes
+ * - Delegates easing selection to `animation/easing.ts` via the `IEasingKey` enumeration, keeping
+ *   easing math centralized.
+ */
 import DefaultProps from './default-properties';
 import { IEasingKey } from '../easing';
 import * as easing from '../easing';

@@ -1,4 +1,21 @@
-// File Overview: This module belongs to src/lib/screen-changer/index.ts.
+/**
+ * Simple state machine for switching between registered screen controllers.
+ *
+ * Role
+ * - Stores a map of screen implementations (intro screen, gameplay screen, etc.) that each expose
+ *   `Update` and `Display` methods.
+ * - Provides a `setState` method so the game loop can pivot between registered screens without
+ *   tight coupling.
+ *
+ * Inputs & Outputs
+ * - `register(name, classObject)`: associates an identifier with an `IScreenChangerObject`.
+ * - `setState(state)`: selects which registered object receives subsequent `Update`/`Display`
+ *   calls.
+ *
+ * Implementation Notes
+ * - Throws if an unknown state is requested, making missing registrations easier to diagnose during
+ *   development.
+ */
 export interface IScreenChangerObject {
   Update(): void;
   Display(context: CanvasRenderingContext2D): void;

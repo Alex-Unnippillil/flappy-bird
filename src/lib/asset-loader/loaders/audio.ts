@@ -1,4 +1,21 @@
-// File Overview: This module belongs to src/lib/asset-loader/loaders/audio.ts.
+/**
+ * Loader implementation for audio assets.
+ *
+ * Role
+ * - Extends the abstract loader to handle `<audio>` creation and lifecycle events (`load`,
+ *   `canplay`, `canplaythrough`).
+ * - Works in tandem with `loaders/image.ts` so the registry can cover both visual and audio assets
+ *   through a consistent interface.
+ *
+ * Inputs & Outputs
+ * - `test()`: checks whether the supplied source matches supported audio extensions.
+ * - `load()`: returns a promise resolving with `{ source, object: HTMLAudioElement }` once all
+ *   readiness events fire.
+ *
+ * Implementation Notes
+ * - Waits for multiple readiness events to ensure playback can start without buffering hiccups
+ *   before resolving back to `AssetsLoader`.
+ */
 import { IPromiseResolve } from '../interfaces';
 import { AbstractLoader } from '../abstraction';
 

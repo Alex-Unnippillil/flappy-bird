@@ -1,7 +1,23 @@
-// File Overview: This module belongs to src/lib/sprite-destructor/index.ts.
 /**
- * A sprite destructor
- * */
+ * Extracts sub-images from a sprite sheet and caches them for reuse.
+ *
+ * Role
+ * - Provides a utility for slicing the atlas provided by the asset loader into named sprites and
+ *   storing them in memory for quick lookup.
+ * - Works alongside `asset-loader` (for initial sheet loading) and the rendering code that consumes
+ *   the extracted `HTMLImageElement`s.
+ *
+ * Inputs & Outputs
+ * - Constructed with a base `HTMLImageElement` representing the sprite sheet.
+ * - `cutOut(name, sx, sy, dx, dy)`: draws a subsection of the sheet and schedules it for caching
+ *   under `name`.
+ * - `then(callback)`: resolves when all queued cutouts have been materialized.
+ * - `asset(key)`: returns a cached sprite by name, throwing if it has not been generated yet.
+ *
+ * Implementation Notes
+ * - Uses an off-screen `<canvas>` to render each sub-image, converts it into a data URL, and lazily
+ *   populates a static cache map shared across instances.
+ */
 
 export interface IPromiseImageHandled {
   name: string;
