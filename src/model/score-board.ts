@@ -277,9 +277,10 @@ export default class ScoreBoard extends ParentObject {
       { width: parentSize.width * 0.22 }
     );
 
+    const medalCenterX = coord.x + parentSize.width * 0.213;
     const pos = {
-      x: coord.x + parentSize.width * 0.145,
-      y: coord.y + parentSize.height * 0.46
+      x: medalCenterX - scaled.width / 2,
+      y: coord.y + parentSize.height * 0.27
     };
 
     context.drawImage(medal, pos.x, pos.y, scaled.width, scaled.height);
@@ -299,7 +300,7 @@ export default class ScoreBoard extends ParentObject {
       context,
       medalTier.label,
       pos.x + scaled.width / 2,
-      pos.y + scaled.height + parentSize.height * 0.04,
+      pos.y + scaled.height + parentSize.height * 0.02,
       parentSize
     );
   }
@@ -324,16 +325,20 @@ export default class ScoreBoard extends ParentObject {
     const prevFillStyle = context.fillStyle;
     const prevStrokeStyle = context.strokeStyle;
     const prevLineWidth = context.lineWidth;
+    const prevLineJoin = context.lineJoin;
+    const prevMiterLimit = context.miterLimit;
     const prevFont = context.font;
     const prevAlign = context.textAlign;
     const prevBaseline = context.textBaseline;
 
     const fontSize = Math.max(parentSize.width * 0.06, 12);
-    context.font = `${fontSize}px 'Press Start 2P', 'Roboto', sans-serif`;
+    context.font = `${fontSize}px 'Arial Black', 'Arial Bold', 'Arial', sans-serif`;
     context.textAlign = 'center';
     context.textBaseline = 'top';
-    context.lineWidth = Math.max(parentSize.width * 0.007, 1.5);
-    context.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+    context.lineJoin = 'round';
+    context.miterLimit = 2;
+    context.lineWidth = Math.max(fontSize * 0.16, 2);
+    context.strokeStyle = '#000000';
     context.fillStyle = '#ffffff';
 
     const text = label.toUpperCase();
@@ -346,6 +351,8 @@ export default class ScoreBoard extends ParentObject {
     context.font = prevFont;
     context.textAlign = prevAlign;
     context.textBaseline = prevBaseline;
+    context.lineJoin = prevLineJoin;
+    context.miterLimit = prevMiterLimit;
   }
 
   private displayScore(
