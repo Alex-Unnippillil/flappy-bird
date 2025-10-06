@@ -278,9 +278,15 @@ export default class ScoreBoard extends ParentObject {
     );
 
     const medalCenterX = coord.x + parentSize.width * 0.213;
+    const scoreBoardImage = this.images.get('score-board');
+    const pixelOffset =
+      scoreBoardImage && scoreBoardImage.height > 0
+        ? (parentSize.height / scoreBoardImage.height) * 2
+        : 2;
+
     const pos = {
       x: medalCenterX - scaled.width / 2,
-      y: coord.y + parentSize.height * 0.27
+      y: coord.y + parentSize.height * 0.27 + pixelOffset
     };
 
     context.drawImage(medal, pos.x, pos.y, scaled.width, scaled.height);
