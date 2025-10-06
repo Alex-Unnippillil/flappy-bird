@@ -325,17 +325,21 @@ export default class ScoreBoard extends ParentObject {
     const prevFillStyle = context.fillStyle;
     const prevStrokeStyle = context.strokeStyle;
     const prevLineWidth = context.lineWidth;
+    const prevLineJoin = context.lineJoin;
+    const prevMiterLimit = context.miterLimit;
     const prevFont = context.font;
     const prevAlign = context.textAlign;
     const prevBaseline = context.textBaseline;
 
     const fontSize = Math.max(parentSize.width * 0.06, 12);
-    context.font = `${fontSize}px 'Press Start 2P', 'Roboto', sans-serif`;
+    context.font = `${fontSize}px 'Arial Black', 'Arial Bold', 'Arial', sans-serif`;
     context.textAlign = 'center';
     context.textBaseline = 'top';
-    context.lineWidth = Math.max(parentSize.width * 0.006, 1.25);
-    context.strokeStyle = '#543847';
-    context.fillStyle = '#fc7858';
+    context.lineJoin = 'round';
+    context.miterLimit = 2;
+    context.lineWidth = Math.max(fontSize * 0.16, 2);
+    context.strokeStyle = '#000000';
+    context.fillStyle = '#ffffff';
 
     const text = label.toUpperCase();
     context.strokeText(text, centerX, topY);
@@ -347,6 +351,8 @@ export default class ScoreBoard extends ParentObject {
     context.font = prevFont;
     context.textAlign = prevAlign;
     context.textBaseline = prevBaseline;
+    context.lineJoin = prevLineJoin;
+    context.miterLimit = prevMiterLimit;
   }
 
   private displayScore(
