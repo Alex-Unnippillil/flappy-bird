@@ -22,7 +22,7 @@
  */
 
 import BannerInstruction from '../model/banner-instruction';
-import BirdModel from '../model/bird';
+import BirdModel, { IBirdColor } from '../model/bird';
 import CounterModel from '../model/count';
 import FlashScreen from '../model/flash-screen';
 import { IScreenChangerObject } from '../lib/screen-changer';
@@ -37,6 +37,8 @@ interface BirdGhostSample {
   time: number;
   position: ICoordinate;
   rotation: number;
+  wingState: number;
+  color: IBirdColor;
 }
 
 export type IGameState = 'died' | 'playing' | 'none';
@@ -282,7 +284,9 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
       frame: this.frameIndex,
       time,
       position: { ...this.bird.coordinate },
-      rotation: this.bird.getRotation()
+      rotation: this.bird.getRotation(),
+      wingState: this.bird.getWingState(),
+      color: this.bird.getColor()
     };
 
     this.frameIndex += 1;
@@ -343,6 +347,9 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     let y = current.position.y;
     let rotation = current.rotation;
 
+    let wingState = current.wingState;
+    let color = current.color;
+
     if (this.ghostPlaybackIndex + 1 < this.ghostPath.length) {
       const next = this.ghostPath[this.ghostPlaybackIndex + 1];
       if (next.time > current.time) {
@@ -350,26 +357,26 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
         x += (next.position.x - current.position.x) * progress;
         y += (next.position.y - current.position.y) * progress;
         rotation += (next.rotation - current.rotation) * progress;
+        if (progress >= 0.5) {
+          wingState = next.wingState;
+          color = next.color;
+        }
       }
     }
 
-    const size = this.bird.getSize();
-    const radius = Math.max(size.width, size.height) * 0.6;
-
-    context.save();
-    context.globalAlpha = 0.35;
-    context.translate(x, y);
-    context.rotate((rotation * Math.PI) / 180);
-    context.fillStyle = '#ffffff';
-    context.beginPath();
-    context.ellipse(0, 0, radius, radius * 0.75, 0, 0, Math.PI * 2);
-    context.fill();
-    context.restore();
+    this.bird.drawGhost(context, {
+      x,
+      y,
+      rotation,
+      wingState,
+      color,
+      alpha: 0.5
+    });
 
     if (this.ghostPlaybackIndex > 0) {
       context.save();
-      context.globalAlpha = 0.15;
-      context.strokeStyle = '#ffffff';
+      context.globalAlpha = 0.2;
+      context.strokeStyle = '#dcdcdc';
       context.lineWidth = 2;
       context.beginPath();
       const start = this.ghostPath[0].position;
