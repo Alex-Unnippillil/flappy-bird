@@ -47,15 +47,19 @@ const physicalContext = canvas.getContext('2d')!;
 const loadingScreen = document.querySelector<HTMLDivElement>('#loading-modal')!;
 const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 let isLoaded = false;
 
 gameIcon.src = gameSpriteIcon;
 
-// prettier-ignore
-fps.text({ x: 50, y: 50 }, '', ' Cycle');
-// prettier-ignore
-fps.container({ x: 10, y: 10}, { x: 230, y: 70});
+if (isDevelopment) {
+  // prettier-ignore
+  fps.text({ x: 50, y: 50 }, '', ' Cycle');
+  // prettier-ignore
+  fps.container({ x: 10, y: 10}, { x: 230, y: 70});
+  fps.forceImmediateUpdate();
+}
 
 const GameUpdate = (): void => {
   physicalContext.drawImage(virtualCanvas, 0, 0);
@@ -63,7 +67,7 @@ const GameUpdate = (): void => {
   Game.Update();
   Game.Display();
 
-  if (process.env.NODE_ENV === 'development') fps.mark();
+  if (isDevelopment) fps.mark();
 
   // raf(GameUpdate); Issue #16
 };
@@ -126,7 +130,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // raf(GameUpdate); Issue #16
     if (!game_running()) game_start(); // Quick fix. Long term :)
 
-    if (process.env.NODE_ENV === 'development') removeLoadingScreen();
+    if (isDevelopment) removeLoadingScreen();
     else window.setTimeout(removeLoadingScreen, 1000);
   });
 });
