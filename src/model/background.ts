@@ -16,6 +16,20 @@ export default class Background extends ParentClass {
   private images: IRecords;
   private theme: ITheme;
 
+  private gradientCache: Map<ITheme, { gradient: CanvasGradient; height: number }>;
+  private hazeCache: Map<ITheme, { gradient: CanvasGradient; height: number }>;
+
+  private readonly palette: Record<
+    ITheme,
+    {
+      base: string;
+      gradient: [string, string];
+      haze: { start: string; end: string };
+      overlayAlpha: number;
+      hazeAlpha: number;
+    }
+  >;
+
   constructor() {
     super();
     this.images = new Map<ITheme, HTMLImageElement>();
@@ -26,6 +40,32 @@ export default class Background extends ParentClass {
     this.backgroundSize = {
       width: 0,
       height: 0
+    };
+
+    this.gradientCache = new Map();
+    this.hazeCache = new Map();
+
+    this.palette = {
+      day: {
+        base: '#cde7ff',
+        gradient: ['#8ecfff', '#ecf7ff'],
+        haze: {
+          start: 'rgba(206, 226, 255, 0.55)',
+          end: 'rgba(206, 226, 255, 0)'
+        },
+        overlayAlpha: 0.6,
+        hazeAlpha: 0.45
+      },
+      night: {
+        base: '#1a233f',
+        gradient: ['#121a33', '#2c3857'],
+        haze: {
+          start: 'rgba(112, 136, 188, 0.5)',
+          end: 'rgba(112, 136, 188, 0)'
+        },
+        overlayAlpha: 0.7,
+        hazeAlpha: 0.4
+      }
     };
   }
 
@@ -85,6 +125,13 @@ export default class Background extends ParentClass {
     const { width, height } = this.backgroundSize;
     const { x, y } = this.coordinate;
 
+    const palette = this.palette[this.theme];
+
+    context.save();
+    context.fillStyle = palette.base;
+    context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+    context.restore();
+
     // Get how many sequence we need to fill the screen
     const sequence = Math.ceil(this.canvasSize.width / width) + 1;
 
@@ -97,11 +144,65 @@ export default class Background extends ParentClass {
     for (let i = 0; i < sequence; i++) {
       context.drawImage(
         this.images.get(this.theme)!,
-        i * (width - i) - offset,
+        i * width - offset,
         y,
         width,
         height
       );
     }
+
+    const bgGradient = this.getGradient(context);
+
+    context.save();
+    context.globalAlpha = palette.overlayAlpha;
+    context.globalCompositeOperation = 'soft-light';
+    context.fillStyle = bgGradient;
+    context.fillRect(0, 0, this.canvasSize.width, this.canvasSize.height);
+    context.restore();
+
+    const hazeGradient = this.getHaze(context);
+    const hazeStart = this.canvasSize.height * 0.35;
+    const hazeHeight = this.canvasSize.height - hazeStart;
+
+    context.save();
+    context.globalAlpha = palette.hazeAlpha;
+    context.globalCompositeOperation = 'screen';
+    context.fillStyle = hazeGradient;
+    context.fillRect(0, hazeStart, this.canvasSize.width, hazeHeight);
+    context.restore();
+  }
+
+  private getGradient(context: CanvasRenderingContext2D): CanvasGradient {
+    const cached = this.gradientCache.get(this.theme);
+    const { gradient } = this.palette[this.theme];
+    const { height } = this.canvasSize;
+
+    if (!cached || cached.height !== height) {
+      const grad = context.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, gradient[0]);
+      grad.addColorStop(1, gradient[1]);
+      this.gradientCache.set(this.theme, { gradient: grad, height });
+      return grad;
+    }
+
+    return cached.gradient;
+  }
+
+  private getHaze(context: CanvasRenderingContext2D): CanvasGradient {
+    const cached = this.hazeCache.get(this.theme);
+    const { haze } = this.palette[this.theme];
+    const { height } = this.canvasSize;
+    const start = height * 0.35;
+    const end = height * 0.9;
+
+    if (!cached || cached.height !== height) {
+      const grad = context.createLinearGradient(0, start, 0, end);
+      grad.addColorStop(0, haze.start);
+      grad.addColorStop(1, haze.end);
+      this.hazeCache.set(this.theme, { gradient: grad, height });
+      return grad;
+    }
+
+    return cached.gradient;
   }
 }
