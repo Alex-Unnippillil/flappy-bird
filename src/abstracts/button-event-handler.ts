@@ -106,10 +106,15 @@ export default abstract class ButtonEventHandler {
   }
 
   public mouseEvent(state: IMouseState, { x, y }: ICoordinate): void {
-    if (state === 'down') {
-      this.onMouseDown({ x, y });
-    } else if (state === 'up') {
-      this.onMouseup({ x, y });
+    switch (state) {
+      case 'down':
+        this.onMouseDown({ x, y });
+        break;
+      case 'up':
+        this.onMouseup({ x, y });
+        break;
+      default:
+        break;
     }
   }
 

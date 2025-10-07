@@ -389,7 +389,7 @@ export default class ScoreBoard extends ParentObject {
     context: CanvasRenderingContext2D,
     coord: ICoordinate,
     parentSize: IDimension,
-    _p0: boolean
+    showNewHighScoreToast: boolean
   ): void {
     const numSize = rescaleDim(
       {
@@ -416,7 +416,7 @@ export default class ScoreBoard extends ParentObject {
       );
     });
 
-    if ((this.flags & ScoreBoard.FLAG_NEW_HIGH_SCORE) === 0) return;
+    if (!showNewHighScoreToast) return;
 
     const toastSize = rescaleDim(
       {
@@ -455,12 +455,8 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.onClick(cb);
   }
 
-  public onShowRanks(_cb: IEmptyFunction): void {
-    /**
-     * I don't know what to do on ranking?
-     *
-     * Should i create API for this?
-     * */
+  public onShowRanks(callback: IEmptyFunction): void {
+    this.rankingButton.onClick(callback);
   }
 
   public mouseDown({ x, y }: ICoordinate): void {
