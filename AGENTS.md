@@ -127,6 +127,13 @@ A modern, TypeScript-based web recreation of the classic Flappy Bird game, featu
 
 - Keep this file synchronized with any new architectural conventions or tooling so future agents inherit accurate guidance.
 - If you introduce new scripts or workflows that agents should know about, add them here and cross-reference related README sections.
+- When updating this file, summarize both the purpose of the change and any new expectations so future agents can quickly scan the diff and understand the rationale.
+
+### Pull Request Communication
+
+- Pull request descriptions should clearly call out gameplay-visible impacts, required manual testing, and any follow-up work that reviewers should be aware of.
+- When updating existing PRs with follow-up changes, append to the existing summary instead of rewriting it to preserve context for reviewers.
+- Mention any deviations from the guidance in this file so maintainers can decide whether to adjust the standards.
 
 ---
 
