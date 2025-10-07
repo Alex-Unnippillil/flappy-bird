@@ -16,6 +16,7 @@
 
 import Game from './game';
 import WebSfx from './lib/web-sfx';
+import GamepadManager from './lib/gamepad-manager';
 
 export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
 
@@ -177,4 +178,33 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
       );
     }
   });
+
+  const syntheticCenter = () => ({
+    x: canvas.width / 2,
+    y: canvas.height / 2
+  });
+
+  const createSyntheticKeyEvent = (type: 'keydown' | 'keyup') =>
+    new KeyboardEvent(type, { key: ' ' });
+
+  const gamepadManager = new GamepadManager({
+    onPrimaryDown: () => {
+      const evt = createSyntheticKeyEvent('keydown');
+      Game.startAtKeyBoardEvent();
+      mouseDown(syntheticCenter(), evt);
+    },
+    onPrimaryUp: () => {
+      const evt = createSyntheticKeyEvent('keyup');
+      mouseUP(syntheticCenter(), evt, false);
+    },
+    onStart: () => {
+      Game.startAtKeyBoardEvent();
+    },
+    onConnectionChange: (connected, pad) => {
+      Game.notifyGamepadStatus(connected, pad?.id ?? '');
+    }
+  });
+
+  gamepadManager.init();
+  gamepadManager.start();
 };
