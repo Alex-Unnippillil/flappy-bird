@@ -1,22 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160">
-  <defs>
-    <linearGradient id="platinum-medal" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#f5faff" />
-      <stop offset="100%" stop-color="#c7d1da" />
-    </linearGradient>
-    <linearGradient id="platinum-ribbon" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6e6ef5" />
-      <stop offset="100%" stop-color="#4a4ab8" />
-    </linearGradient>
-    <radialGradient id="platinum-highlight" cx="50%" cy="30%" r="60%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#d3dbe4" stop-opacity="0" />
-    </radialGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 28" shape-rendering="crispEdges">
   <g fill="none" fill-rule="evenodd">
-    <path d="M32 128h16l16 32 16-32h16l-32 32z" fill="url(#platinum-ribbon)" />
-    <circle cx="64" cy="64" r="56" fill="url(#platinum-medal)" stroke="#98a4b1" stroke-width="8" />
-    <circle cx="64" cy="54" r="40" fill="url(#platinum-highlight)" />
-    <polygon points="64 22 74.5 47.3 102 47.3 79.8 63.7 89.2 90 64 74.7 38.8 90 48.2 63.7 26 47.3 53.5 47.3" fill="#ffffff" stroke="#a6b2bf" stroke-width="4" stroke-linejoin="round" />
+    <path fill="#E5E7FB" d="M6 0H12V1H13V2H14V3H15V4H16V12H15V13H14V14H13V15H12V16H6V15H5V14H4V13H3V12H2V4H3V3H4V2H5V1H6V0Z"/>
+    <path fill="#F7F8FF" d="M6 1H7V4H8V5H9V6H8V7H7V12H6V1Z"/>
+    <path fill="#B3BBE5" d="M12 1H13V2H14V3H15V4H14V5H13V6H12V1Z"/>
+    <path fill="#B3BBE5" d="M12 9H13V10H14V12H13V13H12V9Z"/>
+    <rect width="3" height="1" x="8" y="4" fill="#FFFFFF"/>
+    <rect width="1" height="8" x="8" y="5" fill="#FFFFFF"/>
+    <rect width="2" height="1" x="9" y="5" fill="#FFFFFF"/>
+    <rect width="1" height="1" x="10" y="6" fill="#FFFFFF"/>
+    <rect width="1" height="1" x="9" y="7" fill="#FFFFFF"/>
+    <rect width="2" height="1" x="9" y="8" fill="#FFFFFF"/>
+    <path fill="#9B1C1C" d="M4 16H7V26H6V24H5V26H4V16Z"/>
+    <path fill="#9B1C1C" d="M11 16H14V26H13V24H12V26H11V16Z"/>
+    <path fill="#C23030" d="M7 16H11V18H7V16Z"/>
+    <path fill="#C23030" d="M7 20H11V21H7V20Z"/>
   </g>
 </svg>
