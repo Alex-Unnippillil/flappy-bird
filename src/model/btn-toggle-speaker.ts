@@ -22,7 +22,7 @@ export default class ToggleSpeakerBtn extends Parent {
     Sfx.swoosh();
     this.is_mute = !this.is_mute;
 
-    Sfx.currentVolume = this.is_mute ? 0 : 1;
+    Sfx.volume(this.is_mute ? 0 : 1);
   }
 
   private setImg(): void {
