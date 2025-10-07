@@ -36,7 +36,6 @@ export default class ScoreBoard extends ParentObject {
   private spark: SparkModel;
   private readonly medalTiers: {
     threshold: number;
-    label: string;
     imageKey: string;
   }[];
 
@@ -52,10 +51,10 @@ export default class ScoreBoard extends ParentObject {
     this.currentGeneratedNumber = 0;
     this.currentScore = 0;
     this.medalTiers = [
-      { threshold: 10, label: 'Platinum', imageKey: 'medal-platinum' },
-      { threshold: 5, label: 'Gold', imageKey: 'medal-gold' },
-      { threshold: 1, label: 'Silver', imageKey: 'medal-silver' },
-      { threshold: 0, label: 'Bronze', imageKey: 'medal-bronze' }
+      { threshold: 10, imageKey: 'medal-platinum' },
+      { threshold: 5, imageKey: 'medal-gold' },
+      { threshold: 1, imageKey: 'medal-silver' },
+      { threshold: 0, imageKey: 'medal-bronze' }
     ];
     this.FlyInAnim = new Fly({
       duration: 500,
@@ -296,63 +295,15 @@ export default class ScoreBoard extends ParentObject {
     });
     this.spark.Display(context);
 
-    this.drawMedalLabel(
-      context,
-      medalTier.label,
-      pos.x + scaled.width / 2,
-      pos.y + scaled.height + parentSize.height * 0.02,
-      parentSize
-    );
   }
 
   private getMedalTier(score: number):
     | {
         threshold: number;
-        label: string;
         imageKey: string;
       }
     | undefined {
     return this.medalTiers.find((tier) => score >= tier.threshold);
-  }
-
-  private drawMedalLabel(
-    context: CanvasRenderingContext2D,
-    label: string,
-    centerX: number,
-    topY: number,
-    parentSize: IDimension
-  ): void {
-    const prevFillStyle = context.fillStyle;
-    const prevStrokeStyle = context.strokeStyle;
-    const prevLineWidth = context.lineWidth;
-    const prevLineJoin = context.lineJoin;
-    const prevMiterLimit = context.miterLimit;
-    const prevFont = context.font;
-    const prevAlign = context.textAlign;
-    const prevBaseline = context.textBaseline;
-
-    const fontSize = Math.max(parentSize.width * 0.06, 12);
-    context.font = `${fontSize}px 'Arial Black', 'Arial Bold', 'Arial', sans-serif`;
-    context.textAlign = 'center';
-    context.textBaseline = 'top';
-    context.lineJoin = 'round';
-    context.miterLimit = 2;
-    context.lineWidth = Math.max(fontSize * 0.16, 2);
-    context.strokeStyle = '#000000';
-    context.fillStyle = '#ffffff';
-
-    const text = label.toUpperCase();
-    context.strokeText(text, centerX, topY);
-    context.fillText(text, centerX, topY);
-
-    context.fillStyle = prevFillStyle;
-    context.strokeStyle = prevStrokeStyle;
-    context.lineWidth = prevLineWidth;
-    context.font = prevFont;
-    context.textAlign = prevAlign;
-    context.textBaseline = prevBaseline;
-    context.lineJoin = prevLineJoin;
-    context.miterLimit = prevMiterLimit;
   }
 
   private displayScore(
