@@ -45,7 +45,7 @@ The atlas is sliced in `asset-preparation.ts`. Keys follow a kebab-case pattern 
 
 | Atlas key pattern | Description | Consuming module(s) |
 | --- | --- | --- |
-| `number-lg-0` – `number-lg-9` | Large digits rendered during gameplay score. | `src/model/count.ts` seeds the counter with these sprites.【F:src/model/count.ts†L24-L40】 |
+| `number-lg-0` – `number-lg-9` | Legacy large digits kept for backwards compatibility. | Gameplay score now renders procedurally in `src/model/count.ts`, so these slices remain unused until removed from the atlas.【F:src/model/count.ts†L1-L173】 |
 | `number-md-0` – `number-md-9` | Medium digits for the score board. | `src/model/score-board.ts` caches them in `images` for both score and best columns.【F:src/model/score-board.ts†L91-L124】 |
 | `number-sm-*` | Small digits intended for secondary HUD elements. | Not currently referenced; update this README when wiring them up.【F:src/asset-preparation.ts†L32-L41】 |
 | `number.sm-8` | Legacy typo entry kept for backward compatibility with older atlases. Avoid reusing this dotted key—add new slices with kebab-case instead.【F:src/asset-preparation.ts†L40-L41】 |
