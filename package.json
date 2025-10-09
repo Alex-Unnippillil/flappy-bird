@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jxmked/Flappybird.git"
+    "url": "git+https://github.com/Alex-Unnippillil/flappy-bird.git"
   },
   "keywords": [
     "canvas",
@@ -27,7 +27,7 @@
   "author": "Jovan De Guia",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/jxmked/Flappybird/issues"
+    "url": "https://github.com/Alex-Unnippillil/flappy-bird/issues"
   },
   "homepage": "https://alex-unnippillil.github.io/flappy-bird/",
   "devDependencies": {

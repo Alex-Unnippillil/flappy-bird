@@ -25,6 +25,6 @@ export default class RateNutton extends PlayButton {
     // Open new Tab the goto to Github Repository
 
     // Hard Coded
-    openInNewTab('https://github.com/jxmked/Flappybird');
+    openInNewTab('https://github.com/Alex-Unnippillil/flappy-bird');
   }
 }
