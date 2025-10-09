@@ -19,6 +19,10 @@ const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const WorkboxPlugin = require('workbox-webpack-plugin');
 
+const SOCIAL_CARD_PATH = 'assets/social/flappy-bird-card.svg';
+const homepageUrl = new URL(package.homepage);
+const socialImageUrl = new URL(SOCIAL_CARD_PATH, homepageUrl).toString();
+
 
 
 /**
@@ -252,24 +256,31 @@ module.exports = function (env, config) {
           },
           'og:site_name': {
             property: 'og:site_name',
-            content: 'jxmked page'
+            content: 'Flappy Bird Web App'
+          },
+          'og:image': {
+            property: 'og:image',
+            content: socialImageUrl
           },
           'og:image:url': {
             property: 'og:image:url',
-            content:
-              'https://raw.githubusercontent.com/jxmked/resources/xio/assets/icons/light/Windows/Square310x310Logo.scale-400.png'
+            content: socialImageUrl
+          },
+          'og:image:type': {
+            property: 'og:image:type',
+            content: 'image/svg+xml'
           },
           'og:image:width': {
             property: 'og:image:width',
-            content: '1240'
+            content: '1200'
           },
           'og:image:height': {
             property: 'og:image:height',
-            content: '1240'
+            content: '630'
           },
           'og:image:alt': {
             property: 'og:image:alt',
-            content: 'Logo'
+            content: 'Stylised Flappy Bird illustration and title lockup'
           },
           'apple-meta-01': {
             name: 'apple-mobile-web-app-capable',
@@ -293,7 +304,7 @@ module.exports = function (env, config) {
           },
           'twitter:card': {
             name: 'twitter:card',
-            content: 'app'
+            content: 'summary_large_image'
           },
           'twitter:title': {
             name: 'twitter:title',
@@ -305,8 +316,11 @@ module.exports = function (env, config) {
           },
           'twitter:image': {
             name: 'twitter:image',
-            content:
-              'https://raw.githubusercontent.com/jxmked/resources/xio/assets/icons/light/Windows/Square310x310Logo.scale-400.png'
+            content: socialImageUrl
+          },
+          'twitter:image:alt': {
+            name: 'twitter:image:alt',
+            content: 'Stylised Flappy Bird illustration and title lockup'
           },
           'geo.country': {
             name: 'geo.country',
@@ -331,6 +345,17 @@ module.exports = function (env, config) {
       new MiniCssExtractPlugin({
         filename: CONFIG.output.name + '.css',
         chunkFilename: CONFIG.output.chunk + '.css'
+      }),
+
+      // Copy static social sharing assets without fingerprinting.
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.resolve(__dirname, CONFIG.input.dir, 'assets/social'),
+            to: path.resolve(__dirname, CONFIG.output.dir, 'assets/social'),
+            noErrorOnMissing: true
+          }
+        ]
       }),
 
       // Placeholder values injected into the HTML template.
