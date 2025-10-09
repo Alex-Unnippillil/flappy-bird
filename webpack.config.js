@@ -252,12 +252,12 @@ module.exports = function (env, config) {
           },
           'og:site_name': {
             property: 'og:site_name',
-            content: 'jxmked page'
+            content: 'Flappy Bird'
           },
           'og:image:url': {
             property: 'og:image:url',
             content:
-              'https://raw.githubusercontent.com/jxmked/resources/xio/assets/icons/light/Windows/Square310x310Logo.scale-400.png'
+              'https://raw.githubusercontent.com/Alex-Unnippillil/flappy-bird/main/src/assets/icon.png'
           },
           'og:image:width': {
             property: 'og:image:width',
@@ -306,7 +306,7 @@ module.exports = function (env, config) {
           'twitter:image': {
             name: 'twitter:image',
             content:
-              'https://raw.githubusercontent.com/jxmked/resources/xio/assets/icons/light/Windows/Square310x310Logo.scale-400.png'
+              'https://raw.githubusercontent.com/Alex-Unnippillil/flappy-bird/main/src/assets/icon.png'
           },
           'geo.country': {
             name: 'geo.country',
