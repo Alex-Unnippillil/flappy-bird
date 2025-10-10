@@ -72,6 +72,23 @@ npm run build
 
 Bundles the application into the `dist/` directory with minified JavaScript, extracted CSS, hashed assets, and a production-ready service worker.
 
+### Deployment
+
+- **GitHub Pages**
+  - Ensure the `homepage` field in `package.json` matches your repository slug so that generated asset URLs and social metadata resolve correctly.
+  - If you are hosting from a project page (e.g., `https://<user>.github.io/<repo>/`), update the `publicPath` inside `webpack.config.js` (see the `WebpackManifestPlugin` configuration) to mirror the subdirectory and keep asset manifests consistent.
+  - Run [`npm run build`](#production-build) and publish the contents of `dist/` to the `gh-pages` branch (or serve them via GitHub Actions). Keep the generated `service-worker.js` at the root of that branch so its scope covers the entire game.
+
+- **Netlify / Vercel**
+  - Configure the build command as [`npm run build`](#production-build) and set the publish/output directory to `dist/`.
+  - Disable framework-specific adapters so the project is treated as a static export. On Vercel, pick the “Other” framework preset; on Netlify, leave the “functions” directory blank.
+  - Verify that the deployed URL matches the `homepage` (or override it via environment variables) to keep the precache manifest and service worker scope aligned with the live origin.
+
+- **Static File Hosting (S3, Cloud Storage, Nginx, etc.)**
+  - Upload the entire `dist/` folder to your bucket or web root without changing its structure; the generated manifest, icons, and service worker expect their relative paths.
+  - Serve the files over HTTPS with proper caching headers (short-lived for HTML, long-lived for hashed assets) while allowing the `service-worker.js` file to be fetched with the default scope (served from the root alongside `index.html`).
+  - When hosting from a subdirectory, mirror that path in both `package.json#homepage` and the Webpack `publicPath` setting before running the build to avoid broken asset URLs and out-of-scope service worker registrations.
+
 ## Available Scripts
 
 | Script | Description |
