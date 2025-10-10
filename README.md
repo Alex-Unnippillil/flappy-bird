@@ -23,6 +23,7 @@ A polished, fully offline-capable recreation of the classic Flappy Bird experien
 12. [Browser Support](#browser-support)
     - [Asset Customization](#asset-customization)
 11. [Browser Support](#browser-support)
+12. [Troubleshooting & FAQ](#troubleshooting--faq)
 
 ## Key Features
 
@@ -228,4 +229,26 @@ Follow the [Accessibility Checklist](docs/accessibility-checklist.md) for full c
 - Microsoft Edge
 
 The app targets evergreen browsers; ensure service workers and Web Audio are enabled when testing older devices.
+
+## Troubleshooting & FAQ
+
+> For extended diagnostics, configuration tweaks, and advanced recovery steps, consult the forthcoming [`docs/troubleshooting.md`](docs/troubleshooting.md) guide.
+
+### Why do some sprites or audio files fail to load?
+
+- **Confirm local assets are available** – Run `npm run build` or `npm run dev` to trigger Webpack's asset pipeline and regenerate hashed files.
+- **Check CDN/network blockers** – Browser extensions or strict corporate firewalls can block requests; disable blockers or serve assets locally.
+- **Verify cache-busting** – If you renamed assets, update import paths and ensure the build output is redeployed to prevent stale references.
+
+### The service worker is serving stale files. How can I force an update?
+
+- **Hard refresh** – Use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> (or <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> on macOS) to bypass cached responses.
+- **Unregister outdated workers** – In DevTools, open *Application → Service Workers*, then click **Unregister** and reload the page to install the latest build.
+- **Bump the build** – Increment the Workbox cache version (e.g., adjust the precache manifest or Webpack build hash) so clients recognize the new deployment.
+
+### Audio does not autoplay when the game loads. What should I do?
+
+- **Wait for user interaction** – Most browsers require a tap, click, or keypress before unmuted audio can start; prompt the player to interact once.
+- **Check mute state** – Ensure the in-game mute toggle or device system volume is not silenced.
+- **Fallback to user-triggered playback** – Defer audio initialization until an input event, then resume the Web Audio context via a user gesture handler.
 
