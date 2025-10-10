@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/banner-instruction.ts.
+/**
+ * Model Summary:
+ * Purpose: Shows the "get ready" and tap instruction banners and handles their fade-out transition when the player taps.
+ * Update/Display: `Update()` drives a FadeOut animation once tapped; `Display()` renders both sprites with the current opacity.
+ * Public API: init(), reset(), tap(), resize(size), Update(), Display(ctx).
+ * Constants: None (uses internal BANNER_INSTRUCTION defaults).
+ * Interactions: Standalone overlay consumed by screens; no shared state with other models.
+ */
 import { rescaleDim } from '../utils';
 
 import { FadeOut } from '../lib/animation';

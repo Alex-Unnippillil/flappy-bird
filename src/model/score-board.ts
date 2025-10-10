@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/score-board.ts.
+/**
+ * Model Summary:
+ * Purpose: Controls the game-over banner, score board, medals, and UI buttons shown after a run.
+ * Update/Display: `Update()` advances button animations and spark effects; `Display()` draws the banner/board, increments the shown score, and reveals medals/buttons once animations finish.
+ * Public API: init(), resize(size), Update(), Display(ctx), showBanner(), showBoard(), showButtons(), setScore(num), hide(), onRestart(cb), onShowRanks(cb), mouseDown(pos), mouseUp(pos), triggerPlayATKeyboardEvent().
+ * Constants: None.
+ * Interactions: Composes PlayButton, RankingButton, ToggleSpeaker, and Spark models; persists highscores via Storage and coordinates medal effects alongside these child models.
+ */
 import { rescaleDim } from '../utils';
 
 import medalBronzeSprite from '../assets/medal-bronze.svg';

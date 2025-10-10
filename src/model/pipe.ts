@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/pipe.ts.
+/**
+ * Model Summary:
+ * Purpose: Represents a single scrolling pipe pair, including hole positioning, sprite scaling, and pass-through tracking.
+ * Update/Display: `Update()` advances the pipe leftward using `GAME_SPEED`; `Display()` draws the top and bottom sprites around the hole center.
+ * Public API: static pipeSize, init(), setHollPosition(coord), resize(size), isOut(), use(color), Update(), Display(ctx).
+ * Constants: GAME_SPEED, PIPE_HOLL_SIZE, PIPE_INITIAL_DIMENSION.
+ * Interactions: Registers available colors with SceneGenerator, exposes state consumed by Bird collision/score logic, and shares `pipeSize` dimensions with PipeGenerator.
+ */
 import { GAME_SPEED, PIPE_HOLL_SIZE, PIPE_INITIAL_DIMENSION } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';

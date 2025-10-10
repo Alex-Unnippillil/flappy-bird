@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/background.ts.
+/**
+ * Model Summary:
+ * Purpose: Scrolls the day/night background sprites to create parallax motion.
+ * Update/Display: `Update()` advances the horizontal offset using the canvas width and `BG_SPEED`; `Display()` tiles the active theme image to cover the viewport.
+ * Public API: init(), reset(), use(theme), resize(size), Update(), Display(ctx).
+ * Constants: BG_SPEED.
+ * Interactions: Registers available themes with SceneGenerator and consumes SceneGenerator.background selections.
+ */
 import { BG_SPEED } from '../constants';
 import { rescaleDim } from '../utils';
 import ParentClass from '../abstracts/parent-class';

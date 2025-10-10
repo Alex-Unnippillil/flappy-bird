@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/bird.ts.
+/**
+ * Model Summary:
+ * Purpose: Simulates the player-controlled bird including physics, rotation, wing animation, scoring, and death detection.
+ * Update/Display: `Update()` integrates velocity/weight, clamps motion against `Bird.platformHeight`, and manages rotation; `Display()` renders the active sprite frame with rotation applied.
+ * Public API: static platformHeight, init(), reset(), resize(size), doWave(coord,freq,amp), flap(), isDead(pipes), playDead(), use(color), Update(), Display(ctx), getRotation(), getSize().
+ * Constants: BIRD_HEIGHT, BIRD_INITIAL_DIMENSION, BIRD_JUMP_HEIGHT, BIRD_MAX_DOWN_VELOCITY, BIRD_MAX_ROTATION, BIRD_MAX_UP_VELOCITY, BIRD_MIN_ROTATION, BIRD_WEIGHT, BIRD_X_POSITION.
+ * Interactions: Evaluates collisions against Pipe instances, plays audio via Sfx, and exchanges color/theme data with SceneGenerator; `Bird.platformHeight` is set from Platform sizing via Game.
+ */
 import {
   BIRD_HEIGHT,
   BIRD_INITIAL_DIMENSION,
