@@ -19,6 +19,7 @@ A polished, fully offline-capable recreation of the classic Flappy Bird experien
 8. [Configuration](#configuration)
 9. [Progressive Web App Capabilities](#progressive-web-app-capabilities)
 10. [Development Workflow](#development-workflow)
+    - [Asset Customization](#asset-customization)
 11. [Browser Support](#browser-support)
 
 ## Key Features
@@ -184,6 +185,14 @@ Modifying these constants enables quick experimentation with difficulty curves a
 2. **Testing** – Manually exercise gameplay changes in multiple viewport sizes and input methods.
 3. **Branching** – Use feature branches (`feature/<description>`) and descriptive commit messages.
 4. **Pull Requests** – Summarize gameplay-visible changes and outline manual test steps for reviewers.
+
+### Asset Customization
+
+- **Place new files in `src/assets/`** – Add raster sprites to the atlas (`src/assets/atlas.png`) or keep stand-alone images/audio alongside the existing folders so Webpack can bundle them. Audio clips live in `src/assets/audio/`, where `asset-preparation.ts` already imports and queues the `.ogg` files. 【F:src/asset-preparation.ts†L6-L109】
+- **Register loads through `asset-preparation.ts`** – List each new source in the arrays passed to `AssetLoader`/`WebSfx` and add a matching `SpriteDestructor.cutOut()` entry so the sprite receives a unique key. The loader detects file types by extension via its registered drivers, so referencing the path is all that is required to fetch it. 【F:src/lib/asset-loader/index.ts†L1-L73】【F:src/asset-preparation.ts†L18-L104】
+- **Retrieve sprites with `SpriteDestructor.asset()`** – After `sd.then()` resolves, any module can pull the keyed sprite or audio handle from the shared cache; use expressive identifiers (`bird-emerald-mid`, `pipe-gold-top`, etc.) so call sites remain clear. 【F:src/lib/sprite-destructor/index.ts†L1-L101】【F:src/model/bird.ts†L101-L133】
+- **Update atlas consumers and generators** – When swapping art sets, refresh the consuming classes to request the new keys and extend `SceneGenerator` lists (`birdColorList`, `bgThemeList`, `pipeColorList`) so random selection includes the new variants. This keeps background, bird, and pipe cycles in sync with the available slices. 【F:src/model/scene-generator.ts†L1-L40】【F:src/model/background.ts†L31-L53】【F:src/model/bird.ts†L119-L133】【F:src/model/pipe.ts†L53-L75】
+- **Rebuild atlases carefully** – Export optimized PNGs, ensure coordinates/dimensions match the values supplied to `cutOut`, then rerun `npm run build` or `npm run dev` to confirm the bundle picks up the updated artwork and no keys are missing.
 
 ## Browser Support
 
