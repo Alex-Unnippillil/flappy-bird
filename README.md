@@ -165,6 +165,9 @@ Modifying these constants enables quick experimentation with difficulty curves a
 
 1. **Code Quality** – Run `npm run lint` before committing; configure editors to auto-run Prettier.
 2. **Testing** – Manually exercise gameplay changes in multiple viewport sizes and input methods.
+   - Resize the browser window and rotate mobile devices/emulators to confirm `ScreenResize` in `src/index.ts` recalculates canvas dimensions, DPR scaling, and hit zones after each `resize`/`orientationchange` event.
+   - After resizing, re-enter gameplay to verify sprites remain crisp and inputs track correctly at the new device pixel ratio.
+   - Use Chrome DevTools’ device emulation, Safari’s Responsive Design Mode, or Android Studio’s Emulator to inspect DPR handling, specifically checking the phone (`≤480px`), tablet (~768px), and desktop (`≥1024px`) breakpoints managed by `ScreenResize`.
 3. **Branching** – Use feature branches (`feature/<description>`) and descriptive commit messages.
 4. **Pull Requests** – Summarize gameplay-visible changes and outline manual test steps for reviewers.
 
