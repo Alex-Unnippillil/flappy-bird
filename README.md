@@ -182,6 +182,14 @@ Modifying these constants enables quick experimentation with difficulty curves a
 - **Offline Mode** – Critical resources are cached on first load, enabling gameplay without connectivity.
 - **Add to Home Screen** – Supports installation prompts on compatible mobile and desktop browsers.
 
+### Maintaining the Service Worker & Caches
+
+- **How the worker is built** – The production build (`npm run build`) invokes Webpack's Workbox `GenerateSW` plugin, which inspects the emitted assets and creates `dist/service-worker.js` on the fly. No manual edits are required—the file is regenerated every time you ship a new build, bundling precache metadata alongside runtime caching defaults.
+- **Bumping `APP_VERSION`** – The constant exported from `src/constants.ts` is injected from `package.json`'s `version` field during the build. Run `npm version <patch|minor|major>` (or edit the version directly) before deploying so the new value flows into both the HTML template and the generated service worker, guaranteeing a unique precache manifest.
+- **Local PWA testing** – To exercise the generated worker locally, build and then serve the `dist/` directory over HTTP: `npm run build && npm run serve`. The `serve` step can be backed by any static-file server (e.g., [`serve`](https://www.npmjs.com/package/serve) or `http-server`) as long as it responds from `dist/`.
+- **Force-refreshing clients** – Because the worker is published with `skipWaiting`/`clientsClaim`, a new deployment takes control after the next navigation. If you need to flush stale caches immediately, instruct players to perform a hard refresh (Ctrl/⌘+Shift+R) or clear the site's storage. During debugging you can also trigger `navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.update()))` from the DevTools console to fetch the latest worker.
+- **Cache-busting on deploy** – Always redeploy after bumping `APP_VERSION` so Workbox emits a fresh precache manifest. Combined with the hashed asset filenames from Webpack, this ensures downstream CDNs and browsers download the latest bundle without lingering on outdated responses.
+
 ## Development Workflow
 
 1. **Code Quality** – Run `npm run lint` before committing; configure editors to auto-run Prettier.
