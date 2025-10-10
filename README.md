@@ -19,7 +19,8 @@ A polished, fully offline-capable recreation of the classic Flappy Bird experien
 8. [Configuration](#configuration)
 9. [Progressive Web App Capabilities](#progressive-web-app-capabilities)
 10. [Development Workflow](#development-workflow)
-11. [Browser Support](#browser-support)
+11. [Accessibility](#accessibility)
+12. [Browser Support](#browser-support)
 
 ## Key Features
 
@@ -167,6 +168,31 @@ Modifying these constants enables quick experimentation with difficulty curves a
 2. **Testing** – Manually exercise gameplay changes in multiple viewport sizes and input methods.
 3. **Branching** – Use feature branches (`feature/<description>`) and descriptive commit messages.
 4. **Pull Requests** – Summarize gameplay-visible changes and outline manual test steps for reviewers.
+
+## Accessibility
+
+### Current Support
+
+- **Keyboard Playability** – The canvas listens for `Space` and `Enter` key events, triggering the same handlers used for pointer input so players can flap and restart without a mouse or touch device.【F:src/events.ts†L134-L178】
+
+### Backlog Priorities
+
+- Respect the `prefers-reduced-motion` media query and offer an in-game motion toggle for players who need fewer animations.【F:AGENTS.md†L21-L25】
+- Add keyboard focus management, ARIA roles, and guidance so screen reader users understand the canvas UI and interactive states.【F:AGENTS.md†L21-L25】
+- Provide high-contrast and reduced-glare visual themes, vibration toggles, orientation hints, and a persistable Accessibility/Settings screen.【F:AGENTS.md†L21-L25】
+
+### Manual Testing
+
+Follow the [Accessibility Checklist](docs/accessibility-checklist.md) for full context and expected outcomes.
+
+- **Screen Reader Smoke Test**
+  1. Launch the game locally (`npm run dev`) and open it in your browser.
+  2. Start your preferred screen reader (e.g., NVDA on Windows, VoiceOver on macOS) and move focus to the game canvas.
+  3. Confirm the reader announces available instructions, then use the keyboard controls above to play a round and note any missing narration or focus cues for backlog tracking.
+
+- **Reduced Motion Sanity Check**
+  1. Enable the system-level “Reduce Motion” or “Remove Animations” preference for your OS.
+  2. Refresh the game and observe whether parallax scrolling, sprite animations, and transitions slow down or pause. Record the result so gaps can be prioritized against the backlog items above.
 
 ## Browser Support
 
