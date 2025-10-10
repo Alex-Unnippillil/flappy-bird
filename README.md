@@ -21,6 +21,8 @@ A polished, fully offline-capable recreation of the classic Flappy Bird experien
 10. [Development Workflow](#development-workflow)
 11. [Accessibility](#accessibility)
 12. [Browser Support](#browser-support)
+    - [Asset Customization](#asset-customization)
+11. [Browser Support](#browser-support)
 
 ## Key Features
 
@@ -72,6 +74,23 @@ npm run build
 ```
 
 Bundles the application into the `dist/` directory with minified JavaScript, extracted CSS, hashed assets, and a production-ready service worker.
+
+### Deployment
+
+- **GitHub Pages**
+  - Ensure the `homepage` field in `package.json` matches your repository slug so that generated asset URLs and social metadata resolve correctly.
+  - If you are hosting from a project page (e.g., `https://<user>.github.io/<repo>/`), update the `publicPath` inside `webpack.config.js` (see the `WebpackManifestPlugin` configuration) to mirror the subdirectory and keep asset manifests consistent.
+  - Run [`npm run build`](#production-build) and publish the contents of `dist/` to the `gh-pages` branch (or serve them via GitHub Actions). Keep the generated `service-worker.js` at the root of that branch so its scope covers the entire game.
+
+- **Netlify / Vercel**
+  - Configure the build command as [`npm run build`](#production-build) and set the publish/output directory to `dist/`.
+  - Disable framework-specific adapters so the project is treated as a static export. On Vercel, pick the “Other” framework preset; on Netlify, leave the “functions” directory blank.
+  - Verify that the deployed URL matches the `homepage` (or override it via environment variables) to keep the precache manifest and service worker scope aligned with the live origin.
+
+- **Static File Hosting (S3, Cloud Storage, Nginx, etc.)**
+  - Upload the entire `dist/` folder to your bucket or web root without changing its structure; the generated manifest, icons, and service worker expect their relative paths.
+  - Serve the files over HTTPS with proper caching headers (short-lived for HTML, long-lived for hashed assets) while allowing the `service-worker.js` file to be fetched with the default scope (served from the root alongside `index.html`).
+  - When hosting from a subdirectory, mirror that path in both `package.json#homepage` and the Webpack `publicPath` setting before running the build to avoid broken asset URLs and out-of-scope service worker registrations.
 
 ## Available Scripts
 
@@ -193,6 +212,13 @@ Follow the [Accessibility Checklist](docs/accessibility-checklist.md) for full c
 - **Reduced Motion Sanity Check**
   1. Enable the system-level “Reduce Motion” or “Remove Animations” preference for your OS.
   2. Refresh the game and observe whether parallax scrolling, sprite animations, and transitions slow down or pause. Record the result so gaps can be prioritized against the backlog items above.
+### Asset Customization
+
+- **Place new files in `src/assets/`** – Add raster sprites to the atlas (`src/assets/atlas.png`) or keep stand-alone images/audio alongside the existing folders so Webpack can bundle them. Audio clips live in `src/assets/audio/`, where `asset-preparation.ts` already imports and queues the `.ogg` files. 【F:src/asset-preparation.ts†L6-L109】
+- **Register loads through `asset-preparation.ts`** – List each new source in the arrays passed to `AssetLoader`/`WebSfx` and add a matching `SpriteDestructor.cutOut()` entry so the sprite receives a unique key. The loader detects file types by extension via its registered drivers, so referencing the path is all that is required to fetch it. 【F:src/lib/asset-loader/index.ts†L1-L73】【F:src/asset-preparation.ts†L18-L104】
+- **Retrieve sprites with `SpriteDestructor.asset()`** – After `sd.then()` resolves, any module can pull the keyed sprite or audio handle from the shared cache; use expressive identifiers (`bird-emerald-mid`, `pipe-gold-top`, etc.) so call sites remain clear. 【F:src/lib/sprite-destructor/index.ts†L1-L101】【F:src/model/bird.ts†L101-L133】
+- **Update atlas consumers and generators** – When swapping art sets, refresh the consuming classes to request the new keys and extend `SceneGenerator` lists (`birdColorList`, `bgThemeList`, `pipeColorList`) so random selection includes the new variants. This keeps background, bird, and pipe cycles in sync with the available slices. 【F:src/model/scene-generator.ts†L1-L40】【F:src/model/background.ts†L31-L53】【F:src/model/bird.ts†L119-L133】【F:src/model/pipe.ts†L53-L75】
+- **Rebuild atlases carefully** – Export optimized PNGs, ensure coordinates/dimensions match the values supplied to `cutOut`, then rerun `npm run build` or `npm run dev` to confirm the bundle picks up the updated artwork and no keys are missing.
 
 ## Browser Support
 
