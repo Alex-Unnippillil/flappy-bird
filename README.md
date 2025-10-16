@@ -34,6 +34,7 @@ A polished, fully offline-capable recreation of the classic Flappy Bird experien
 - **Immersive Audio** – Low-latency sound effects powered by the Web Audio API.
 - **Persistent Scores** – Local storage keeps track of personal bests across sessions.
 - **60 FPS Rendering** – Optimized draw cycle and sprite batching keep animations smooth.
+- **Ghost Replay Coaching** – A translucent bird replays your previous attempt after a crash, highlighting pacing and timing.
 
 ## Architecture Overview
 
@@ -162,6 +163,13 @@ flappy-bird/
 - Web Audio API plays short-form SFX (flap, score, collision) with minimal latency.
 - Audio assets are preloaded to avoid runtime delays.
 - Volume and mute toggles are managed per session and cached locally.
+
+### Ghost Replay System
+
+- Each run records the bird's position, rotation, and wing beat timing until a collision occurs.
+- After death, the game replays that data as a greyscale "ghost" bird that traces the previous flight path.
+- The ghost fades slightly and leaves a subtle trail to avoid obscuring the active run while still conveying timing cues.
+- Watching the ghost helps players adjust their taps on the next attempt, effectively turning every failure into a coaching moment.
 
 ## Configuration
 

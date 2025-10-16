@@ -368,4 +368,52 @@ export default class Bird extends ParentClass {
   public getSize(): IDimension {
     return { ...this.scaled };
   }
+
+  public getWingState(): number {
+    return this.wingState;
+  }
+
+  public getColor(): IBirdColor {
+    return this.color;
+  }
+
+  public drawGhost(
+    context: CanvasRenderingContext2D,
+    {
+      x,
+      y,
+      rotation,
+      wingState,
+      color,
+      alpha = 0.45
+    }: {
+      x: number;
+      y: number;
+      rotation: number;
+      wingState: number;
+      color: IBirdColor;
+      alpha?: number;
+    }
+  ): void {
+    const spriteKey = `${color}.${wingState}`;
+    const sprite = this.images.get(spriteKey) ?? this.images.get(`${this.color}.${wingState}`);
+
+    if (!sprite) {
+      return;
+    }
+
+    context.save();
+    context.globalAlpha = alpha;
+    context.filter = 'grayscale(100%) brightness(1.15)';
+    context.translate(x, y);
+    context.rotate((rotation * Math.PI) / 180);
+    context.drawImage(
+      sprite,
+      -this.scaled.width,
+      -this.scaled.height,
+      this.scaled.width * 2,
+      this.scaled.height * 2
+    );
+    context.restore();
+  }
 }
