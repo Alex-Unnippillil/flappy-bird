@@ -32,6 +32,7 @@ import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
+import { GHOST_TRAIL_LENGTH } from '../constants';
 
 interface BirdGhostSample {
   frame: number;
@@ -471,7 +472,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
 
     const endIndex = this.ghostPlaybackIndex;
-    const startIndex = Math.max(0, endIndex - 24);
+    const startIndex = Math.max(0, endIndex - GHOST_TRAIL_LENGTH);
 
     context.save();
     const start = this.ghostPath[startIndex].position;

@@ -115,3 +115,10 @@ export const COUNT_COORDINATE: ICoordinate = {
   x: 0.5,
   y: 0.18
 };
+
+/**
+ * Ghost Replay
+ * */
+// Maximum number of historical positions to render in the ghost trail.
+// Higher values create a longer, more visible trail behind the ghost replay.
+export const GHOST_TRAIL_LENGTH = 24;
