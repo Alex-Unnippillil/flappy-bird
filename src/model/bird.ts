@@ -365,6 +365,10 @@ export default class Bird extends ParentClass {
     return this.rotation;
   }
 
+  public getWingState(): number {
+    return this.wingState;
+  }
+
   public getSize(): IDimension {
     return { ...this.scaled };
   }

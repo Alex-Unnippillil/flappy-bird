@@ -31,12 +31,14 @@ import ParentClass from '../abstracts/parent-class';
 import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
+import SpriteDestructor from '../lib/sprite-destructor';
 
 interface BirdGhostSample {
   frame: number;
   time: number;
   position: ICoordinate;
   rotation: number;
+  wingState: number;
 }
 
 export type IGameState = 'died' | 'playing' | 'none';
@@ -61,6 +63,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private runStartTime: number | null;
   private ghostDuration: number;
   private hasSavedGhost: boolean;
+  private ghostSpriteFrames: HTMLCanvasElement[];
+  private ghostEnabled: boolean;
 
   constructor(game: MainGameController) {
     super();
@@ -94,8 +98,29 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.runStartTime = null;
     this.ghostDuration = 0;
     this.hasSavedGhost = false;
+    this.ghostSpriteFrames = [];
+    this.ghostEnabled = true;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
+
+    this.scoreBoard.onToggleGhost((enabled: boolean) => {
+      this.ghostEnabled = enabled;
+
+      if (!enabled) {
+        this.ghostPlaybackStart = null;
+        return;
+      }
+
+      if (
+        this.state === 'playing' &&
+        this.gameState !== 'died' &&
+        this.ghostPath &&
+        this.ghostPath.length > 0
+      ) {
+        this.ghostPlaybackStart = performance.now();
+        this.ghostPlaybackIndex = 0;
+      }
+    });
   }
 
   public init(): void {
@@ -106,6 +131,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.setButtonEvent();
     this.flashScreen.init();
     this.transition.init();
+    this.prepareGhostSprites();
+    this.ghostEnabled = this.scoreBoard.isGhostEnabled();
   }
 
   public reset(): void {
@@ -126,6 +153,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.hasSavedGhost = false;
     this.ghostPlaybackStart = null;
     this.ghostPlaybackIndex = 0;
+    this.ghostEnabled = this.scoreBoard.isGhostEnabled();
   }
 
   public resize({ width, height }: IDimension): void {
@@ -259,7 +287,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.runStartTime = now;
     this.hasSavedGhost = false;
 
-    if (this.ghostPath && this.ghostPath.length > 0) {
+    if (this.ghostEnabled && this.ghostPath && this.ghostPath.length > 0) {
       this.ghostPlaybackStart = now;
       this.ghostPlaybackIndex = 0;
     } else {
@@ -282,7 +310,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
       frame: this.frameIndex,
       time,
       position: { ...this.bird.coordinate },
-      rotation: this.bird.getRotation()
+      rotation: this.bird.getRotation(),
+      wingState: this.bird.getWingState()
     };
 
     this.frameIndex += 1;
@@ -310,10 +339,15 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
 
   private displayGhost(context: CanvasRenderingContext2D): void {
     if (
+      !this.ghostEnabled ||
       !this.ghostPath ||
       this.ghostPath.length === 0 ||
       this.ghostPlaybackStart === null
     ) {
+      return;
+    }
+
+    if (this.ghostSpriteFrames.length === 0) {
       return;
     }
 
@@ -354,32 +388,119 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
 
     const size = this.bird.getSize();
-    const radius = Math.max(size.width, size.height) * 0.6;
+    const drawWidth = size.width * 2;
+    const drawHeight = size.height * 2;
+    const sprite = this.getGhostSpriteFrame(current.wingState);
 
     context.save();
-    context.globalAlpha = 0.35;
     context.translate(x, y);
     context.rotate((rotation * Math.PI) / 180);
-    context.fillStyle = '#ffffff';
+    context.globalAlpha = 0.5;
+    context.shadowColor = 'rgba(120, 136, 176, 0.38)';
+    context.shadowBlur = Math.max(drawWidth, drawHeight) * 0.45;
+    context.shadowOffsetY = drawHeight * 0.08;
+    context.drawImage(sprite, -size.width, -size.height, drawWidth, drawHeight);
+    context.shadowBlur = 0;
+    context.shadowOffsetY = 0;
+    context.shadowColor = 'transparent';
+    context.globalAlpha = 0.28;
+    context.fillStyle = 'rgba(212, 218, 238, 0.6)';
     context.beginPath();
-    context.ellipse(0, 0, radius, radius * 0.75, 0, 0, Math.PI * 2);
+    context.ellipse(0, drawHeight * 0.38, size.width * 0.85, size.height * 0.55, 0, 0, Math.PI * 2);
     context.fill();
     context.restore();
 
-    if (this.ghostPlaybackIndex > 0) {
-      context.save();
-      context.globalAlpha = 0.15;
-      context.strokeStyle = '#ffffff';
-      context.lineWidth = 2;
-      context.beginPath();
-      const start = this.ghostPath[0].position;
-      context.moveTo(start.x, start.y);
-      for (let i = 1; i <= this.ghostPlaybackIndex; i++) {
-        const sample = this.ghostPath[i].position;
-        context.lineTo(sample.x, sample.y);
-      }
-      context.stroke();
-      context.restore();
+    this.drawGhostTrail(context);
+  }
+
+  private prepareGhostSprites(): void {
+    const frames: HTMLCanvasElement[] = [];
+    const wingKeys: ('up' | 'mid' | 'down')[] = ['up', 'mid', 'down'];
+
+    for (const key of wingKeys) {
+      try {
+        const base = SpriteDestructor.asset(`bird-yellow-${key}`);
+        const canvas = document.createElement('canvas');
+        canvas.width = base.width;
+        canvas.height = base.height;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          continue;
+        }
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+        ctx.drawImage(base, 0, 0, base.width, base.height);
+        ctx.globalCompositeOperation = 'source-atop';
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#f4f6fb');
+        gradient.addColorStop(0.45, '#c9cedd');
+        gradient.addColorStop(1, '#8f95a9');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.24;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.55);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+
+        frames.push(canvas);
+      } catch (err) {}
     }
+
+    this.ghostSpriteFrames = frames;
+  }
+
+  private getGhostSpriteFrame(wingState: number): HTMLCanvasElement {
+    if (this.ghostSpriteFrames.length < 3) {
+      return this.ghostSpriteFrames[0] ?? document.createElement('canvas');
+    }
+
+    const index = Math.max(0, Math.min(2, wingState));
+    return this.ghostSpriteFrames[index];
+  }
+
+  private drawGhostTrail(context: CanvasRenderingContext2D): void {
+    if (!this.ghostPath || this.ghostPlaybackIndex < 1) {
+      return;
+    }
+
+    const endIndex = this.ghostPlaybackIndex;
+    const startIndex = Math.max(0, endIndex - 24);
+
+    context.save();
+    const start = this.ghostPath[startIndex].position;
+    const end = this.ghostPath[endIndex].position;
+    const gradient = context.createLinearGradient(start.x, start.y, end.x, end.y);
+    gradient.addColorStop(0, 'rgba(200, 208, 230, 0)');
+    gradient.addColorStop(1, 'rgba(200, 210, 235, 0.45)');
+    context.strokeStyle = gradient;
+    context.lineWidth = Math.max(2, this.canvasSize.width * 0.005);
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.globalAlpha = 0.6;
+    context.beginPath();
+    context.moveTo(start.x, start.y);
+    for (let i = startIndex + 1; i <= endIndex; i++) {
+      const sample = this.ghostPath[i].position;
+      context.lineTo(sample.x, sample.y);
+    }
+    context.stroke();
+
+    const sparkleCount = Math.max(2, Math.floor((endIndex - startIndex) / 5));
+    context.globalAlpha = 0.4;
+    context.fillStyle = 'rgba(224, 232, 255, 0.7)';
+    for (let i = 0; i < sparkleCount; i++) {
+      const index = Math.max(startIndex, endIndex - i * 4);
+      const sample = this.ghostPath[index].position;
+      const radius = Math.max(2, this.canvasSize.width * 0.004) * (1 - i / sparkleCount);
+      context.beginPath();
+      context.arc(sample.x, sample.y, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
   }
 }
