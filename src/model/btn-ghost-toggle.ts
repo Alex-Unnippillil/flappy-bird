@@ -173,18 +173,20 @@ export default class GhostToggleButton extends ButtonEventHandler {
     ctx.shadowBlur = height * 0.25;
     ctx.shadowOffsetY = height * 0.12;
     const iconScale = height * 0.74;
-    const iconAspect = this.icon.height / Math.max(1, this.icon.width);
-    const iconWidth = iconScale;
-    const iconHeight = iconScale * iconAspect;
+    if (this.icon.width > 0 && this.icon.height > 0) {
+      const iconAspect = this.icon.height / this.icon.width;
+      const iconWidth = iconScale;
+      const iconHeight = iconScale * iconAspect;
 
-    ctx.globalAlpha = this.enabled ? 0.68 : 0.45;
-    ctx.drawImage(
-      this.icon,
-      -width * 0.32 - iconWidth / 2,
-      -iconHeight / 2,
-      iconWidth,
-      iconHeight
-    );
+      ctx.globalAlpha = this.enabled ? 0.68 : 0.45;
+      ctx.drawImage(
+        this.icon,
+        -width * 0.32 - iconWidth / 2,
+        -iconHeight / 2,
+        iconWidth,
+        iconHeight
+      );
+    }
 
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
