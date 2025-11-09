@@ -43,6 +43,9 @@ interface BirdGhostSample {
 
 export type IGameState = 'died' | 'playing' | 'none';
 export default class GetReady extends ParentClass implements IScreenChangerObject {
+  private static readonly MIN_SPARKLE_COUNT = 2;
+  private static readonly SPARKLE_INTERVAL = 5;
+
   private bird: BirdModel;
   private pipeGenerator: PipeGenerator;
   private state: string;
@@ -492,7 +495,10 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     }
     context.stroke();
 
-    const sparkleCount = Math.max(2, Math.floor((endIndex - startIndex) / 5));
+    const sparkleCount = Math.max(
+      GetReady.MIN_SPARKLE_COUNT,
+      Math.floor((endIndex - startIndex) / GetReady.SPARKLE_INTERVAL)
+    );
     context.globalAlpha = 0.4;
     context.fillStyle = 'rgba(224, 232, 255, 0.7)';
     for (let i = 0; i < sparkleCount; i++) {
