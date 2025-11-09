@@ -448,7 +448,9 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
         ctx.globalCompositeOperation = 'source-over';
 
         frames.push(canvas);
-      } catch (err) {}
+      } catch (err) {
+        console.warn('Failed to prepare ghost sprite:', err);
+      }
     }
 
     this.ghostSpriteFrames = frames;
