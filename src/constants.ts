@@ -72,6 +72,9 @@ export const BIRD_INITIAL_DIMENSION: IDimension = {
   height: 24
 };
 
+// Number of bird wing animation states (up, mid, down)
+export const BIRD_WING_STATES = 3;
+
 /**
  * Pipe
  */

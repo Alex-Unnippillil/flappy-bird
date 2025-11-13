@@ -321,7 +321,6 @@ export default class ScoreBoard extends ParentObject {
       height: scaled.height * 0.7
     });
     this.spark.Display(context);
-
   }
 
   private getMedalTier(score: number):

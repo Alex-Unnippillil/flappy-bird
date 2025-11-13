@@ -100,7 +100,6 @@ export default class Introduction extends ParentClass implements IScreenChangerO
       fbbScaled.height
     );
     // ----------------------------------
-
   }
 
   public mouseDown({ x, y }: ICoordinate): void {

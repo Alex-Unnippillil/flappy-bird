@@ -32,6 +32,7 @@ import PipeGenerator from '../model/pipe-generator';
 import ScoreBoard from '../model/score-board';
 import Sfx from '../model/sfx';
 import SpriteDestructor from '../lib/sprite-destructor';
+import { BIRD_WING_STATES } from '../constants';
 
 interface BirdGhostSample {
   frame: number;
@@ -297,11 +298,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   private recordFrameSample(): void {
-    if (
-      this.state !== 'playing' ||
-      this.runStartTime === null ||
-      !this.bird.alive
-    ) {
+    if (this.state !== 'playing' || this.runStartTime === null || !this.bird.alive) {
       return;
     }
 
@@ -406,7 +403,15 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     context.globalAlpha = 0.28;
     context.fillStyle = 'rgba(212, 218, 238, 0.6)';
     context.beginPath();
-    context.ellipse(0, drawHeight * 0.38, size.width * 0.85, size.height * 0.55, 0, 0, Math.PI * 2);
+    context.ellipse(
+      0,
+      drawHeight * 0.38,
+      size.width * 0.85,
+      size.height * 0.55,
+      0,
+      0,
+      Math.PI * 2
+    );
     context.fill();
     context.restore();
 
@@ -457,11 +462,11 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   private getGhostSpriteFrame(wingState: number): HTMLCanvasElement {
-    if (this.ghostSpriteFrames.length < 3) {
+    if (this.ghostSpriteFrames.length < BIRD_WING_STATES) {
       return this.ghostSpriteFrames[0] ?? document.createElement('canvas');
     }
 
-    const index = Math.max(0, Math.min(2, wingState));
+    const index = Math.max(0, Math.min(BIRD_WING_STATES - 1, wingState));
     return this.ghostSpriteFrames[index];
   }
 
