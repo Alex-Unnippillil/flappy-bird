@@ -11,6 +11,7 @@ import SparkModel from './spark';
 import PlayButton from './btn-play';
 import RankingButton from './btn-ranking';
 import ToggleSpeaker from './btn-toggle-speaker';
+import GhostToggleButton from './btn-ghost-toggle';
 import SpriteDestructor from '../lib/sprite-destructor';
 import { Fly, BounceIn, TimingEvent } from '../lib/animation';
 import Storage from '../lib/storage';
@@ -27,6 +28,7 @@ export default class ScoreBoard extends ParentObject {
   private playButton: PlayButton;
   private rankingButton: RankingButton;
   private toggleSpeakerButton: ToggleSpeaker;
+  private ghostToggleButton: GhostToggleButton;
   private FlyInAnim: Fly;
   private BounceInAnim: BounceIn;
   private currentScore: number;
@@ -34,6 +36,8 @@ export default class ScoreBoard extends ParentObject {
   private currentHighScore: number;
   private TimingEventAnim: TimingEvent;
   private spark: SparkModel;
+  private ghostEnabled: boolean;
+  private ghostToggleHandler?: (enabled: boolean) => void;
   private readonly medalTiers: {
     threshold: number;
     imageKey: string;
@@ -46,10 +50,13 @@ export default class ScoreBoard extends ParentObject {
     this.playButton = new PlayButton();
     this.rankingButton = new RankingButton();
     this.toggleSpeakerButton = new ToggleSpeaker();
+    this.ghostToggleButton = new GhostToggleButton();
     this.spark = new SparkModel();
     this.currentHighScore = 0;
     this.currentGeneratedNumber = 0;
     this.currentScore = 0;
+    this.ghostEnabled = true;
+    this.ghostToggleHandler = undefined;
     this.medalTiers = [
       { threshold: 10, imageKey: 'medal-platinum' },
       { threshold: 5, imageKey: 'medal-gold' },
@@ -93,10 +100,12 @@ export default class ScoreBoard extends ParentObject {
     this.rankingButton.init();
     this.playButton.init();
     this.toggleSpeakerButton.init();
+    this.ghostToggleButton.init();
 
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.ghostToggleButton.active = false;
     this.spark.init();
 
     /**
@@ -106,6 +115,19 @@ export default class ScoreBoard extends ParentObject {
      * */
     const prevScore = Storage.get('highscore') as number;
     this.currentHighScore = typeof prevScore === 'number' ? prevScore : 0;
+
+    const storedGhostPreference = Storage.get('ghost-enabled');
+    if (typeof storedGhostPreference === 'boolean') {
+      this.ghostEnabled = storedGhostPreference;
+    }
+
+    this.ghostToggleButton.setEnabled(this.ghostEnabled);
+    this.ghostToggleButton.onToggle((enabled: boolean) => {
+      if (this.ghostEnabled === enabled) return;
+      this.ghostEnabled = enabled;
+      Storage.save('ghost-enabled', enabled);
+      this.ghostToggleHandler?.(enabled);
+    });
   }
 
   private preloadImage(key: string, src: string): void {
@@ -125,6 +147,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.resize(this.canvasSize);
     this.spark.resize(this.canvasSize);
     this.toggleSpeakerButton.resize(this.canvasSize);
+    this.ghostToggleButton.resize(this.canvasSize);
   }
 
   public Update(): void {
@@ -132,6 +155,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.Update();
     this.spark.Update();
     this.toggleSpeakerButton.Update();
+    this.ghostToggleButton.Update();
   }
 
   public Display(context: CanvasRenderingContext2D): void {
@@ -218,6 +242,7 @@ export default class ScoreBoard extends ParentObject {
       this.rankingButton.Display(context);
       this.playButton.Display(context);
       this.toggleSpeakerButton.Display(context);
+      this.ghostToggleButton.Display(context);
     }
   }
 
@@ -241,6 +266,8 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = true;
     this.rankingButton.active = true;
     this.toggleSpeakerButton.active = true;
+    this.ghostToggleButton.active = true;
+    this.ghostToggleButton.setEnabled(this.ghostEnabled);
   }
 
   private setHighScore(num: number): void {
@@ -395,6 +422,7 @@ export default class ScoreBoard extends ParentObject {
     this.playButton.active = false;
     this.rankingButton.active = false;
     this.toggleSpeakerButton.active = false;
+    this.ghostToggleButton.active = false;
     this.currentGeneratedNumber = 0;
     this.FlyInAnim.reset();
     this.BounceInAnim.reset();
@@ -410,16 +438,26 @@ export default class ScoreBoard extends ParentObject {
     this.rankingButton.onClick(callback);
   }
 
+  public onToggleGhost(callback: (enabled: boolean) => void): void {
+    this.ghostToggleHandler = callback;
+  }
+
+  public isGhostEnabled(): boolean {
+    return this.ghostEnabled;
+  }
+
   public mouseDown({ x, y }: ICoordinate): void {
     this.playButton.mouseEvent('down', { x, y });
     this.rankingButton.mouseEvent('down', { x, y });
     this.toggleSpeakerButton.mouseEvent('down', { x, y });
+    this.ghostToggleButton.mouseEvent('down', { x, y });
   }
 
   public mouseUp({ x, y }: ICoordinate): void {
     this.playButton.mouseEvent('up', { x, y });
     this.rankingButton.mouseEvent('up', { x, y });
     this.toggleSpeakerButton.mouseEvent('up', { x, y });
+    this.ghostToggleButton.mouseEvent('up', { x, y });
   }
 
   public triggerPlayATKeyboardEvent(): void {
