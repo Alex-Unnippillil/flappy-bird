@@ -2,6 +2,9 @@
 
 # Flappy Bird Web App
 
+
+https://alex-unnippillil.github.io/flappy-bird/
+
 A polished, fully offline-capable recreation of the classic Flappy Bird experience built with TypeScript, HTML5 Canvas, and modern tooling. The project is structured for maintainability, extensibility, and developer productivity, making it a solid reference for browser-based arcade games and PWA implementations.
 
 
