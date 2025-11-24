@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/btn-ranking.ts.
+/**
+ * Model Summary:
+ * Purpose: Provides a ranking button variant that reuses PlayButton positioning and hover behavior with a different sprite.
+ * Update/Display: Inherits Update()/Display() from PlayButton to manage hover animation and rendering.
+ * Public API: init(), inherited onClick/click handlers from PlayButton.
+ * Constants: None.
+ * Interactions: Shares behavior with PlayButton and pulls its artwork via SpriteDestructor; intended to trigger external leaderboard flows.
+ */
 import PlayButton from './btn-play'; // Instead of duplicating
 import SpriteDestructor from '../lib/sprite-destructor';
 

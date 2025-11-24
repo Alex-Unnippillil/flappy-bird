@@ -1,4 +1,11 @@
-// File Overview: This module belongs to src/model/spark.ts.
+/**
+ * Model Summary:
+ * Purpose: Animates celebratory spark sprites within a defined region.
+ * Update/Display: `Update()` cycles through spark frames at timed intervals and repositions targets; `Display()` draws the current frame when active.
+ * Public API: init(), resize(size), doSpark(), stop(), move(origin, dimension), Update(), Display(ctx).
+ * Constants: None.
+ * Interactions: Typically embedded by ScoreBoard to enhance medal reveals; leverages SpriteDestructor for assets.
+ */
 import ParentClass from '../abstracts/parent-class';
 import { rescaleDim, randomClamp } from '../utils';
 import SpriteDestructor from '../lib/sprite-destructor';
