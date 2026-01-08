@@ -2,12 +2,15 @@
 import { randomClamp } from '../utils';
 import { ITheme } from './background';
 import { IBirdColor } from './bird';
-import { IPipeColor } from './pipe';
+import { IPipeColor, IPipePalette } from './pipe';
 
 export default class SceneGenerator {
   public static birdColorList: IBirdColor[] = [];
   public static bgThemeList: ITheme[] = [];
-  public static pipeColorList: IPipeColor[] = [];
+  public static pipeColorList: IPipePalette = {
+    day: ['green'],
+    night: ['red']
+  };
   private static isNight = false;
 
   public static get background(): ITheme {
@@ -29,15 +32,17 @@ export default class SceneGenerator {
   }
 
   public static get pipe(): IPipeColor {
-    if (SceneGenerator.pipeColorList.length < 1)
-      throw new Error('No available pipe color');
+    const palette = SceneGenerator.isNight
+      ? SceneGenerator.pipeColorList.night
+      : SceneGenerator.pipeColorList.day;
 
-    if (SceneGenerator.isNight) {
-      return SceneGenerator.pipeColorList[
-        randomClamp(0, SceneGenerator.pipeColorList.length)
-      ];
+    if (palette.length < 1) throw new Error('No available pipe color');
+
+    if (!SceneGenerator.isNight) {
+      // Day time always uses the classic green pipes for familiarity
+      return palette[0];
     }
 
-    return 'green' as IPipeColor;
+    return palette[randomClamp(0, palette.length)];
   }
 }

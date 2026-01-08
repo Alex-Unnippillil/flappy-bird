@@ -15,7 +15,12 @@ export interface IPipeScaled {
 }
 
 export type IPipeColor = string;
-export type IPipeRecords = Map<IPipeColor, HTMLImageElement>;
+export interface IPipePalette {
+  day: IPipeColor[];
+  night: IPipeColor[];
+}
+export type IPipeSprite = HTMLImageElement | HTMLCanvasElement;
+export type IPipeRecords = Map<string, IPipeSprite>;
 
 export default class Pipe extends ParentClass {
   /**
@@ -36,7 +41,7 @@ export default class Pipe extends ParentClass {
 
   constructor() {
     super();
-    this.images = new Map<string, HTMLImageElement>();
+    this.images = new Map<string, IPipeSprite>();
     this.color = 'green';
     this.hollSize = 0;
     this.pipePosition = {
@@ -52,12 +57,30 @@ export default class Pipe extends ParentClass {
   }
 
   public init(): void {
-    this.images.set('green.top', SpriteDestructor.asset('pipe-green-top'));
-    this.images.set('green.bottom', SpriteDestructor.asset('pipe-green-bottom'));
-    this.images.set('red.top', SpriteDestructor.asset('pipe-red-top'));
-    this.images.set('red.bottom', SpriteDestructor.asset('pipe-red-bottom'));
+    const greenTop = SpriteDestructor.asset('pipe-green-top');
+    const greenBottom = SpriteDestructor.asset('pipe-green-bottom');
+    const redTop = SpriteDestructor.asset('pipe-red-top');
+    const redBottom = SpriteDestructor.asset('pipe-red-bottom');
 
-    Object.assign(SceneGenerator.pipeColorList, ['red', 'green']);
+    this.registerSprite('green', greenTop, greenBottom);
+    this.registerSprite('red', redTop, redBottom);
+
+    const tintVariants: { name: IPipeColor; color: string }[] = [
+      { name: 'gold', color: '#f9d648' },
+      { name: 'glacier', color: '#4de8e4' },
+      { name: 'violet', color: '#d0a6ff' }
+    ];
+
+    for (const variant of tintVariants) {
+      this.registerSprite(
+        variant.name,
+        Pipe.tintSprite(greenTop, variant.color),
+        Pipe.tintSprite(greenBottom, variant.color)
+      );
+    }
+
+    SceneGenerator.pipeColorList.day = ['green'];
+    SceneGenerator.pipeColorList.night = ['red', 'gold', 'glacier', 'violet'];
   }
 
   /**
@@ -180,5 +203,33 @@ export default class Pipe extends ParentClass {
       this.scaled.bottom.width,
       this.scaled.bottom.height
     );
+  }
+
+  private registerSprite(color: IPipeColor, top: IPipeSprite, bottom: IPipeSprite): void {
+    this.images.set(`${color}.top`, top);
+    this.images.set(`${color}.bottom`, bottom);
+  }
+
+  private static tintSprite(base: HTMLImageElement, fill: string): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = base.width;
+    canvas.height = base.height;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(base, 0, 0);
+
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = fill;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'destination-atop';
+    ctx.drawImage(base, 0, 0);
+
+    ctx.globalCompositeOperation = 'source-over';
+
+    return canvas;
   }
 }
