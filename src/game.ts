@@ -174,6 +174,10 @@ export default class Game extends ParentClass {
     else this.gamePlay.startAtKeyBoardEvent();
   }
 
+  public notifyGamepadStatus(connected: boolean, label?: string): void {
+    this.screenIntro.setGamepadHint(connected ? label : void 0);
+  }
+
   public get currentState(): IGameState {
     return this.state;
   }
