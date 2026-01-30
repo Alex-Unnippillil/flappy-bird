@@ -122,6 +122,7 @@ A modern, TypeScript-based web recreation of the classic Flappy Bird game, featu
 - Validate changes with `npm run lint` and `npm run dev`.
 - Document new features in `README.md` and update this file if new agent-relevant patterns are introduced.
 - When preparing pull requests, summarize gameplay-visible changes and mention any required manual test steps in the PR description to help reviewers.
+- For inspiration on future improvements, see `TASKS_CODEX.md`, which collects well-scoped task stubs tailored for automation runs.
 
 ### Documentation Updates
 
