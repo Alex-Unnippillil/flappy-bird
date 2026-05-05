@@ -20,8 +20,17 @@
  *   retrieval can restore the correct type rather than always returning strings.
  */
 export type IStoreValue = string | number | boolean;
+
+type IStoreValueType = 'string' | 'number' | 'boolean';
+
 export interface IData {
-  type: IStoreValue;
+  type: IStoreValueType;
+  value: string;
+}
+
+interface ILegacyData {
+  mode?: IStoreValueType;
+  type?: IStoreValueType;
   value: string;
 }
 
@@ -59,13 +68,16 @@ export default class Storage {
       console.warn('Storage is not available');
       return;
     }
-    const mode = typeof value;
+
+    const type: IStoreValueType = typeof value;
+
     if (typeof value !== 'string') {
       value = String(value);
     }
+
     window.localStorage.setItem(
       `__${Storage.sk! as string}_${key}__`,
-      Storage.utoa(JSON.stringify({ mode, value }))
+      Storage.utoa(JSON.stringify({ type, value }))
     );
   }
 
@@ -82,25 +94,31 @@ export default class Storage {
 
       if (!read_item) return void 0;
 
-      const obj = JSON.parse(Storage.atou(read_item)) as IData;
+      const obj = JSON.parse(Storage.atou(read_item)) as ILegacyData;
+      const type = obj.type ?? obj.mode;
 
-      let return_value: IStoreValue | undefined = void 0;
-
-      switch (obj.type) {
-        case 'string':
-          return_value = String(obj.value);
-          break;
-        case 'number':
-          return_value = Number(obj.value);
-          break;
-        case 'boolean':
-          return_value = obj.value === 'true' ? true : false;
-          break;
+      if (!type) {
+        console.warn(`Storage record is missing type metadata for key: ${key}`);
+        return void 0;
       }
 
-      return return_value;
+      switch (type) {
+        case 'string':
+          return String(obj.value);
+        case 'number':
+          return Number(obj.value);
+        case 'boolean':
+          return obj.value === 'true';
+        default: {
+          const exhaustiveCheck: never = type;
+          console.warn(
+            `Storage record has unsupported type metadata "${String(exhaustiveCheck)}" for key: ${key}`
+          );
+          return void 0;
+        }
+      }
     } catch (err) {
-      console.error('Failed to fetch highscore');
+      console.error(`Failed to read storage value for key: ${key}`);
       return void 0;
     }
   }
