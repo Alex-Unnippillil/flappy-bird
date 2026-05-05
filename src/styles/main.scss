@@ -138,3 +138,28 @@ body {
     transform: translate(24px, 0);
   }
 }
+
+#sw-update-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(28, 28, 30, 0.96);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  > button {
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
