@@ -49,6 +49,8 @@ const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
 let isLoaded = false;
+let previousFrameTime: number | null = null;
+const MAX_DELTA_MS = 100;
 
 gameIcon.src = gameSpriteIcon;
 
@@ -58,9 +60,14 @@ fps.text({ x: 50, y: 50 }, '', ' Cycle');
 fps.container({ x: 10, y: 10}, { x: 230, y: 70});
 
 const GameUpdate = (): void => {
+  const now = performance.now();
+  const rawDeltaMs = previousFrameTime === null ? 1000 / 60 : now - previousFrameTime;
+  previousFrameTime = now;
+  const deltaMs = Math.min(rawDeltaMs, MAX_DELTA_MS);
+
   physicalContext.drawImage(virtualCanvas, 0, 0);
 
-  Game.Update();
+  Game.Update(deltaMs);
   Game.Display();
 
   if (process.env.NODE_ENV === 'development') fps.mark();
@@ -124,6 +131,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ScreenResize();
 
     // raf(GameUpdate); Issue #16
+    previousFrameTime = performance.now();
     if (!game_running()) game_start(); // Quick fix. Long term :)
 
     if (process.env.NODE_ENV === 'development') removeLoadingScreen();
@@ -135,6 +143,12 @@ window.addEventListener('resize', () => {
   if (!isLoaded) return;
 
   ScreenResize();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    previousFrameTime = performance.now();
+  }
 });
 
 window.addEventListener('orientationchange', () => {

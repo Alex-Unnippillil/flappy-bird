@@ -68,7 +68,8 @@ export default class Background extends ParentClass {
     );
   }
 
-  public Update(): void {
+  public Update(deltaMs: number): void {
+    const deltaScale = deltaMs / (1000 / 60);
     /**
      * We use linear interpolation instead of by pixel to move the object.
      * It is to keep the speed same in different Screen Sizes & Screen DPI.
@@ -77,8 +78,8 @@ export default class Background extends ParentClass {
      * We cannot rely on fps since it is not a constant value.
      * Which means is the game will speed up or slow down based on fps
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
-    this.coordinate.y += this.velocity.y;
+    this.coordinate.x += this.canvasSize.width * this.velocity.x * deltaScale;
+    this.coordinate.y += this.velocity.y * deltaScale;
   }
 
   public Display(context: CanvasRenderingContext2D): void {

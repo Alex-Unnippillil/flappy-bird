@@ -312,7 +312,8 @@ export default class Bird extends ParentClass {
     this.flapWing(flipRange(4, 8.2, f));
   }
 
-  public Update(): void {
+  public Update(deltaMs: number): void {
+    const deltaScale = deltaMs / (1000 / 60);
     // Always above the floor
     if (this.doesHitTheFloor() || (this.flags & Bird.FLAG_DOES_LANDED) !== 0) {
       this.flags |= Bird.FLAG_DOES_LANDED;
@@ -328,10 +329,10 @@ export default class Bird extends ParentClass {
       this.max_lift_velocity,
       this.max_fall_velocity,
       this.velocity.y
-    );
+    ) * deltaScale;
 
     // Slowly reduce the Y velocity by given weights
-    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT;
+    this.velocity.y += this.canvasSize.height * BIRD_WEIGHT * deltaScale;
 
     this.handleRotation();
   }

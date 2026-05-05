@@ -17,7 +17,7 @@
  *   development.
  */
 export interface IScreenChangerObject {
-  Update(): void;
+  Update(deltaMs: number): void;
   Display(context: CanvasRenderingContext2D): void;
 }
 
@@ -38,14 +38,14 @@ export default class ScreenChanger implements IScreenChangerObject {
     this.objects.set(name, classObject);
   }
 
-  public Update(): void {
+  public Update(deltaMs: number): void {
     const classObject = this.objects.get(this.currentState);
 
     if (classObject === void 0) {
       throw new TypeError(`State ${this.currentState} does not exists`);
     }
 
-    classObject.Update();
+    classObject.Update(deltaMs);
   }
 
   public Display(context: CanvasRenderingContext2D): void {
