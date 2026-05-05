@@ -49,6 +49,11 @@ const Game = new GameObject(virtualCanvas);
 const fps = new Framer(Game.context);
 
 let isLoaded = false;
+let scheduledResizeFrame: number | null = null;
+let prevDisplayWidth = 0;
+let prevDisplayHeight = 0;
+let prevCanvasWidth = 0;
+let prevCanvasHeight = 0;
 
 gameIcon.src = gameSpriteIcon;
 
@@ -86,20 +91,55 @@ const ScreenResize = () => {
 
   const displayWidth = scaledDimension.width / dpr;
   const displayHeight = scaledDimension.height / dpr;
+  const canvasWidth = Math.round(scaledDimension.width);
+  const canvasHeight = Math.round(scaledDimension.height);
 
-  canvas.style.maxWidth = `${displayWidth}px`;
-  canvas.style.maxHeight = `${displayHeight}px`;
-  canvas.style.width = `${displayWidth}px`;
-  canvas.style.height = `${displayHeight}px`;
+  const hasDisplayChange =
+    prevDisplayWidth !== displayWidth || prevDisplayHeight !== displayHeight;
+  const hasCanvasChange =
+    prevCanvasWidth !== canvasWidth || prevCanvasHeight !== canvasHeight;
 
-  canvas.width = Math.round(scaledDimension.width);
-  canvas.height = Math.round(scaledDimension.height);
-  virtualCanvas.width = canvas.width;
-  virtualCanvas.height = canvas.height;
+  if (!hasDisplayChange && !hasCanvasChange) {
+    return;
+  }
 
-  console.log(`Canvas Size: ${canvas.width}x${canvas.height}`);
+  if (hasDisplayChange) {
+    const width = `${displayWidth}px`;
+    const height = `${displayHeight}px`;
+
+    canvas.style.maxWidth = width;
+    canvas.style.maxHeight = height;
+    canvas.style.width = width;
+    canvas.style.height = height;
+
+    prevDisplayWidth = displayWidth;
+    prevDisplayHeight = displayHeight;
+  }
+
+  if (hasCanvasChange) {
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    virtualCanvas.width = canvasWidth;
+    virtualCanvas.height = canvasHeight;
+
+    prevCanvasWidth = canvasWidth;
+    prevCanvasHeight = canvasHeight;
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Canvas Size: ${canvas.width}x${canvas.height}`);
+    }
+  }
 
   Game.Resize({ width: canvas.width, height: canvas.height });
+};
+
+const scheduleScreenResize = () => {
+  if (scheduledResizeFrame !== null) return;
+
+  scheduledResizeFrame = window.requestAnimationFrame(() => {
+    scheduledResizeFrame = null;
+    ScreenResize();
+  });
 };
 
 const removeLoadingScreen = () => {
@@ -134,23 +174,23 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('resize', () => {
   if (!isLoaded) return;
 
-  ScreenResize();
+  scheduleScreenResize();
 });
 
 window.addEventListener('orientationchange', () => {
   if (!isLoaded) return;
 
-  window.setTimeout(ScreenResize, 0);
+  scheduleScreenResize();
 });
 
 window.visualViewport?.addEventListener('resize', () => {
   if (!isLoaded) return;
 
-  ScreenResize();
+  scheduleScreenResize();
 });
 
 window.visualViewport?.addEventListener('scroll', () => {
   if (!isLoaded) return;
 
-  ScreenResize();
+  scheduleScreenResize();
 });
