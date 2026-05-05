@@ -42,13 +42,14 @@ export default class Platform extends ParentClass {
     this.coordinate.y = height - this.platformSize.height;
   }
 
-  public Update() {
+  public Update(deltaMs: number) {
+    const deltaScale = deltaMs / (1000 / 60);
     /**
      * We use linear interpolation instead of by pixel to move the object.
      * It is to keep the speed same in different Screen Sizes & Screen DPI
      * */
-    this.coordinate.x += this.canvasSize.width * this.velocity.x;
-    this.coordinate.y += this.velocity.y;
+    this.coordinate.x += this.canvasSize.width * this.velocity.x * deltaScale;
+    this.coordinate.y += this.velocity.y * deltaScale;
   }
 
   public Display(context: CanvasRenderingContext2D) {
