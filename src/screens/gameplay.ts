@@ -61,6 +61,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private runStartTime: number | null;
   private ghostDuration: number;
   private hasSavedGhost: boolean;
+  private scoreRevealTimerId: number | null;
+  private boardRevealTimerId: number | null;
 
   constructor(game: MainGameController) {
     super();
@@ -94,6 +96,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.runStartTime = null;
     this.ghostDuration = 0;
     this.hasSavedGhost = false;
+    this.scoreRevealTimerId = null;
+    this.boardRevealTimerId = null;
 
     this.transition.setEvent([0.99, 1], this.reset.bind(this));
   }
@@ -109,6 +113,7 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   }
 
   public reset(): void {
+    this.clearPendingUiTimers();
     this.gameState = 'none';
     this.state = 'waiting';
     this.game.background.reset();
@@ -168,21 +173,31 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.recordFrameSample();
 
     if (this.bird.isDead(this.pipeGenerator.pipes)) {
+      if (this.gameState === 'died') return;
+
+      this.clearPendingUiTimers();
       this.flashScreen.reset();
       this.flashScreen.start();
 
       this.gameState = 'died';
       this.finalizeGhostRun();
 
-      window.setTimeout(() => {
+      this.scoreRevealTimerId = window.setTimeout(() => {
+        this.scoreRevealTimerId = null;
+        if (this.gameState !== 'died' || this.state !== 'playing') return;
+
         this.scoreBoard.setScore(this.bird.score);
         this.showScoreBoard = true;
-        window.setTimeout(() => {
+        this.scoreBoard.showBanner();
+        Sfx.swoosh();
+
+        this.boardRevealTimerId = window.setTimeout(() => {
+          this.boardRevealTimerId = null;
+          if (this.gameState !== 'died' || this.state !== 'playing') return;
+
           this.scoreBoard.showBoard();
           Sfx.swoosh();
         }, 700);
-        this.scoreBoard.showBanner();
-        Sfx.swoosh();
       }, 500);
 
       Sfx.hit(() => {
@@ -214,6 +229,8 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
   private setButtonEvent(): void {
     this.scoreBoard.onRestart(() => {
       if (this.transition.status.running) return;
+
+      this.clearPendingUiTimers();
       this.transition.reset();
       this.transition.start();
     });
@@ -306,6 +323,18 @@ export default class GetReady extends ParentClass implements IScreenChangerObjec
     this.runStartTime = null;
     this.ghostPlaybackStart = null;
     this.ghostPlaybackIndex = 0;
+  }
+
+  private clearPendingUiTimers(): void {
+    if (this.scoreRevealTimerId !== null) {
+      window.clearTimeout(this.scoreRevealTimerId);
+      this.scoreRevealTimerId = null;
+    }
+
+    if (this.boardRevealTimerId !== null) {
+      window.clearTimeout(this.boardRevealTimerId);
+      this.boardRevealTimerId = null;
+    }
   }
 
   private displayGhost(context: CanvasRenderingContext2D): void {
