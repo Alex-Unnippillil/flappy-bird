@@ -1,23 +1,19 @@
 /**
- * Centralizes user input for the game canvas by mapping mouse, touch, and
- * keyboard events onto a shared "mouse" state that Game consumes. Pointer
- * coordinates are translated from viewport space to canvas space via
+ * Centralizes user input for the game canvas by mapping pointer and keyboard
+ * events onto a shared "mouse" state that Game consumes. Pointer coordinates
+ * are translated from viewport space to canvas space via
  * `getBoundingClientRect` so Game always receives device-independent values.
- * Repeated taps/clicks are debounced through `likeClickedEvent`, which only
+ * Repeated presses are debounced through `likeClickedEvent`, which only
  * forwards the first press in a down/up cycle to `Game.onClick` so score
  * screens behave consistently. Each first interaction for a press also calls
  * `WebSfx.init()` to unlock audio playback (required by some browsers) before
- * delegating to `Game.mouseDown`/`Game.mouseUp`. The shared `hasMouseDown` /
- * `hasMouseUp` toggles ensure each physical press only fires once per phase.
- * Keyboard Space/Enter presses call `Game.startAtKeyBoardEvent()` and then
- * simulate centered pointer events so the Game and WebSfx pipelines stay
- * synchronized regardless of input type.
+ * delegating to `Game.mouseDown`/`Game.mouseUp`.
  */
 
 import Game from './game';
 import WebSfx from './lib/web-sfx';
 
-export type IEventParam = MouseEvent | TouchEvent | KeyboardEvent;
+export type IEventParam = PointerEvent | KeyboardEvent;
 
 export default (Game: Game, canvas: HTMLCanvasElement) => {
   interface IMouse {
@@ -27,7 +23,7 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
 
   let clicked = false;
 
-  // Trigger the event once
+  // Trigger each phase once per physical press cycle.
   let hasMouseDown = false;
   let hasMouseUp = true;
 
@@ -54,81 +50,57 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     clicked = true;
   };
 
-  const mouseMove = ({ x, y }: ICoordinate, evt: IEventParam): void => {
-    evt.preventDefault();
+  const applyPosition = ({ x, y }: ICoordinate) => {
     mouse.position = getBoundedPosition({ x, y });
   };
 
-  const mouseUP = (
-    { x, y }: ICoordinate,
-    evt: IEventParam,
-    isRetreive: boolean
-  ): void => {
-    if (hasMouseUp) return;
-    hasMouseUp = true;
-    hasMouseDown = false;
-
-    /**
-     * Required due to autoplay restriction
-     * */
-    void WebSfx.init();
-
-    evt.preventDefault();
-    if (!isRetreive) mouse.position = getBoundedPosition({ x, y });
-
-    Game.mouseUp(mouse.position);
-    mouse.down = false;
-    clicked = false;
-  };
-
-  const mouseDown = ({ x, y }: ICoordinate, evt: IEventParam): void => {
+  const press = ({ x, y }: ICoordinate) => {
     if (hasMouseDown) return;
-    hasMouseUp = false;
-    hasMouseDown = true;
 
-    /**
-     * Trigger multiple times
-     * Required due to autoplay restriction
-     * */
+    hasMouseDown = true;
+    hasMouseUp = false;
+
     void WebSfx.init();
 
-    evt.preventDefault();
-    mouse.position = getBoundedPosition({ x, y });
-    Game.mouseDown(mouse.position);
+    applyPosition({ x, y });
     mouse.down = true;
+    Game.mouseDown(mouse.position);
 
     likeClickedEvent();
   };
 
-  // Mouse Event
-  canvas.addEventListener('mousedown', (evt: MouseEvent) => {
-    mouseDown({ x: evt.clientX, y: evt.clientY }, evt);
+  const release = ({ x, y }: ICoordinate) => {
+    if (hasMouseUp) return;
+
+    hasMouseUp = true;
+    hasMouseDown = false;
+
+    void WebSfx.init();
+
+    applyPosition({ x, y });
+    mouse.down = false;
+    Game.mouseUp(mouse.position);
+    clicked = false;
+  };
+
+  const move = ({ x, y }: ICoordinate) => {
+    applyPosition({ x, y });
+  };
+
+  canvas.addEventListener('pointerdown', (evt: PointerEvent) => {
+    press({ x: evt.clientX, y: evt.clientY });
   });
 
-  canvas.addEventListener('mouseup', (evt: MouseEvent) => {
-    mouseUP({ x: evt.clientX, y: evt.clientY }, evt, false);
+  canvas.addEventListener('pointerup', (evt: PointerEvent) => {
+    release({ x: evt.clientX, y: evt.clientY });
   });
 
-  canvas.addEventListener('mousemove', (evt: MouseEvent) => {
-    mouseMove({ x: evt.clientX, y: evt.clientY }, evt);
+  canvas.addEventListener('pointercancel', (evt: PointerEvent) => {
+    release({ x: evt.clientX, y: evt.clientY });
   });
 
-  // Touch Event
-  canvas.addEventListener('touchstart', (evt: TouchEvent) => {
-    mouseDown({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
-  });
-
-  canvas.addEventListener('touchend', (evt: TouchEvent) => {
-    if (evt.touches.length < 1) {
-      mouseUP(mouse.position, evt, true);
-      return;
-    }
-
-    mouseUP({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt, false);
-  });
-
-  canvas.addEventListener('touchmove', (evt: TouchEvent) => {
-    mouseMove({ x: evt.touches[0].clientX, y: evt.touches[0].clientY }, evt);
+  canvas.addEventListener('pointermove', (evt: PointerEvent) => {
+    move({ x: evt.clientX, y: evt.clientY });
   });
 
   // Keyboard event
@@ -146,13 +118,11 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
     ) {
       Game.startAtKeyBoardEvent();
 
-      mouseDown(
-        {
-          x: canvas.width / 2,
-          y: canvas.height / 2
-        },
-        evt
-      );
+      evt.preventDefault();
+      press({
+        x: canvas.width / 2,
+        y: canvas.height / 2
+      });
     }
   });
 
@@ -167,14 +137,11 @@ export default (Game: Game, canvas: HTMLCanvasElement) => {
       code === 'NumpadEnter' ||
       code === 'Enter'
     ) {
-      mouseUP(
-        {
-          x: canvas.width / 2,
-          y: canvas.height / 2
-        },
-        evt,
-        false
-      );
+      evt.preventDefault();
+      release({
+        x: canvas.width / 2,
+        y: canvas.height / 2
+      });
     }
   });
 };
